@@ -1,0 +1,7 @@
+@media print {
+    .wrapper {margin-bottom:10px;}
+}
+
+.wrapper { font-size: 11px; }
+
+hr.new { border-top: 2px dashed black; }
