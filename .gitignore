@@ -21,3 +21,12 @@ error_log
 .well-known
 
 global/tmp/qr_codes/*.png
+
+assests/uploads/*
+
+*.jpg
+*.jpeg
+*.jpe
+*.jif
+*.jfif
+*.jfi
