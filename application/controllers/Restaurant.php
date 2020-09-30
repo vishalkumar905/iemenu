@@ -4,6 +4,7 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 require_once(dirname(__FILE__).'/Main.php');
 
 include_once APPPATH.'/third_party/mpdf/vendor/autoload.php';
+include_once APPPATH.'/libraries/SimpleXLSXGen.php';
 
 class Restaurant extends Main 
 {
@@ -161,10 +162,23 @@ class Restaurant extends Main
 		    $date = new DateTime("now");
             $curr_date = $date->format('Y-m-d');
     		$condition = array('res_id'=>$rid, 'DATE(created_at)'=>$curr_date);
+    		
+    		$orders = $this->restaurantModel->getOrderList($condition);
 		} else {
-		    $condition = array('res_id'=>$rid, 'order_status'=>2);
+		    $this->db->order_by('id','DESC');
+		    $this->db->where('res_id',$rid);
+		    $this->db->where('order_status',2);
+		    
+		    if($_POST['isFilter']=='yes'){
+		        $date=json_decode($_POST['formdata'],true); $from=$date['from']; $to=$date['to'];
+		        if($from!='' && $to!='') { $this->db->where("DATE(created_at) BETWEEN '$from' AND '$to'"); }
+		        elseif($date['from']!='') { $this->db->where("DATE(created_at) >= '$from'"); }
+		        elseif($date['to']!='') { $this->db->where("DATE(created_at) <= '$to'"); }
+		    }
+    		$query = $this->db->get('orders');
+    		$orders = $query->result();
 		}
-	    $orders = $this->restaurantModel->getOrderList($condition);
+	    
 	    
 	    $data = array(); $i=1;
         foreach ( $orders as $order )
@@ -180,7 +194,6 @@ class Restaurant extends Main
             $sub_array[] = $order->buyer_name;
             $sub_array[] = $order->buyer_phone_number;
             $sub_array[] = $order->order_type;
-            
             
             $sub_array[] = ($order->payment_mode=='1') ? '<span class="label label-primary">CASH</span>' : '<span class="label label-info">ONLINE</span>' ;
             if($type=='reportorder'){ 
@@ -201,6 +214,93 @@ class Restaurant extends Main
 
         echo json_encode( $output );
         exit;
+	}
+	
+	public function exportSheet($type='csv',$rid=0,$from='',$to='')
+	{
+	    $rid = $this->session->userid;
+	    $this->db->order_by('id','DESC');
+	    $this->db->where('res_id',$rid);
+	    $this->db->where('order_status',2);
+	    
+        if($from!='' && $to!=''){
+	        if($from!='NaN' && $to!='NaN') { $from=date("Y-m-d",$from); $to=date("Y-m-d",$to); $this->db->where(" DATE(created_at) BETWEEN '$from' AND '$to'"); }
+	        elseif($from!='NaN') { $from = date("Y-m-d",$from); $this->db->where(" DATE(created_at) >= '$from'"); }
+	        elseif($to!='NaN') { $to = date("Y-m-d",$to); $this->db->where(" DATE(created_at) <= '$to'"); }
+	    }
+    	    
+		$query = $this->db->get('orders');
+		$orders = $query->result();
+		
+		$data[] = ['Order Status','Order Id','Table Id','Customer Name','Phone Number','Order Type','Payment Mode','Total Amount','Created Date'];
+		
+		foreach ( $orders as $order )
+        {
+            if($order->order_status=='0'){ $order_status='OPEN'; }elseif($order->order_status=='1'){ $order_status='CONFIRM'; }else{ $order_status='CLOSE'; }
+            $CartLists=json_decode($order->item_details, true);
+            
+            $sub_array   = array();
+            $sub_array[] = $order_status;
+            $sub_array[] = $order->order_id;
+            $sub_array[] = ($order->table_id) ? ($this->getTableDetail($order->table_id)) ? $this->getTableDetail($order->table_id)->table_name : '-' : '-';
+            $sub_array[] = $order->buyer_name;
+            $sub_array[] = $order->buyer_phone_number;
+            $sub_array[] = $order->order_type;
+            $sub_array[] = ($order->payment_mode=='1') ? 'CASH' : 'ONLINE' ;
+            $sub_array[] = $this->cartTotal($CartLists,'no',$rid);
+            $sub_array[] = $order->created_at; 
+            
+            $data[] = $sub_array;
+        }
+        
+        if('excel'==strtolower($type)) {
+            $this->getExcel($data);
+        }
+        elseif('csv'==strtolower($type)) {
+            $this->getCSV($data);
+        }
+        else {
+            echo 'No other sheet and data available.';
+            return false;
+        }
+	}
+	
+	public function getExcel($data=array())
+	{
+	    $report = array();
+	    
+	    foreach ($data as $row) {
+            $report[] = $row;
+        }
+        
+        $xlsx = SimpleXLSXGen::fromArray( $report );
+        // $xlsx->saveAs('books.xlsx');
+        $xlsx->download();
+	}
+	
+	public function getCSV($data=array())
+	{
+	    $filename = gmdate('YmdHis') . '.csv';
+	    
+        header('Content-type: text/csv');
+        header('Content-Disposition: attachment; filename="'.$filename.'"');
+        header('Last-Modified: ' . gmdate('D, d M Y H:i:s \G\M\T' , time() ));
+        header('Pragma: no-cache');
+        header('Expires: 0');
+         
+        // create a file pointer connected to the output stream
+        $file = fopen('php://output', 'w');
+         
+        // send the column headers fputcsv($file, $columnArray);
+         
+        // output each row of the data
+        foreach ($data as $row)
+        {
+            fputcsv($file, $row);
+        }
+         
+        // Close the file
+        fclose($file);
 	}
 	
 	public function translist($type="")
@@ -433,99 +533,6 @@ class Restaurant extends Main
 	
 	
 	
-	
-	
-	
-// 		public function getOrderBasedOnDate()
-// 	{   
-	    
-// 	    if(isset($_POST["from_date"]) && isset($_POST["to_date"]))  
-//         {  
-//           $output = '';  
-          
-//           //add query to filter here
-          
-//           $query = "  
-//               SELECT * FROM orders  
-//               WHERE created_date BETWEEN '".$_POST["from_date"]."' AND '".$_POST["to_date"]."'  
-//           ";  
-//           $result = $query->result();
-          
-//           $output .= '  
-//               <table class="table table-bordered">  
-//                     <tr>  
-//                         <th>#</th>
-//                         <th>Order Status</th>
-//                         <th>Order Id</th>
-//                         <th>Table Id</th>
-//                         <th>Customer Name</th>
-//                         <th>Phone Number</th>
-//                         <th>Payment Mode</th>
-//                         <th>Created Date</th>
-//                         <th class="disabled-sorting text-right">Actions</th>
-//                     </tr>  
-//           ';  
-//           if($result > 0)  
-//           {  
-//               foreach($result as $row)  
-//               {  
-//                     $output .= '  
-//                          <tr>  
-//                               <td>'. $row["order_status"] .'</td>  
-//                               <td>'. $row["order_id"] .'</td>  
-//                               <td>'. $row["table_id"] .'</td>  
-//                               <td>'. $row["buyer_name"] .'</td>  
-//                               <td>'. $row["buyer_phone_number"] .'</td>  
-                              
-//                               <td>'. $row["payment_mode"] .'</td>  
-//                               <td>'. $row["created_at"] .'</td>  
-//                          </tr>  
-//                     ';  
-//               }  
-//           }  
-//           else  
-//           {  
-//               $output .= '  
-//                     <tr>  
-//                          <td colspan="5">No Order Found</td>  
-//                     </tr>  
-//               ';  
-//           }  
-//           $output .= '</table>';  
-//           echo $output;  
-//  }  
-//   // if(!empty($_POST))
-// 	   // {
-//     //         $postdata = $_POST;
-// 	   // }
-	    
-//         // $condition = array('order_id'=>$postdata['orderID']);
-//         // $data['order'] = $this->restaurantModel->getOrderList($condition)[0];
-//         $this->load->view('restaurant/orderlist', $output);
-// 	}
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
+
 	
 }

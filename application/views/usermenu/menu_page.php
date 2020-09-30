@@ -54,7 +54,7 @@
                 <div class="row">
                         <div class="col-sm-12">
 								<div class="owl-carousel owl-theme selecton">
-									<?php $ci=&get_instance(); $menuLists=$ci->get_user_menus($rest_id); 
+									<?php $ci=&get_instance(); 
 									  if(!empty($menuLists)) { $i=0;
 										foreach($menuLists as $menuList) :
 									?>
@@ -69,7 +69,7 @@
                 </div><!--row-->
             </div>
             <div class="menu-content">
-				<?php $ci=&get_instance(); $menuLists=$ci->get_user_menus($rest_id); 
+				<?php $ci=&get_instance(); 
                   if(!empty($menuLists)) { $i=0;
                     foreach($menuLists as $menuList) :
                 ?>
@@ -83,7 +83,9 @@
                             foreach($itemLists as $itemList) :
                                 $price=json_decode($itemList->price, true);
                                 $taxes=unserialize($itemList->taxes);
-                                $price_desc=json_decode($itemList->price_desc, true);
+                                $price_desc =json_decode($itemList->price_desc, true);
+
+								$oldPrice = $price;
 
                                 $price = $controller->addTaxInPrice($price, $taxes);
                         ?>
@@ -106,7 +108,7 @@
                                                 <?php for($k=0;$k<count($price);$k++) : ?>
 													<span>
 													    <!--<input class="radio-btn" id="<?= $price_desc[$k].$itemList->item_id ?>" type="radio" name="pricetype_<?= $itemList->item_id ?>" value="<?= $price_desc[$k] ?>" data-name="<?= $itemList->name ?>" data-price="<?= $price[$k] ?>" data-itemid="<?= $itemList->item_id ?>" data-itemimg="<?= $itemList->image ?>" data-itemtype="<?= $itemList->food_type ?>" <?= ($k==0)?'checked':'' ?>>-->
-													    <input class="radio-btn" id="<?= $price_desc[$k].$itemList->item_id ?>" type="radio" name="pricetype_<?= $itemList->item_id ?>" value="<?= $price_desc[$k] ?>" data-name="<?= $itemList->name ?>" data-price="<?= $price[$k] ?>" data-itemid="<?= $itemList->item_id ?>" data-itemimg="<?= $itemList->image ?>" data-itemtype="<?= $itemList->food_type ?>" <?= (max($price)==$price[$k])?'checked':'' ?>>
+													    <input class="radio-btn" id="<?= $price_desc[$k].$itemList->item_id ?>" type="radio" name="pricetype_<?= $itemList->item_id ?>" value="<?= $price_desc[$k] ?>" data-itemoldprice="<?=$oldPrice[$k]?>" data-name="<?= $itemList->name ?>" data-price="<?= $price[$k] ?>" data-itemid="<?= $itemList->item_id ?>" data-itemimg="<?= $itemList->image ?>" data-itemtype="<?= $itemList->food_type ?>" <?= (max($price)==$price[$k])?'checked':'' ?>>
 													    <label class="pr-10 pl-5 radio-label" for="<?= $price_desc[$k].$itemList->item_id ?>"><?= $price_desc[$k] ?></label>
 													</span>
 												<?php endfor; ?>
@@ -204,6 +206,8 @@
 	<script src="<?= base_url('assets/front_end/'); ?>js/scripts.js"></script>
 	<script src="<?= base_url('assets/front_end/'); ?>js/owl.carousel.js"></script>
 <script>
+	var thirdSegment = "<?=$this->uri->segment(3)?>";
+
 	$(document).ready(function() {
 		$('.owl-carousel').owlCarousel({
 			loop:false,
@@ -264,13 +268,15 @@
 	        var itemName = $("input[name='pricetype_"+itemid+"']:checked").attr('data-name');
 	        var itemPrice = $("input[name='pricetype_"+itemid+"']:checked").attr('data-price');
 	        var itemImage = $("input[name='pricetype_"+itemid+"']:checked").attr('data-itemimg');
+	        var itemOldPrice = $("input[name='pricetype_"+itemid+"']:checked").attr('data-itemoldprice');
 	        var itemFoodType = $("input[name='pricetype_"+itemid+"']:checked").attr('data-itemtype');
 	        var itemType = $("input[name='pricetype_"+itemid+"']:checked").val();
 	        var itemCount = $('.item-count-'+itemid).val();
 	        itemArray['itemName'] = itemName;
-	        itemArray['itemPrice'] = parseInt(itemPrice);
+	        itemArray['itemPrice'] = parseFloat(itemPrice);
 	        itemArray['itemImage'] = itemImage;
 	        itemArray['itemType'] = itemType;
+	        itemArray['itemOldPrice'] = itemOldPrice;
 	        itemArray['itemFoodType'] = itemFoodType;
 	        itemArray['itemCount'] = itemCount;
 	        
@@ -280,7 +286,6 @@
 	        
 	       // $('#myModal').modal('show');
 	    }
-	    console.log(itemIndex);
 	}
 	
 	function createCartList(cartList={})
@@ -288,7 +293,7 @@
 	    $.ajax({
 	        type : "POST",
 	        url  : "<?= base_url('UserMenu/cartList') ?>",
-	        data : {'cartList' : cartList }
+	        data : {'cartList' : cartList, thirdSegment }
 	    })
 	    .done(function(response){
 	        console.log(response);

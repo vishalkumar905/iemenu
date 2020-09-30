@@ -31,13 +31,17 @@ class UserMenu extends CI_Controller
 	        $restInfo = $this->getResturant($tableToken);
 	        $data['tableToken']=$tableToken; 
 
+			
+
 		    if(!empty($restInfo))
 		    {
 		        $data['qr_menu']=$this->usermodel->getstyledata($restInfo[0]->rest_id);   
 		        $data['rest_data']=$this->usermodel->getResturantbyID($restInfo[0]->rest_id);   
 		        $data['rest_id']=$restInfo[0]->rest_id;   
-		        $data['table_id']=$restInfo[0]->table_id;  
-		    
+				$data['table_id']=$restInfo[0]->table_id;  
+				
+				$data['menuLists']=$this->get_user_menus($restInfo[0]->rest_id);
+
 		        $this->restInfo = $restInfo;
 		    }
 	    }
@@ -108,8 +112,7 @@ class UserMenu extends CI_Controller
 	
 	public function get_user_items($id=0)
 	{
-	    $menu_id = ($id!=0) ? $id : $this->uri->segment(3);		
-		
+	    $menu_id = ($id!=0) ? $id : $this->uri->segment(3);	
 		return $this->menuItem->get_user_items($menu_id);
 	}
 	
@@ -131,20 +134,79 @@ class UserMenu extends CI_Controller
 	            }
 	        endforeach;
 	    }*/
-	    
+		
+		
 	    if(!empty($_POST['cartList']))
 	    {
 	        foreach($_POST['cartList'] as $itemID => $itemData) :
 	            $cartArray[$itemID][$itemData['itemType']]=$itemData;
 	        endforeach;
-	    }
-	    
+		}
+
+		$token = $this->input->post('thirdSegment');
+		$cartArray = $this->updateTaxInCartItems($cartArray, $token);
+		
 	    $this->session->set_userdata('CartList',json_encode($cartArray)); // $this->session->unset_userdata('CartList');
 	   
-	   // echo $this->session->userdata('CartList');
 	    echo $this->cartHtml();
 	}
 	
+	public function updateTaxInCartItems($cartProducts, $token)
+	{
+		if (!empty($cartProducts))
+		{
+			foreach ($cartProducts as $key => $product)
+			{
+				$menuItemDetail = $this->menuItem->getMenuItemDataByItemId($key);
+				if (!empty($menuItemDetail))
+				{
+					$menuItemTaxes = unserialize($menuItemDetail->taxes);
+					if (!empty($menuItemTaxes))
+					{
+						$itemTaxDetails = [];
+						foreach($menuItemTaxes as $taxKey => $taxId)
+						{
+							$taxDetail = $this->getTaxDetails($taxId, $token);
+							if (!empty($taxDetail))
+							{
+								$itemTaxDetails[] = [
+									'taxName' => $taxDetail['tax_type'],
+									'taxPercentage' => $taxDetail['tax_percent'],
+								];
+							}
+						}
+
+						$productKey = key($product);
+						$cartProducts[$key][$productKey]['itemTaxes'] = $itemTaxDetails; 
+					}
+				}
+			}
+		}
+
+		return $cartProducts;
+	}
+
+	private function getTaxDetails($taxId, $token) 
+	{
+
+		$this->restInfo = empty($this->restInfo) ? $this->getResturant($token) : $this->restInfo;
+
+		$this->restaurantTaxes = empty($this->restaurantTaxes) ? $this->restaurantModel->getTaxList(['rest_id' => $this->restInfo[0]->rest_id]) : $this->restaurantTaxes;
+
+		if (!empty($this->restaurantTaxes))
+		{
+			foreach($this->restaurantTaxes as $row)
+			{
+				if ($row->tax_id === $taxId)
+				{
+					return json_decode(json_encode($row), true);
+				}
+			}
+		}
+
+		return [];
+	}
+
 	public function cartRemove()
 	{
 	    $cartArray=array();
@@ -272,21 +334,23 @@ class UserMenu extends CI_Controller
 	
 	public function checkout($tableToken=NULL)
 	{
-	    $restInfo=$sessArray=array(); $data = [];
+	    $restInfo = $sessArray =  $data = [];
 	    if($tableToken!=NULL) 
 	    {
 	        $restInfo = $this->getResturant($tableToken);
-	    }
 	    
-	    if(!empty($restInfo))
-	    {
-	        $data['rest_id']=$restInfo[0]->rest_id;   
-	        $data['table_id']=$restInfo[0]->table_id;
-	        $data['tableToken'] = $tableToken;
-	    }
-	    
+			if(!empty($restInfo))
+			{
+				$data['rest_id']=$restInfo[0]->rest_id;   
+				$data['table_id']=$restInfo[0]->table_id;
+				$data['tableToken'] = $tableToken;
+			}	
+		}
 	    $sessArray=json_decode($this->session->userdata('CartList'), true);
-	    
+		echo "<pre>";
+		print_r($sessArray);
+		
+		die();
 	    if($this->session->userdata('CartList')) {
 	        if(!empty($sessArray)){
 	            $this->load->view('usermenu/checkout', $data);

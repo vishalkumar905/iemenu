@@ -20,9 +20,15 @@
                                         <div class="col-md-3">  
                                              <input type="date" name="to_date" id="to_date" class="form-control" placeholder="To Date" />  
                                         </div>  
-                                        <div class="col-md-5">  
+                                        <div class="col-md-2">  
                                              <input type="button" name="filter" id="filter" value="Filter" class="btn btn-info" />  
-                                        </div>  
+                                        </div>
+                                        <div class="col-md-2">  
+                                            <input type="button" name="csv" id="csv" value="CSV" class="btn btn-info" />  
+                                        </div>
+                                        <div class="col-md-2">  
+                                            <input type="button" name="excel" id="excel" value="Excel" class="btn btn-info" />  
+                                        </div>
                                     </div>
                                     <div class="material-datatables">
                                         <table id="datatables" class="table table-striped table-no-bordered table-hover" cellspacing="0" width="100%" style="width:100%">
@@ -87,6 +93,8 @@
 <?php $this->load->view('comman/footer'); ?>
 <script>
     jQuery(document).ready(function() {
+        var rid="<?= $this->session->userid ?>";
+        
         <?php if($this->session->flashdata('Success MSG')) { ?>
             swal({
                 text: "<?= $this->session->flashdata('Success MSG') ?>",
@@ -108,40 +116,44 @@
         demo.initDashboardPageCharts();
 
         demo.initVectorMap();
+        
+        fetchData('no');
+        
+        $('#filter').on('click', function() {
+            var data = { };
+            data.from = $('#from_date').val();
+            data.to = $('#to_date').val();
+            
+            var json = JSON.stringify(data);
+            $('#datatables').DataTable().destroy();
+            fetchData( 'yes', json );
+        });
+        
+        $('#csv').on('click', function() {
+            var data = { }; var fromdate = ''; var todate = '';
+            data.from = $('#from_date').val();
+            data.to = $('#to_date').val();
+            
+            fromdate = Date.parse(data.from) / 1000;
+            todate = Date.parse(data.to) / 1000;
 
-        $('#datatables').DataTable({
-            'processing'    : true,
-            'ajax'          : {
-                'url'  : '<?= base_url() . "Restaurant/ajaxorderlist/reportorder" ?>'
-            },
-            'columns'        : [
-                { 'data' : 0 },
-                { 'data' : 1 },
-                { 'data' : 2 },
-                { 'data' : 3 },
-                { 'data' : 4 },
-                { 'data' : 5 },
-                { 'data' : 6 },
-                { 'data' : 7 },
-                { 'data' : 8 },
-                { 'data' : 9 }
-                
-               
-            ],
-            "pagingType": "full_numbers",
-            "lengthMenu"    : [[10, 25, 50, -1], [10, 25, 50, "All"]],
-            "pageLength"    : 10,
-            responsive: true,
-            language: {
-                search: "_INPUT_",
-                searchPlaceholder: "Search records",
-            }
+            window.open('<?= base_url("Restaurant/exportSheet") ?>'+'/csv/'+rid+'/'+fromdate+'/'+todate, '_blank');
+        });
+        
+        $('#excel').on('click', function() {
+            var data = { }; var fromdate = ''; var todate = '';
+            data.from = $('#from_date').val();
+            data.to = $('#to_date').val();
+            
+            fromdate = Date.parse(data.from) / 1000;
+            todate = Date.parse(data.to) / 1000;
 
+            window.open('<?= base_url("Restaurant/exportSheet") ?>'+'/excel/'+rid+'/'+fromdate+'/'+todate, '_blank');
         });
 
         $('.card .material-datatables label').addClass('form-group');
         
-        setInterval(function(){ $('#datatables').DataTable().ajax.reload(); }, 15000);
+        // setInterval(function(){ $('#datatables').DataTable().ajax.reload(); }, 15000);
     });
     
     function getOrderView(orderID=0)
@@ -157,37 +169,33 @@
 			// console.log(response);
         })
     }
+    
+    function fetchData( isFilter = 'no', data = null ) {
+        $('#datatables').DataTable({
+            'processing'    : true,
+            'ajax'          : {
+                'url'  : '<?= base_url() . "Restaurant/ajaxorderlist/reportorder" ?>',
+                'type' : 'POST',
+                'data' : {'isFilter' : isFilter, 'formdata' : data}
+            },
+            'columns'        : [
+                { 'data' : 0 },
+                { 'data' : 1 },
+                { 'data' : 2 },
+                { 'data' : 3 },
+                { 'data' : 4 },
+                { 'data' : 5 },
+                { 'data' : 6 },
+                { 'data' : 7 },
+                { 'data' : 8 },
+                { 'data' : 9 }
+                
+               
+            ],
+            "lengthMenu"    : [[10, 25, 50, -1], [10, 25, 50, "All"]],
+            "pageLength"    : 10
+        });
+    }
 </script>
-
-
- <script>  
-//       $(document).ready(function(){  
-//           $.datepicker.setDefaults({  
-//                 dateFormat: 'yy-mm-dd'   
-//           });  
-//           $(function(){  
-//                 $("#from_date").datepicker();  
-//                 $("#to_date").datepicker();  
-//           });  
-//           $('#filter').click(function(){  
-//                 var from_date = $('#from_date').val();  
-//                 var to_date = $('#to_date').val();  
-//                 if(from_date != '' && to_date != '')  
-//                 {  
-//                     //  $.ajax({  
-//                     //       url:"<?= base_url('Restaurant/getOrderBasedOnDate') ?>",  
-//                     //       method:"POST",  
-//                     //       data:{from_date:from_date, to_date:to_date},  
-//                     //       success:function(data)  
-//                     //       {  
-//                     //           $('#datatables').html(data);  
-//                     //       }  
-//                     //  });  
-//                 }  
-//                 else  
-//                 {  
-//                      alert("Please Select Date");  
-//                 }  
-//           });  
-//       });  
+  
   </script>

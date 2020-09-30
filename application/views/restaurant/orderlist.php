@@ -14,6 +14,7 @@
                                     <h4 class="card-title">List Order</h4>
                                     <div class="toolbar">
                                         <!--        Here you can write extra buttons/actions for the toolbar              -->
+                                        
                                     </div>
                                     <div class="material-datatables">
                                         <table id="datatables" class="table table-striped table-no-bordered table-hover" cellspacing="0" width="100%" style="width:100%">
@@ -72,7 +73,11 @@
                 background: #dddddd;
             }
             </style>
+            
+            <div id="audios" style="display:none;">We are audios!</div>
+            
 <?php $this->load->view('comman/footer'); ?>
+
 <script>
     jQuery(document).ready(function() {
         <?php if($this->session->flashdata('Success MSG')) { ?>
@@ -127,8 +132,30 @@
 
         $('.card .material-datatables label').addClass('form-group');
         
-        setInterval(function(){ $('#datatables').DataTable().ajax.reload(); }, 15000);
+        setInterval(function(){ $('#datatables').DataTable().ajax.reload();  }, 15000);
+        
+        
+        
     });
+    
+    // function checkUpdate()
+    // {
+    //     $.post("<?= base_url('Restaurant/ajaxorderlist/order') ?>", function(data, status)
+    //     {   
+    //         //  alert("Data: " + data + "\nStatus: " + status);
+    //         // alert(data.toString()=="true");
+    //       if (data.toString()=="true")
+    //       {
+    //           playSound();
+    //       }
+    //     });
+    // }
+    
+    // function playSound()
+    // {
+    //     var audio = new Audio('https://iemenu.in/MDB/assets/order_alert.mp3');
+    //     audio.play();
+    // }
     
     function getOrderView(orderID=0)
     {
