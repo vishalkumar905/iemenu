@@ -172,28 +172,37 @@
                                                 </div>
                                               </div>
                                               <br/>
-                                              <select class="selectpicker" name="tax[]" data-style="select-with-transition" multiple title="Choose Taxes">
-                                                <option disabled> Choose taxes</option>
-                                                <?php if(!empty($taxes)) { 
-                                                  $taxesAll = $items->taxes;
-                                                  if (!empty($items->taxes))
-                                                  {
-                                                    $taxesAll = unserialize($items->taxes);
-                                                  }
-                                                  else
-                                                  {
-                                                    $taxesAll = [];
-                                                  }
 
-                                                  foreach ($taxes as $tax) {
-                                                    $selected = in_array($tax->tax_id, $taxesAll) ? 'selected' : '';
-                                                ?>
-                                                  <option value="<?=$tax->tax_id?>" <?=$selected?>><?=$tax->tax_percent?> % (<?=$tax->tax_type?>)</option>
-                                                <?php 
-                                                    } 
-                                                  }
-                                                ?>
-                                              </select>
+                                              <div class="row">
+                                                <div class="col-md-3 col-sm-3">
+                                                  <label for="tax[]" style="margin-top: 20px;" class="lableModal">Tax</label>
+                                                </div>
+                                                <div class="col-md-9 col-sm-9">
+                                                  <select class="selectpicker" name="tax[]" data-style="select-with-transition" multiple title="Choose Taxes">
+                                                    <option disabled> Choose taxes</option>
+                                                    <?php if(!empty($taxes)) { 
+                                                      $taxesAll = $items->taxes;
+                                                      if (!empty($items->taxes))
+                                                      {
+                                                        $taxesAll = unserialize($items->taxes);
+                                                      }
+                                                      else
+                                                      {
+                                                        $taxesAll = [];
+                                                      }
+
+                                                      foreach ($taxes as $tax) {
+                                                        $selected = in_array($tax->tax_id, $taxesAll) ? 'selected' : '';
+                                                    ?>
+                                                      <option value="<?=$tax->tax_id?>" <?=$selected?>><?=$tax->tax_percent?> % (<?=$tax->tax_type?>)</option>
+                                                    <?php 
+                                                        } 
+                                                      }
+                                                    ?>
+                                                  </select>
+                                                </div>
+                                              </div>
+                                              <br/>
                                               <input type="hidden" name="item_id" value="<?= $items->item_id; ?>" >
                                               <input type="hidden" name="menu_id" value="<?= $menu_id ?>" >
                                               
@@ -355,17 +364,25 @@
                             </style>
                           </div>
                           <br/>
-                          <select class="selectpicker" name="tax[]" data-style="select-with-transition" multiple title="Choose Taxes">
-                            <option disabled> Choose taxes</option>
-                            <?php if(!empty($taxes)) { 
-                              foreach ($taxes as $tax) {
-                            ?>
-                              <option value="<?=$tax->tax_id?>"><?=$tax->tax_percent?> % (<?=$tax->tax_type?>)</option>
-                            <?php 
-                                } 
-                              }
-                            ?>
-                          </select>
+                          <div class="row">
+                            <div class="col-md-3 col-sm-3">
+                              <label for="tax[]" style="margin-top: 20px;" class="lableModal">Tax</label>
+                            </div>
+                            <div class="col-md-9 col-sm-9">
+                              <select class="selectpicker" name="tax[]" data-style="select-with-transition" multiple title="Choose Taxes">
+                                <option disabled> Choose taxes</option>
+                                <?php if(!empty($taxes)) { 
+                                  foreach ($taxes as $tax) {
+                                ?>
+                                  <option value="<?=$tax->tax_id?>"><?=$tax->tax_percent?> % (<?=$tax->tax_type?>)</option>
+                                <?php 
+                                    } 
+                                  }
+                                ?>
+                              </select>
+                            </div>
+                          </div>
+
                           <input type="hidden" name="menu_id" value="<?= $menu_id ?>" >
 
                           <button type="submit" class="btn btn-rose" id="btn-menuForm" value="create">Add Item</button>

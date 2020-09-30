@@ -53,7 +53,7 @@
 								<?= $itemDataArray['itemName'] ?> (<?= $itemDataId ?>)
 								<?php if(!empty($taxName)) {
 									$tax = implode(', ', $taxName);
-									echo "<br><span style='font-size:10px;'>Tax: $tax </span>"; 
+									// echo "<br><span style='font-size:10px;'>Tax: $tax </span>"; 
 								}  ?>
 							</div>
     				        <div style="width:13%; float:left;">

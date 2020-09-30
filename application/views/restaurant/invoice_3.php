@@ -25,12 +25,12 @@
 						<?php if ($showTaxColumn) { ?>
 				        <div style="width:40%; float:left;"><b>Items</b></div>
 						<div style="width:13%; float:left;"><b>Qty</b></div>
-				        <div style="width:13%; float:left;"><b>Tax</b></div>
-						<div style="width:25%; float:left;"><b>Price</b></div>
+				        <div style="width:13%; float:left; text-align:center;"><b>Tax</b></div>
+						<div style="width:25%; float:left; text-align:right;"><b>Price</b></div>
 						<?php }else { ?>
 						<div style="width:60%; float:left;"><b>Items</b></div>
-						<div style="width:13%; float:left;"><b>Qty</b></div>
-						<div style="width:25%; float:left;"><b>Price</b></div>
+						<div style="width:13%; float:left; text-align:center;"><b>Qty</b></div>
+						<div style="width:25%; float:left; text-align:right;"><b>Price</b></div>
 						<?php } ?>
 				    </div>
 				    <hr class="new">
@@ -53,26 +53,26 @@
 								<?= $itemDataArray['itemName'] ?> (<?= $itemDataId ?>)
 								<?php if(!empty($taxName)) {
 									$tax = implode(', ', $taxName);
-									echo "<br><span style='font-size:10px;'>Tax: $tax </span>"; 
+									// echo "<br><span style='font-size:10px;'>Tax: $tax </span>"; 
 								}  ?>
 							</div>
     				        <div style="width:13%; float:left;">
 								<?= $itemDataArray['itemCount'] ?>
 							</div>
-    				        <div style="width:13%; float:left;">
-								<?=$totalTaxPercentage?>%
+    				        <div style="width:13%; float:left; text-align:center;">
+								<?=$totalTaxPercentage > 0 ? $totalTaxPercentage.'%' : '--' ?>
 							</div>
-    				        <div style="width:25%; float:left;">
+    				        <div style="width:25%; float:left; text-align:right;">
 								₹ <?= $itemDataArray['itemCount'] * $itemDataArray['itemPrice'] ?>
 							</div>
     				    <?php } else { ?>
 							<div style="width:60%; float:left;">
 								<?= $itemDataArray['itemName'] ?> (<?= $itemDataId ?>)
 							</div>
-							<div style="width:13%; float:left;">
+							<div style="width:13%; float:left; text-align:center;">
 								<?= $itemDataArray['itemCount'] ?>
 							</div>
-							<div style="width:25%; float:left;">
+							<div style="width:25%; float:left; text-align:right;">
 								₹ <?= $itemDataArray['itemCount'] * $itemDataArray['itemPrice'] ?>
 							</div>
 						<?php } endforeach;
@@ -84,17 +84,18 @@
 				    <div>
 				        <div style="width:63%; float:left; text-align:right;"><strong>Total Amount : </strong></div>
 				        <div style="width:10%; float:left; text-align:right;">&nbsp;&nbsp;</div>
-				        <div style="width:25%; float:left;">₹ <?= $ci->cartTotal($CartLists) ?></div>
+				        <div style="width:25%; float:left; text-align:right;">₹ <?= $ci->cartTotal($CartLists) ?></div>
 				    </div>
 			
 				    <div>
 				        <div style="width:63%; float:left; text-align:right;"><strong>Total Billed : </strong></div>
 				        <div style="width:10%; float:left; text-align:right;">&nbsp;&nbsp;</div>
-				        <div style="width:25%; float:left;">₹ <?= $ci->cartTotal($CartLists,'yes',$order->res_id) ?></div>
+				        <div style="width:25%; float:left; text-align:right;">₹ <?= $ci->cartTotal($CartLists,'yes',$order->res_id) ?></div>
 				    </div>
             	</div>
             	<div style="padding-top:5px; text-align:center; font-size: 10px;">
-            	    Customer Copy
+					Customer Copy<br>
+					*All PRICES ARE INCLUDING TAXES
             	</div>
             	<div style="padding-top:3px; text-align:center;">
             	    <strong>Thank You, visit again!</strong>
