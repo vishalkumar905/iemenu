@@ -31,8 +31,6 @@ class UserMenu extends CI_Controller
 	        $restInfo = $this->getResturant($tableToken);
 	        $data['tableToken']=$tableToken; 
 
-			
-
 		    if(!empty($restInfo))
 		    {
 		        $data['qr_menu']=$this->usermodel->getstyledata($restInfo[0]->rest_id);   
@@ -147,7 +145,7 @@ class UserMenu extends CI_Controller
 		$cartArray = $this->updateTaxInCartItems($cartArray, $token);
 		
 	    $this->session->set_userdata('CartList',json_encode($cartArray)); // $this->session->unset_userdata('CartList');
-	   
+
 	    echo $this->cartHtml();
 	}
 	
@@ -319,14 +317,14 @@ class UserMenu extends CI_Controller
 	            else { $itemTotalPrice = $itemTotalPrice + $manageCartList['itemNetPrice']; }
 	        endforeach;
 	        
-	        if('yes' == $tax && $rest_id != 0) :
-	            $taxLists=$this->getTaxList($rest_id); 
-	            if(!empty($taxLists)) :
-                    foreach($taxLists as $taxList):
-                        $itemTotalPrice = $itemTotalPrice + $this->cartTax($cartArray, $taxList->tax_percent);
-                    endforeach; 
-                endif;
-	        endif;
+	        // if('yes' == $tax && $rest_id != 0) :
+	        //     $taxLists=$this->getTaxList($rest_id); 
+	        //     if(!empty($taxLists)) :
+            //         foreach($taxLists as $taxList):
+            //             $itemTotalPrice = $itemTotalPrice + $this->cartTax($cartArray, $taxList->tax_percent);
+            //         endforeach; 
+            //     endif;
+	        // endif;
 	    }
 	    
 	    return $itemTotalPrice;
@@ -347,10 +345,6 @@ class UserMenu extends CI_Controller
 			}	
 		}
 	    $sessArray=json_decode($this->session->userdata('CartList'), true);
-		echo "<pre>";
-		print_r($sessArray);
-		
-		die();
 	    if($this->session->userdata('CartList')) {
 	        if(!empty($sessArray)){
 	            $this->load->view('usermenu/checkout', $data);

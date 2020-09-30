@@ -22,10 +22,6 @@
 			<div class="col-md-4">
 			    <?php $CartLists=json_decode($order->item_details, true); ?>
 				<p><strong>Total Amount : </strong>₹ <?= $ci->cartTotal($CartLists) ?></p>
-				<?php $taxLists=$ci->getTaxList($order->res_id); if(!empty($taxLists)) :
-                foreach($taxLists as $taxList): ?>
-				<p><strong><?= $taxList->tax_type ?> &nbsp; (<?= $taxList->tax_percent ?>%) : </strong>₹ <?= $ci->cartTax($CartLists, $taxList->tax_percent) ?></p>
-				<?php endforeach; endif; ?>
 				<p><strong>Total Billed : </strong>₹ <?= $ci->cartTotal($CartLists,'yes',$order->res_id) ?></p>
 			</div>
 		</div>

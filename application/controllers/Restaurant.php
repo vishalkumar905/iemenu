@@ -332,7 +332,8 @@ class Restaurant extends Main
 	{
 	    $data=array();
         $condition = array('order_id'=>$orderid);
-        $data['order'] = $this->restaurantModel->getOrderList($condition)[0];
+		$data['order'] = $this->restaurantModel->getOrderList($condition)[0];
+		$data['showTaxColumn'] = $this->checkIfTaxIsAvaliable($data['order']);
         
         $stylesheet = file_get_contents('/home/yd93k4ea02s3/public_html/MDB/assets/css/print2.css');
         $html = $this->load->view( 'restaurant/invoice_2', $data, true );
@@ -357,8 +358,8 @@ class Restaurant extends Main
 	    $data=array();
         $condition = array('order_id'=>$orderid);
         $data['order'] = $this->restaurantModel->getOrderList($condition)[0];
-        
-        $stylesheet = file_get_contents('/home/yd93k4ea02s3/public_html/MDB/assets/css/print2.css');
+		$data['showTaxColumn'] = $this->checkIfTaxIsAvaliable($data['order']);
+		$stylesheet = file_get_contents('/home/yd93k4ea02s3/public_html/MDB/assets/css/print2.css');
         $html = $this->load->view( 'restaurant/invoice_3', $data, true );
         
         $mpdf = new \Mpdf\Mpdf();
@@ -374,6 +375,25 @@ class Restaurant extends Main
         $mpdf->WriteHTML($stylesheet,1);
         $mpdf->WriteHTML($html,2);
         $mpdf->Output();
+	}
+
+	public function checkIfTaxIsAvaliable($data)
+	{
+		if (!empty($data))
+		{
+			$itemDetails = json_decode($data->item_details, true);
+			foreach ($itemDetails as $item)
+			{
+				$key = key($item);
+				if (isset($item[$key]['itemTaxes']))
+				{
+					return 1;
+				}
+			}
+			
+		}
+
+		return 0;
 	}
 	
 	public function getOrderView($postdata=array())
@@ -399,14 +419,14 @@ class Restaurant extends Main
 	            else { $itemTotalPrice = $itemTotalPrice + $manageCartList['itemNetPrice']; }
 	        endforeach;
 	        
-	        if('yes' == $tax && $rest_id != 0) :
-	            $taxLists=$this->getTaxList($rest_id); 
-	            if(!empty($taxLists)) :
-                    foreach($taxLists as $taxList):
-                        $itemTotalPrice = $itemTotalPrice + $this->cartTax($cartArray, $taxList->tax_percent);
-                    endforeach; 
-                endif;
-	        endif;
+	        // if('yes' == $tax && $rest_id != 0) :
+	        //     $taxLists=$this->getTaxList($rest_id); 
+	        //     if(!empty($taxLists)) :
+            //         foreach($taxLists as $taxList):
+            //             $itemTotalPrice = $itemTotalPrice + $this->cartTax($cartArray, $taxList->tax_percent);
+            //         endforeach; 
+            //     endif;
+	        // endif;
 	    }
 	    
 	    return $itemTotalPrice;

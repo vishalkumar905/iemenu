@@ -22,25 +22,60 @@
             	<?php $CartLists=json_decode($order->item_details, true); ?>
 				<div style="width:100%;">
 				    <div>
-				        <div style="width:60%; float:left;"><b>Items</b></div>
-				        <div style="width:13%; float:left;"><b>Qty</b></div>
-				        <div style="width:25%; float:left;"><b>Price</b></div>
+						<?php if ($showTaxColumn) { ?>
+				        <div style="width:40%; float:left;"><b>Items</b></div>
+						<div style="width:13%; float:left;"><b>Qty</b></div>
+				        <div style="width:13%; float:left;"><b>Tax</b></div>
+						<div style="width:25%; float:left;"><b>Price</b></div>
+						<?php }else { ?>
+						<div style="width:60%; float:left;"><b>Items</b></div>
+						<div style="width:13%; float:left;"><b>Qty</b></div>
+						<div style="width:25%; float:left;"><b>Price</b></div>
+						<?php } ?>
 				    </div>
 				    <hr class="new">
 				    <div>
 				        <?php $i=0; foreach($CartLists as $itemId => $itemArray) : 
 						    foreach($itemArray as $itemDataId => $itemDataArray) :
-						    ?>
-    				        <div style="width:60%; float:left;">
+								if ($showTaxColumn) { 
+									$taxName = [];
+									$totalTaxPercentage = 0;
+									if (!empty($itemDataArray['itemTaxes']))
+									{
+										foreach ($itemDataArray['itemTaxes'] as $itemTax)
+										{
+											$taxName[] = $itemTax['taxName'];
+											$totalTaxPercentage += $itemTax['taxPercentage'];
+										}
+									}
+						?>
+    				        <div style="width:40%; float:left;">
 								<?= $itemDataArray['itemName'] ?> (<?= $itemDataId ?>)
+								<?php if(!empty($taxName)) {
+									$tax = implode(', ', $taxName);
+									echo "<br><span style='font-size:10px;'>Tax: $tax </span>"; 
+								}  ?>
 							</div>
     				        <div style="width:13%; float:left;">
 								<?= $itemDataArray['itemCount'] ?>
 							</div>
+    				        <div style="width:13%; float:left;">
+								<?=$totalTaxPercentage?>%
+							</div>
     				        <div style="width:25%; float:left;">
 								₹ <?= $itemDataArray['itemCount'] * $itemDataArray['itemPrice'] ?>
 							</div>
-    				    <?php endforeach;
+    				    <?php } else { ?>
+							<div style="width:60%; float:left;">
+								<?= $itemDataArray['itemName'] ?> (<?= $itemDataId ?>)
+							</div>
+							<div style="width:13%; float:left;">
+								<?= $itemDataArray['itemCount'] ?>
+							</div>
+							<div style="width:25%; float:left;">
+								₹ <?= $itemDataArray['itemCount'] * $itemDataArray['itemPrice'] ?>
+							</div>
+						<?php } endforeach;
 					    endforeach; ?>
 				    </div>
 				</div>
@@ -51,14 +86,6 @@
 				        <div style="width:10%; float:left; text-align:right;">&nbsp;&nbsp;</div>
 				        <div style="width:25%; float:left;">₹ <?= $ci->cartTotal($CartLists) ?></div>
 				    </div>
-				    <?php $taxLists=$ci->getTaxList($order->res_id); if(!empty($taxLists)) :
-        			     foreach($taxLists as $taxList): ?>
-				    <div>
-				        <div style="width:63%; float:left; text-align:right;"><strong style="padding-left:100px;"><?= $taxList->tax_type ?> &nbsp; (<?= $taxList->tax_percent ?>%) : </strong></div>
-				        <div style="width:10%; float:left; text-align:right;">&nbsp;&nbsp;</div>
-				        <div style="width:25%; float:left;">₹ <?= $ci->cartTax($CartLists, $taxList->tax_percent) ?></div>
-				    </div>
-				    <?php endforeach; endif; ?>
 				    <div>
 				        <div style="width:63%; float:left; text-align:right;"><strong>Total Billed : </strong></div>
 				        <div style="width:10%; float:left; text-align:right;">&nbsp;&nbsp;</div>
