@@ -60,7 +60,7 @@
 								<?= $itemDataArray['itemCount'] ?>
 							</div>
     				        <div style="width:13%; float:left; text-align:center;">
-								<?=$totalTaxPercentage?>%
+								<?=$totalTaxPercentage > 0 ? $totalTaxPercentage.'%' : '--' ?>
 							</div>
     				        <div style="width:25%; float:left; text-align:right;">
 								₹ <?= $itemDataArray['itemCount'] * $itemDataArray['itemPrice'] ?>

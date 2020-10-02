@@ -92,11 +92,14 @@
 				        <div style="width:10%; float:left; text-align:right;">&nbsp;&nbsp;</div>
 				        <div style="width:25%; float:left; text-align:right;">₹ <?= $ci->cartTotal($CartLists,'yes',$order->res_id) ?></div>
 				    </div>
-            	</div>
+				</div>
+				<br>
             	<div style="padding-top:5px; text-align:center; font-size: 10px;">
 					Customer Copy<br>
 					*All PRICES ARE INCLUDING TAXES
-            	</div>
+				</div>
+				<br>
+				<br>
             	<div style="padding-top:3px; text-align:center;">
             	    <strong>Thank You, visit again!</strong>
             	</div>
