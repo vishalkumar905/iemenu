@@ -23,14 +23,18 @@
 				<div style="width:100%;">
 				    <div>
 						<?php if ($showTaxColumn) { ?>
-				        <div style="width:40%; float:left;"><b>Items</b></div>
-						<div style="width:13%; float:left;"><b>Qty</b></div>
+				        <div style="width:75%; float:left;"><b>Items</b></div>
+						<div style="width:20%; float:left; text-align:center;"><b>Qty</b></div>
+						<?php /*?>
 				        <div style="width:13%; float:left; text-align:center;"><b>Tax</b></div>
 						<div style="width:25%; float:left; text-align:right;"><b>Price</b></div>
+						<?php */?>
 						<?php }else { ?>
-						<div style="width:60%; float:left;"><b>Items</b></div>
-						<div style="width:13%; float:left; text-align:center;"><b>Qty</b></div>
+						<div style="width:75%; float:left;"><b>Items</b></div>
+						<div style="width:20%; float:left; text-align:center;"><b>Qty</b></div>
+						<?php /*?>
 						<div style="width:25%; float:left; text-align:right;"><b>Price</b></div>
+						<?php */?>
 						<?php } ?>
 				    </div>
 				    <hr class="new">
@@ -49,57 +53,40 @@
 										}
 									}
 						?>
-    				        <div style="width:40%; float:left;">
+    				        <div style="width:75%; float:left;">
 								<?= $itemDataArray['itemName'] ?> (<?= $itemDataId ?>)
 								<?php if(!empty($taxName)) {
 									$tax = implode(', ', $taxName);
 									// echo "<br><span style='font-size:10px;'>Tax: $tax </span>"; 
 								}  ?>
 							</div>
-    				        <div style="width:13%; float:left;">
+    				        <div style="width:20%; float:left; text-align:center;">
 								<?= $itemDataArray['itemCount'] ?>
 							</div>
-    				        <div style="width:13%; float:left; text-align:center;">
+    				        <?php /*?>
+							<div style="width:13%; float:left; text-align:center;">
 								<?=$totalTaxPercentage > 0 ? $totalTaxPercentage.'%' : '--' ?>
 							</div>
     				        <div style="width:25%; float:left; text-align:right;">
 								₹ <?= $itemDataArray['itemCount'] * $itemDataArray['itemPrice'] ?>
 							</div>
+							<?php */?>
     				    <?php } else { ?>
-							<div style="width:60%; float:left;">
+							<div style="width:75%; float:left;">
 								<?= $itemDataArray['itemName'] ?> (<?= $itemDataId ?>)
 							</div>
-							<div style="width:13%; float:left; text-align:center;">
+							<div style="width:20%; float:left; text-align:center;">
 								<?= $itemDataArray['itemCount'] ?>
 							</div>
+							<?php /*?>
 							<div style="width:25%; float:left; text-align:right;">
-								₹ <?= $itemDataArray['itemCount'] * $itemDataArray['itemPrice'] ?>
+							₹ <?= $itemDataArray['itemCount'] * $itemDataArray['itemPrice'] ?>
 							</div>
+							<?php */?>
 						<?php } endforeach;
 					    endforeach; ?>
 				    </div>
 				</div>
-				<hr class="new">
-				<div style="width:100%;">
-				    <div>
-				        <div style="width:63%; float:left; text-align:right;"><strong>Total Amount : </strong></div>
-				        <div style="width:10%; float:left; text-align:right;">&nbsp;&nbsp;</div>
-				        <div style="width:25%; float:left;">₹ <?= $ci->cartTotal($CartLists) ?></div>
-				    </div>
-				    <div>
-				        <div style="width:63%; float:left; text-align:right;"><strong>Total Billed : </strong></div>
-				        <div style="width:10%; float:left; text-align:right;">&nbsp;&nbsp;</div>
-				        <div style="width:25%; float:left;">₹ <?= $ci->cartTotal($CartLists,'yes',$order->res_id) ?></div>
-				    </div>
-				</div>
-				<br>
-				<br>
-            	<div style="padding-top:5px; text-align:center;">
-            	    <strong>Thank You, visit again!</strong>
-            	</div>
-            	<div style="padding-top:3px; text-align:center; font-size: 10px;">
-            	    Powered by Fligobeam Networks
-            	</div>
             </div>
         </div>
         

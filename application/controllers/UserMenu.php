@@ -67,10 +67,14 @@ class UserMenu extends CI_Controller
 						$calculatePrice += ($itemPrice * $taxData['tax_percent']) / 100;
 					}
 				}
-				$itemPrice = $calculatePrice + $itemPrice;
+				$itemPrice = ($calculatePrice + $itemPrice);
+				if (strpos($itemPrice, '.') != false)
+				{
+					$itemPrice = number_format($itemPrice, 2, '.', '');	
+				}
 			}
 		}
-
+		
 		return $itemPrices;
 	}
 
@@ -143,7 +147,7 @@ class UserMenu extends CI_Controller
 
 		$token = $this->input->post('thirdSegment');
 		$cartArray = $this->updateTaxInCartItems($cartArray, $token);
-		
+
 	    $this->session->set_userdata('CartList',json_encode($cartArray)); // $this->session->unset_userdata('CartList');
 
 	    echo $this->cartHtml();
@@ -297,7 +301,13 @@ class UserMenu extends CI_Controller
 	               
 	            }
 	        endforeach;
-	    }
+		}
+
+		if (strpos($itemNetPrice, '.') != false)
+		{
+			$itemNetPrice = number_format($itemNetPrice, 2, '.', '');	
+		}
+		
 	    $tempArr['itemName']=$itemName;
 	    $tempArr['itemImage']=$itemImage;
 	    $tempArr['itemFoodType']=$itemFoodType;
@@ -316,7 +326,11 @@ class UserMenu extends CI_Controller
 	            if($itemTotalPrice == '') { $itemTotalPrice = $manageCartList['itemNetPrice']; }
 	            else { $itemTotalPrice = $itemTotalPrice + $manageCartList['itemNetPrice']; }
 	        endforeach;
-	        
+			
+			if (strpos($itemTotalPrice, '.') != false)
+			{
+				$itemTotalPrice = number_format($itemTotalPrice, 2, '.', '');	
+			}
 	        // if('yes' == $tax && $rest_id != 0) :
 	        //     $taxLists=$this->getTaxList($rest_id); 
 	        //     if(!empty($taxLists)) :
@@ -327,7 +341,7 @@ class UserMenu extends CI_Controller
 	        // endif;
 	    }
 	    
-	    return $itemTotalPrice;
+	    return round($itemTotalPrice);
 	}
 	
 	public function checkout($tableToken=NULL)
@@ -344,7 +358,8 @@ class UserMenu extends CI_Controller
 				$data['tableToken'] = $tableToken;
 			}	
 		}
-	    $sessArray=json_decode($this->session->userdata('CartList'), true);
+		$sessArray=json_decode($this->session->userdata('CartList'), true);
+
 	    if($this->session->userdata('CartList')) {
 	        if(!empty($sessArray)){
 	            $this->load->view('usermenu/checkout', $data);

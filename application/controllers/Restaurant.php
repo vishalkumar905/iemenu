@@ -1,4 +1,7 @@
 <?php
+
+use Mpdf\Tag\P;
+
 defined('BASEPATH') OR exit('No direct script access allowed');
 
 require_once(dirname(__FILE__).'/Main.php');
@@ -359,6 +362,7 @@ class Restaurant extends Main
         $condition = array('order_id'=>$orderid);
         $data['order'] = $this->restaurantModel->getOrderList($condition)[0];
 		$data['showTaxColumn'] = $this->checkIfTaxIsAvaliable($data['order']);
+		$data['allCombinedTaxes'] = $this->calculateAllCombinedTaxes($data['order']);
 		$stylesheet = file_get_contents('/home/yd93k4ea02s3/public_html/MDB/assets/css/print2.css');
         $html = $this->load->view( 'restaurant/invoice_3', $data, true );
         
@@ -396,6 +400,61 @@ class Restaurant extends Main
 		return 0;
 	}
 	
+	public function calculateAllCombinedTaxes($data)
+	{
+		$combineAllTaxes = [];
+		if (!empty($data))
+		{
+			$itemLists = json_decode($data->item_details, true);
+			foreach ($itemLists as $itemList)
+			{
+				foreach($itemList as $itemDetail)
+				{
+					if (!empty($itemDetail['itemTaxes']))
+					{
+						foreach ($itemDetail['itemTaxes'] as $itemTax)
+						{
+							$calculatedTax = (($itemDetail['itemOldPrice'] * $itemDetail['itemCount']) * $itemTax['taxPercentage']) / 100;
+							$calculatedTax = number_format($calculatedTax, 2, '.', '');
+
+							$combineAllTaxes[] = ['taxName' => $itemTax['taxName'], 'taxAmount' => $calculatedTax];
+						}
+					}
+				}
+			}
+		}
+
+		// echo '<pre>';
+		// print_r($combineAllTaxes);
+		// die();
+
+		if (!empty($combineAllTaxes))
+		{
+			$tempArr = [];
+			foreach($combineAllTaxes as $tax)
+			{
+				if (!isset($tempArr[$tax['taxName']]))
+				{
+					$tempArr[$tax['taxName']] = number_format($tax['taxAmount'], 2, '.', '');
+				}
+				else
+				{
+					foreach ($tempArr as $key => $val)
+					{
+						if ($key === $tax['taxName'])
+						{
+							$tempArr[$tax['taxName']] = number_format($tax['taxAmount'] + $val, 2, '.', '');
+						}
+					}
+				}
+			}
+
+			$combineAllTaxes = $tempArr;
+		}
+
+		return $combineAllTaxes;
+	}
+
 	public function getOrderView($postdata=array())
 	{
 	    if(!empty($_POST))
@@ -426,10 +485,12 @@ class Restaurant extends Main
             //             $itemTotalPrice = $itemTotalPrice + $this->cartTax($cartArray, $taxList->tax_percent);
             //         endforeach; 
             //     endif;
-	        // endif;
-	    }
-	    
-	    return $itemTotalPrice;
+			// endif;
+			
+			
+		}
+		
+		return round($itemTotalPrice);
 	}
 	public function manageCartList($cartArray=array())
 	{

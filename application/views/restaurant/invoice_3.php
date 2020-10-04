@@ -22,77 +22,92 @@
             	<?php $CartLists=json_decode($order->item_details, true); ?>
 				<div style="width:100%;">
 				    <div>
-						<?php if ($showTaxColumn) { ?>
-				        <div style="width:40%; float:left;"><b>Items</b></div>
-						<div style="width:13%; float:left;"><b>Qty</b></div>
-				        <div style="width:13%; float:left; text-align:center;"><b>Tax</b></div>
-						<div style="width:25%; float:left; text-align:right;"><b>Price</b></div>
-						<?php }else { ?>
 						<div style="width:60%; float:left;"><b>Items</b></div>
 						<div style="width:13%; float:left; text-align:center;"><b>Qty</b></div>
 						<div style="width:25%; float:left; text-align:right;"><b>Price</b></div>
-						<?php } ?>
 				    </div>
 				    <hr class="new">
 				    <div>
-				        <?php $i=0; foreach($CartLists as $itemId => $itemArray) : 
+						<?php $i=0; $subTotalAmount = 0; $totalQuantity = 0;
+						foreach($CartLists as $itemId => $itemArray) : 
 							foreach($itemArray as $itemDataId => $itemDataArray) :
-								if ($showTaxColumn) { 
-									$taxName = [];
-									$totalTaxPercentage = 0;
-									if (!empty($itemDataArray['itemTaxes']))
+								$taxName = [];
+								$totalTaxPercentage = 0;
+								if (!empty($itemDataArray['itemTaxes']))
+								{
+									foreach ($itemDataArray['itemTaxes'] as $itemTax)
 									{
-										foreach ($itemDataArray['itemTaxes'] as $itemTax)
-										{
-											$taxName[] = $itemTax['taxName'];
-											$totalTaxPercentage += $itemTax['taxPercentage'];
-										}
+										$taxName[] = sprintf('%s (%s%s)',  $itemTax['taxName'],  $itemTax['taxPercentage'], '%');
+										$totalTaxPercentage += $itemTax['taxPercentage'];
 									}
+								}
+
+								$subTotalAmount += $itemDataArray['itemCount'] * $itemDataArray['itemOldPrice'];
+								$totalQuantity += $itemDataArray['itemCount'];
 						?>
-    				        <div style="width:40%; float:left;">
+    				        <div style="width:60%; float:left;">
 								<?= $itemDataArray['itemName'] ?> (<?= $itemDataId ?>)
 								<?php if(!empty($taxName)) {
 									$tax = implode(', ', $taxName);
-									// echo "<br><span style='font-size:10px;'>Tax: $tax </span>"; 
+									echo "<br><span style='font-size:10px;'>Tax: $tax </span><br>"; 
 								}  ?>
-							</div>
-    				        <div style="width:13%; float:left;">
-								<?= $itemDataArray['itemCount'] ?>
-							</div>
-    				        <div style="width:13%; float:left; text-align:center;">
-								<?=$totalTaxPercentage > 0 ? $totalTaxPercentage.'%' : '--' ?>
-							</div>
-    				        <div style="width:25%; float:left; text-align:right;">
-								₹ <?= $itemDataArray['itemCount'] * $itemDataArray['itemPrice'] ?>
-							</div>
-    				    <?php } else { ?>
-							<div style="width:60%; float:left;">
-								<?= $itemDataArray['itemName'] ?> (<?= $itemDataId ?>)
 							</div>
 							<div style="width:13%; float:left; text-align:center;">
 								<?= $itemDataArray['itemCount'] ?>
 							</div>
 							<div style="width:25%; float:left; text-align:right;">
-								₹ <?= $itemDataArray['itemCount'] * $itemDataArray['itemPrice'] ?>
+								₹ <?= $itemDataArray['itemCount'] * $itemDataArray['itemOldPrice'] ?>
 							</div>
-						<?php } endforeach;
+						<?php  endforeach;
 					    endforeach; ?>
 				    </div>
 				</div>
 				<hr class="new">
 				<div style="width:100%;">
 				    <div>
-				        <div style="width:63%; float:left; text-align:right;"><strong>Total Amount : </strong></div>
-				        <div style="width:10%; float:left; text-align:right;">&nbsp;&nbsp;</div>
-				        <div style="width:25%; float:left; text-align:right;">₹ <?= $ci->cartTotal($CartLists) ?></div>
-				    </div>
-			
-				    <div>
-				        <div style="width:63%; float:left; text-align:right;"><strong>Total Billed : </strong></div>
-				        <div style="width:10%; float:left; text-align:right;">&nbsp;&nbsp;</div>
-				        <div style="width:25%; float:left; text-align:right;">₹ <?= $ci->cartTotal($CartLists,'yes',$order->res_id) ?></div>
+				        <div style="width:60%; float:left; text-align:left;"><strong>Total Qty: </strong></div>
+				        <div style="width:13%; float:left; text-align:center;"><?= $totalQuantity ?></div>
+				        <div style="width:25%; float:left; text-align:right;">&nbsp;&nbsp;</div>
 				    </div>
 				</div>
+				<div style="width:100%;">
+				    <div>
+				        <div style="width:60%; float:left; text-align:left;"><strong>SubTotal: </strong></div>
+				        <div style="width:13%; float:left; text-align:center;">&nbsp;&nbsp;</div>
+				        <div style="width:25%; float:left; text-align:right;">₹ <?= $subTotalAmount ?></div>
+				    </div>
+				</div>
+				<?php 
+					if ($showTaxColumn)
+					{ 
+				?>
+				<hr class="new">
+				<div style="width:100%;">
+					<?php foreach ($allCombinedTaxes as $taxName => $taxAmount) { $subTotalAmount += $taxAmount; ?>
+				    <div>
+				        <div style="width:60%; float:left; text-align:left;"><strong><?=$taxName?>:</strong></div>
+				        <div style="width:13%; float:left; text-align:right;">&nbsp;&nbsp;</div>
+				        <div style="width:25%; float:left; text-align:right;">₹ <?= $taxAmount ?></div>
+					</div>
+					<?php } ?>
+				</div>
+				<?php
+					} 
+				?>
+				<hr class="new">
+				<div style="width:100%;">
+				    <div>
+				        <div style="width:60%; float:left; text-align:right;"><strong>Total Amount : </strong></div>
+				        <div style="width:10%; float:left; text-align:right;">&nbsp;&nbsp;</div>
+				        <div style="width:30%; float:left; text-align:right;">₹ <?= number_format($subTotalAmount, 2, '.', '') ?></div>
+				    </div>
+				    <div>
+				        <div style="width:60%; float:left; text-align:right;"><strong>Total Billed : </strong></div>
+				        <div style="width:10%; float:left; text-align:right;">&nbsp;&nbsp;</div>
+				        <div style="width:30%; float:left; text-align:right;">₹ <?= $ci->cartTotal($CartLists,'yes',$order->res_id) ?></div>
+				    </div>
+				</div>
+				<?php /* ?>
 				<br>
             	<div style="padding-top:5px; text-align:center; font-size: 10px;">
 					Customer Copy<br>
@@ -105,7 +120,8 @@
             	</div>
             	<div style="padding-top:3px; text-align:center; font-size: 10px;">
             	    Powered by Fligobeam Networks
-            	</div>
+				</div>
+				<?php */ ?>
             </div>
         </div>
         

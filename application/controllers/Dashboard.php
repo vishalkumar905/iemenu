@@ -118,17 +118,17 @@ class Dashboard extends CI_Controller {
 	            else { $itemTotalPrice = $itemTotalPrice + $manageCartList['itemNetPrice']; }
 	        endforeach;
 	        
-	        if('yes' == $tax && $rest_id != 0) :
-	            $taxLists=$this->getTaxList($rest_id); 
-	            if(!empty($taxLists)) :
-                    foreach($taxLists as $taxList):
-                        $itemTotalPrice = $itemTotalPrice + $this->cartTax($cartArray, $taxList->tax_percent);
-                    endforeach; 
-                endif;
-	        endif;
+	        // if('yes' == $tax && $rest_id != 0) :
+	        //     $taxLists=$this->getTaxList($rest_id); 
+	        //     if(!empty($taxLists)) :
+            //         foreach($taxLists as $taxList):
+            //             $itemTotalPrice = $itemTotalPrice + $this->cartTax($cartArray, $taxList->tax_percent);
+            //         endforeach; 
+            //     endif;
+			// endif;
 	    }
 	    
-	    return $itemTotalPrice;
+	    return round($itemTotalPrice);
 	}
 	public function manageCartList($cartArray=array())
 	{
@@ -202,7 +202,7 @@ class Dashboard extends CI_Controller {
 	        endforeach;
 	    }
 	    
-	    $data['closePrice']=$itemTotalPrice;
+	    $data['closePrice']= round($itemTotalPrice);
 	    
 	    return $data;
     }

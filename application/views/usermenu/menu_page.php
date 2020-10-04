@@ -273,7 +273,7 @@
 	        var itemType = $("input[name='pricetype_"+itemid+"']:checked").val();
 	        var itemCount = $('.item-count-'+itemid).val();
 	        itemArray['itemName'] = itemName;
-	        itemArray['itemPrice'] = parseFloat(itemPrice);
+	        itemArray['itemPrice'] = itemPrice;
 	        itemArray['itemImage'] = itemImage;
 	        itemArray['itemType'] = itemType;
 	        itemArray['itemOldPrice'] = itemOldPrice;
@@ -296,7 +296,6 @@
 	        data : {'cartList' : cartList, thirdSegment }
 	    })
 	    .done(function(response){
-	        console.log(response);
 	        $('.added-notification').show();
 	        resp = JSON.parse(response);
 	        $('.added-item').html(resp[0]);
@@ -314,7 +313,6 @@
     	        data : {'itemID' : itemid, 'itemType' : itemtype }
     	    })
     	    .done(function(response){
-    	        console.log(response);
     	        resp = JSON.parse(response);
     	        $('.added-item').html(resp[0]);
     	        $('.cart-added-items').html(resp[1]);
