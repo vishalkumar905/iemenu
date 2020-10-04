@@ -52,7 +52,7 @@ class UserModel extends CI_Model
         $this->db->select('order_id');    
         $this->db->order_by('id',"desc");    
         $this->db->limit(1);    
-		$query = $this->db->get('orders');					
-		return $query->result();
+        $query = $this->db->get('orders');					
+        return $query->result();
     }
 }

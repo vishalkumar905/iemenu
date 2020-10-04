@@ -172,12 +172,23 @@ class Restaurant extends Main
 		    $this->db->where('res_id',$rid);
 		    $this->db->where('order_status',2);
 		    
-		    if($_POST['isFilter']=='yes'){
+			if($_POST['isFilter']=='yes')
+			{
 		        $date=json_decode($_POST['formdata'],true); $from=$date['from']; $to=$date['to'];
-		        if($from!='' && $to!='') { $this->db->where("DATE(created_at) BETWEEN '$from' AND '$to'"); }
-		        elseif($date['from']!='') { $this->db->where("DATE(created_at) >= '$from'"); }
-		        elseif($date['to']!='') { $this->db->where("DATE(created_at) <= '$to'"); }
-		    }
+				if($from!='' && $to !='') 
+				{ 
+					$this->db->where("DATE(created_at) BETWEEN '$from' AND '$to'"); 
+				}
+				elseif($date['from'] !='')
+				{ 
+					$this->db->where("DATE(created_at) >= '$from'"); 
+				}
+				elseif($date['to'] !='') 
+				{ 
+					$this->db->where("DATE(created_at) <= '$to'"); 
+				}
+			}
+			
     		$query = $this->db->get('orders');
     		$orders = $query->result();
 		}
@@ -188,7 +199,24 @@ class Restaurant extends Main
         {
             if($order->order_status=='0'){ $order_status='<span class="label label-success">OPEN</span>'; }elseif($order->order_status=='1'){ $order_status='<span class="label label-warning">CONFIRM</span>'; }else{ $order_status='<span class="label label-default">CLOSE</span>'; }
             $onclick=($order->order_status=='0') ? 'disabled="disabled"' : 'onclick="updateOrder('. $order->order_id .',2)"';
-            
+			
+			if($order->payment_mode == '1') 
+			{ 
+				$payment_mode ='<span class="label label-primary">CASH</span>';
+			} 
+			elseif($order->payment_mode == '2') 
+			{ 
+				$payment_mode='<span class="label label-info">ONLINE</span>';
+			} 
+			elseif($order->payment_mode == '3') 
+			{ 
+				$payment_mode='<span class="label label-danger">UPI QR SCAN</span>';
+			} 
+			else 
+			{ 
+				$payment_mode='<span class="label label-success">CARD SWIPE</span>';
+			}
+
             $sub_array   = array();
             $sub_array[] = $i;
             $sub_array[] = $order_status;
@@ -197,12 +225,10 @@ class Restaurant extends Main
             $sub_array[] = $order->buyer_name;
             $sub_array[] = $order->buyer_phone_number;
             $sub_array[] = $order->order_type;
+			$sub_array[] = $payment_mode;
             
-            $sub_array[] = ($order->payment_mode=='1') ? '<span class="label label-primary">CASH</span>' : '<span class="label label-info">ONLINE</span>' ;
-            if($type=='reportorder'){ 
-                
+			if($type=='reportorder'){ 
                 $sub_array[] = $order->created_at; 
-                
                 $sub_array[] = '<div class="text-right"><a href="javascript:getOrderView('. $order->order_id .')" title="View" class="btn btn-sm btn-danger"> View</a></div>';
             } else {
                 $sub_array[] = '<div class="text-right"><a href="javascript:getOrderView('. $order->order_id .')" title="View" class="btn btn-sm btn-danger"> View</a><a href="javascript:void(0)" data-id="'. $order->id.'" class="btn btn-sm btn-default" '.$onclick.' >Close</a></div>';
@@ -249,7 +275,7 @@ class Restaurant extends Main
             $sub_array[] = $order->buyer_name;
             $sub_array[] = $order->buyer_phone_number;
             $sub_array[] = $order->order_type;
-            $sub_array[] = ($order->payment_mode=='1') ? 'CASH' : 'ONLINE' ;
+            $sub_array[] = $this->paymentMethod($order->payment_mode);
             $sub_array[] = $this->cartTotal($CartLists,'no',$rid);
             $sub_array[] = $order->created_at; 
             
@@ -389,12 +415,11 @@ class Restaurant extends Main
 			foreach ($itemDetails as $item)
 			{
 				$key = key($item);
-				if (isset($item[$key]['itemTaxes']))
+				if (isset($item[$key]) && isset($item[$key]['itemTaxes']))
 				{
 					return 1;
 				}
 			}
-			
 		}
 
 		return 0;
@@ -423,10 +448,6 @@ class Restaurant extends Main
 				}
 			}
 		}
-
-		// echo '<pre>';
-		// print_r($combineAllTaxes);
-		// die();
 
 		if (!empty($combineAllTaxes))
 		{
@@ -461,10 +482,23 @@ class Restaurant extends Main
 	    {
             $postdata = $_POST;
 	    }
-	    
+		
         $condition = array('order_id'=>$postdata['orderID']);
         $data['order'] = $this->restaurantModel->getOrderList($condition)[0];
+		$data['paymentMethodName'] = $this->paymentMethod($data['order']->payment_mode);
         $this->load->view('restaurant/orderPopup', $data);
+	}
+
+	public function paymentMethod($paymentId)
+	{
+		$paymentModes = [
+			1 => 'CASH',
+			2 => 'ONLINE',
+			3 => 'UPI QR SCAN',
+			4 => 'CARD SWIPE',
+		];
+
+		return isset($paymentModes[$paymentId]) ? $paymentModes[$paymentId] : 'ONLINE';
 	}
 	
 	public function cartTotal($cartArray=array(), $tax='yes', $rest_id=0)

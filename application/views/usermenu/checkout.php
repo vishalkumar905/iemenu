@@ -123,7 +123,8 @@
 						<div class="col-md-6">
 							<h5 class="mb-10">Payment Method</h5>
 							<span><input class="radio-btn" id="cash-label" type="radio" name="pay_method" value="Cash" checked="" form="paycash-form"><label for="cash-label" class="pr-10 pl-5 radio-label">Cash / UPI</label></span>
-
+                            <span><input class="radio-btn" id="upi-label" type="radio" name="pay_method" value="UPI QR Scan" form="paycash-form"><label for="upi-label" class="pr-10 pl-5 radio-label">UPI QR Scan</label></span>
+                            <span><input class="radio-btn" id="card-label" type="radio" name="pay_method" value="Card Swipe" form="paycash-form"><label for="card-label" class="pr-10 pl-5 radio-label">Card Swipe</label></span>
 							<?php
 							if (!empty($conf) && !empty($userConf)) {
 								if ($conf->status == 'on' && $userConf[0]->online_pay_status == 'on') {
@@ -134,6 +135,12 @@
 							}
 							?>
 						</div>
+
+						<div class="col-md-6 mtb-20" id="card-pay" style="display:none;">
+                            <h5 class="mb-10">Transaction Id (If swiped by card)</h5>
+                            <input class="mb-20" type="text" name="card_transaction_id" placeholder="Enter by cashier" form="paycash-form">  
+						</div>
+
 						<div class="col-md-6 mtb-20" id="pay-later">
 							<form class="form-style-1 placeholder-1" action="<?php echo base_url('UserMenu/checkoutPlaceOrder/') . $tableToken; ?>" method="post" id="paycash-form">
 								<input type="hidden" name="rest_id" value="<?= $rest_id; ?>">
@@ -191,10 +198,22 @@
 				if (this.value == 'Cash') {
 					$("#pay-later").show();
 					$("#pay-now").hide();
+					$("#card-pay").hide();
+					$('input[form^="pay"]').attr('form', 'paycash-form');
+				} else if(this.value == 'UPI QR Scan'){
+				    $("#pay-now").hide();
+					$("#pay-later").show();
+					$("#card-pay").hide();
+				    $('input[form^="pay"]').attr('form', 'paycash-form');
+				} else if(this.value == 'Card Swipe') {
+				    $("#pay-now").hide();
+					$("#pay-later").show();
+					$("#card-pay").show();
 					$('input[form^="pay"]').attr('form', 'paycash-form');
 				} else {
 					$("#pay-now").show();
 					$("#pay-later").hide();
+					$("#card-pay").hide();
 					$('input[form^="pay"]').attr('form', 'payonline-form');
 				}
 			});

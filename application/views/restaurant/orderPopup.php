@@ -16,7 +16,7 @@
 			<div class="col-md-8">
 				<p><strong>Last Update : </strong><?= $order->updated_at ?></p>
 				<p><strong>Created : </strong><?= $order->created_at ?></p>
-				<p><strong>Payment Method : </strong><?= ($order->payment_mode=='1') ? 'CASH' : 'ONLINE' ; ?></td></p>
+				<p><strong>Payment Method : </strong><?= $paymentMethodName; ?></td></p>
 				<p><strong>Transaction ID : </strong><?= ($order->payment_mode=='1') ? '-' : $order->txn_id ; ?></td></p>
 			</div>
 			<div class="col-md-4">

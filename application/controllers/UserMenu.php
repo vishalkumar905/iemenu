@@ -415,43 +415,69 @@ class UserMenu extends CI_Controller
     	    
     	    $data['order_type'] = $this->input->post('order_type');
     	    
-    	    
-    	    
-    	    
     	    $data['created_at'] = date('Y-m-d H:i:s');
     	    
     	    $data['item_details'] = $items;
     	    $data['item_temp_details'] = $items;
-    	    $data['total'] = $this->cartTotal($CartLists,'yes',$_POST['rest_id']);
-    	    if($this->input->post('pay_method') == 'Cash'){
+			$data['total'] = $this->cartTotal($CartLists,'yes',$_POST['rest_id']);
+			
+			$orderMessage = 'Can&apos;t Place Order';
+			$orderId = 'NA';
+			$paymentMethods = ['Cash', 'Pay Online', 'UPI QR Scan', 'Card Swipe'];
+			$paymentMethod = $this->input->post('pay_method');
+
+			if($paymentMethod == 'Cash')
+			{
     	        $data['payment_mode'] = 1;
     	        $data['payment_status'] = 2;
     	        $data['order_id'] = $this->lastOrder();
     	        $added = $this->usermodel->placeOrder($data);
-    	        if($added){
-    				$this->session->set_flashdata('SUCCESSMSG','Order Placed Successfully');
-    				$this->session->set_flashdata('ORDER_ID', $data['order_id']);
-    				$this->load->view('usermenu/order_success');
-    			}
-    			else{
-    			    $this->session->set_flashdata('SUCCESSMSG','Can&apos;t Place Order');
-    			    $this->session->set_flashdata('ORDER_ID', 'NA');
-    			    $this->load->view('usermenu/order_success');
+				if($added)
+				{
+					$orderMessage = 'Order Placed Successfully';
+					$orderId =  $data['order_id'];
     			}
     	    }
-    	    else if($this->input->post('pay_method') == 'Pay Online'){
+			else if($paymentMethod == 'Pay Online')
+			{
     	        $check = $this->check($_POST);
-    	        if($check['status']){
-    				$this->session->set_flashdata('SUCCESSMSG','Order Placed Successfully');
-    				$this->session->set_flashdata('ORDER_ID', $check['order_id']);
-    				$this->load->view('usermenu/order_success');
+				if($check['status'])
+				{
+					$orderMessage = 'Order Placed Successfully';
+					$orderId =  $check['order_id'];
     			}
-    			else{
-    			    $this->session->set_flashdata('SUCCESSMSG','Can&apos;t Place Order');
-    			    $this->session->set_flashdata('ORDER_ID', 'NA');
-    			    $this->load->view('usermenu/order_success');
-    			}
-    	    }
+			}
+			else if($paymentMethod == 'UPI QR Scan')
+			{
+				$data['payment_mode'] = 3;
+				$data['payment_status'] = 2;
+				$data['order_id'] = $this->lastOrder();
+				$added = $this->usermodel->placeOrder($data);
+				if($added)
+				{
+					$orderMessage = 'Order Placed Successfully';
+					$orderId = $data['order_id'];
+				}
+			}
+			else if($paymentMethod == 'Card Swipe')
+			{
+				$data['payment_mode'] = 4;
+				$data['payment_status'] = 2;
+				$data['order_id'] = $this->lastOrder();
+				$added = $this->usermodel->placeOrder($data);
+				if($added)
+				{
+					$orderMessage = 'Order Placed Successfully';
+					$orderId = $data['order_id'];
+				}
+			}
+			
+			if (in_array($paymentMethod, $paymentMethods))
+			{
+				$this->session->set_flashdata('SUCCESSMSG', $orderMessage);
+				$this->session->set_flashdata('ORDER_ID', $orderId);
+				$this->load->view('usermenu/order_success');
+			}
 	    }
 	    else {
 	        redirect('UserMenu/menuPage/'.$tableToken,'refresh');
@@ -655,10 +681,16 @@ class UserMenu extends CI_Controller
 	    $data = $this->usermodel->lastOrder();
 	    if(!empty($data))
 	    {
-	        if($data[0]->order_id == '' ) { $O_ID = $O_ID; }
-	        else { $O_ID = $data[0]->order_id + 1; }
-	        
-	        return $O_ID;
-	    }
+			if($data[0]->order_id == '') 
+			{ 
+				$O_ID = $O_ID; 
+			}
+			else 
+			{ 
+				$O_ID = $data[0]->order_id + 1; 
+			}
+		}
+		
+		return $O_ID;
 	}
 }
