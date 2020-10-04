@@ -363,7 +363,8 @@ class Restaurant extends Main
         $condition = array('order_id'=>$orderid);
 		$data['order'] = $this->restaurantModel->getOrderList($condition)[0];
 		$data['showTaxColumn'] = $this->checkIfTaxIsAvaliable($data['order']);
-        
+		$data['paymentMethodName'] = $this->paymentMethod($data['order']->payment_mode);
+
         $stylesheet = file_get_contents('/home/yd93k4ea02s3/public_html/MDB/assets/css/print2.css');
         $html = $this->load->view( 'restaurant/invoice_2', $data, true );
         
@@ -389,6 +390,8 @@ class Restaurant extends Main
         $data['order'] = $this->restaurantModel->getOrderList($condition)[0];
 		$data['showTaxColumn'] = $this->checkIfTaxIsAvaliable($data['order']);
 		$data['allCombinedTaxes'] = $this->calculateAllCombinedTaxes($data['order']);
+		$data['paymentMethodName'] = $this->paymentMethod($data['order']->payment_mode);
+
 		$stylesheet = file_get_contents('/home/yd93k4ea02s3/public_html/MDB/assets/css/print2.css');
         $html = $this->load->view( 'restaurant/invoice_3', $data, true );
         

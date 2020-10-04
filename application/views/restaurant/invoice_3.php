@@ -15,7 +15,7 @@
                 <div>
                     <b>Order #<?= $order->order_id ?></b>&nbsp;(<?= ($order->table_id) ? ($ci->getTableDetail($order->table_id)) ? $ci->getTableDetail($order->table_id)->table_name : '-' : '-'; ?>) <br/>
                     <b>Date : </b><?= date('d-m-Y h:i:s a'); ?> <br/>
-				    <strong>Payment Method : </strong><?= ($order->payment_mode=='1') ? 'CASH' : 'ONLINE' ; ?> <br/>
+				    <strong>Payment Method : </strong><?= $paymentMethodName ?> <br/>
 				    <strong>GSTIN : </strong>07AASFV8263C1ZQ
             	</div>
             	<hr class="new">
