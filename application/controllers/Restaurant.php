@@ -261,13 +261,27 @@ class Restaurant extends Main
 		$query = $this->db->get('orders');
 		$orders = $query->result();
 		
-		$data[] = ['Order Status','Order Id','Table Id','Customer Name','Phone Number','Order Type','Payment Mode','Total Amount','Created Date'];
+		$data[] = ['Order Status','Order Id','Table Id','Customer Name','Phone Number','Order Type','Payment Mode', 'Sub Total', 'Total Tax', 'Total Amount', 'Roundoff', 'Total Billed','Created Date'];
 		
 		foreach ( $orders as $order )
         {
             if($order->order_status=='0'){ $order_status='OPEN'; }elseif($order->order_status=='1'){ $order_status='CONFIRM'; }else{ $order_status='CLOSE'; }
-            $CartLists=json_decode($order->item_details, true);
-            
+			$CartLists=json_decode($order->item_details, true);
+			
+			$totalTaxes = 0;
+			$subTotal = $this->calculateItemsSubtotal($order);
+			$allCombinedTaxes = $this->calculateAllCombinedTaxes($order);
+			
+			foreach($allCombinedTaxes as $taxName => $taxValue)
+			{
+				$totalTaxes += $taxValue;
+			}
+
+			$totalAmount = $subTotal + $totalTaxes;
+			$totalAmount = number_format($totalAmount, 2, '.', '');
+			$totalBilledAmount = $this->cartTotal($CartLists,'no',$rid);
+			$roundOff = number_format($totalBilledAmount - $totalAmount, 2, '.', '');
+
             $sub_array   = array();
             $sub_array[] = $order_status;
             $sub_array[] = $order->order_id;
@@ -276,9 +290,13 @@ class Restaurant extends Main
             $sub_array[] = $order->buyer_phone_number;
             $sub_array[] = $order->order_type;
             $sub_array[] = $this->paymentMethod($order->payment_mode);
-            $sub_array[] = $this->cartTotal($CartLists,'no',$rid);
+            $sub_array[] = $subTotal;
+            $sub_array[] = $totalTaxes; 
+            $sub_array[] = $totalAmount; 
+            $sub_array[] = $roundOff; 
+            $sub_array[] = $totalBilledAmount; 
             $sub_array[] = $order->created_at; 
-            
+
             $data[] = $sub_array;
         }
         
@@ -477,6 +495,24 @@ class Restaurant extends Main
 		}
 
 		return $combineAllTaxes;
+	}
+
+	public function calculateItemsSubtotal($data)
+	{
+		$subTotal = 0;
+		if (!empty($data))
+		{
+			$itemLists = json_decode($data->item_details, true);
+			foreach ($itemLists as $itemList)
+			{
+				foreach($itemList as $itemDetail)
+				{
+					$subTotal += ($itemDetail['itemCount'] * (isset($itemDetail['itemOldPrice']) ? $itemDetail['itemOldPrice'] : $itemDetail['itemPrice']));
+				}
+			}
+		}
+
+		return $subTotal;
 	}
 
 	public function getOrderView($postdata=array())
