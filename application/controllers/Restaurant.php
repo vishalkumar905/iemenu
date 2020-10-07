@@ -263,6 +263,8 @@ class Restaurant extends Main
 		
 		$data[] = ['Order Status','Order Id','Table Id','Customer Name','Phone Number','Order Type','Payment Mode', 'Sub Total', 'Total Tax', 'Total Amount', 'Roundoff', 'Total Billed','Created Date'];
 		
+		$grandTotalTaxes = $grandSubTotal = $grandTotalAmount = $grandRoundOff = $grandTotalBilledAmount = 0;
+
 		foreach ( $orders as $order )
         {
             if($order->order_status=='0'){ $order_status='OPEN'; }elseif($order->order_status=='1'){ $order_status='CONFIRM'; }else{ $order_status='CLOSE'; }
@@ -297,8 +299,35 @@ class Restaurant extends Main
             $sub_array[] = $totalBilledAmount; 
             $sub_array[] = $order->created_at; 
 
+			$grandTotalTaxes += $totalTaxes;
+			$grandSubTotal += $subTotal;
+			$grandTotalAmount += $totalAmount;
+			$grandRoundOff += $roundOff;
+			$grandTotalBilledAmount += $totalBilledAmount;
+
             $data[] = $sub_array;
-        }
+		}
+		
+		if (count($data) > 1)
+		{
+			$sub_array   = array();
+			$sub_array[] = '';
+            $sub_array[] = '';
+           	$sub_array[] = '';
+           	$sub_array[] = '';
+            $sub_array[] = '';
+            $sub_array[] = '';
+            $sub_array[] = '';
+            $sub_array[] = $grandSubTotal;
+            $sub_array[] = $grandTotalTaxes; 
+            $sub_array[] = $grandTotalAmount; 
+            $sub_array[] = $grandRoundOff; 
+            $sub_array[] = $grandTotalBilledAmount; 
+			$sub_array[] = '';
+			
+			$data[] = $sub_array;
+		}
+
         
         if('excel'==strtolower($type)) {
             $this->getExcel($data);
