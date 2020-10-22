@@ -47,11 +47,12 @@ class UserModel extends CI_Model
 		}
     }
     
-    function lastOrder()
+    function lastOrder($restId)
     {
         $this->db->select('order_id');    
         $this->db->order_by('id',"desc");    
         $this->db->limit(1);    
+        $this->db->where('res_id', $restId);
         $query = $this->db->get('orders');					
         return $query->result();
     }

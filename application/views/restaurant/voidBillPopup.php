@@ -1,16 +1,26 @@
 <?php $ci=get_instance(); ?>
 <div class="modal-header">
 	<button type="button" class="close" data-dismiss="modal" aria-hidden="true"><i class="material-icons">clear</i></button>
-	<h5 class="modal-title" id="myModalLabel"><b>Order #<?= $order->order_id ?></b></h5>
+	<h5 class="modal-title" id="myModalLabel1"><b>Void Bill For Order #<?= $order->order_id ?></b></h5>
 </div>
+
+
+
 <div class="modal-body">
+
+
+
     <div class="instruction">
 	    <div class="row">
 			<div class="col-md-12">
-			    <h5  class="modal-title"><?= ($order->table_id) ? ($ci->getTableDetail($order->table_id)) ? $ci->getTableDetail($order->table_id)->table_name : '-' : '-'; ?></h5>
+			    <h5  class="modal-title">
+                    <b>Void Bill For Table Name </b><?= ($order->table_id) ? ($ci->getTableDetail($order->table_id)) ? $ci->getTableDetail($order->table_id)->table_name : '-' : '-'; ?>
+                </h5>
 			</div>
 	    </div>
-	</div>
+    </div>
+    
+
     <div class="instruction">
 		<div class="row">
 			<div class="col-md-8">
@@ -25,8 +35,20 @@
 				<p><strong>Total Billed : </strong>₹ <?= $ci->cartTotal($CartLists,'yes',$order->res_id) ?></p>
 			</div>
 		</div>
-	</div>
-	<div class="row">
+    </div>
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="row">
 		<div class="col-md-12">
 			<div class="card-content">
 				<div class="table-responsive">
@@ -82,15 +104,27 @@
 				</div>
 			</div>
 		</div>
-	</div>
+    </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
 	<div class="text-right">
-	<?php if($order->order_status == 0) { ?>
-		<button type="button" class="btn btn-primary btn-round" onclick="updateOrder('<?= $order->order_id ?>','1')">Confirm Order</button>
-	<?php //} elseif($order->order_status == 2) { $path=base_url("Restaurant/printInvoice/").$order->order_id; ?>
-	<?php } elseif($order->order_status == 1) { $path=base_url("Restaurant/printInvoice2/").$order->order_id; $path2=base_url("Restaurant/printInvoice3/").$order->order_id; ?>
-	    <button type="button" class="btn btn-primary btn-round" onclick="window.open('<?= $path2 ?>','_blank')">Customer Copy</button>
-	    <button type="button" class="btn btn-primary btn-round" onclick="window.open('<?= $path ?>','_blank')">KOT Print</button>
-	<?php } ?>
-		<button type="button" class="btn btn-default btn-round" data-dismiss="modal">Cancel</button>
-	</div>
+		<?php if($order->order_status != 3) { ?>
+		    <button type="button" class="btn btn-primary btn-round" onclick="updateOrder('<?= $order->order_id ?>','3')">VOID BILL</button>
+	    <?php } ?>
+            <button type="button" class="btn btn-default btn-round" data-dismiss="modal">Cancel</button>
+    </div>
+    
 </div>

@@ -49,7 +49,120 @@
                                     
                                     <div class="modal fade" id="noticeModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
 										<div class="modal-dialog modal-notice">
+											<div class="modal-content" id="noticeModalData">
+											</div>
+										</div>
+									</div>
+                                    <!--Modal Code End-->
+                                    
+                                     <!-- 11-10-2020 -->
+                                    <!-- this is void bill modal popup -->
+                                    <div class="modal fade" id="voidBillModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel1" aria-hidden="true">
+										<div class="modal-dialog modal-notice">
 											<div class="modal-content">
+											</div>
+										</div>
+									</div>
+                                    <!--Modal Code End-->
+                                    
+                                    <!-- this is void bill modal popup -->
+                            <div class="modal fade" id="voidBillModal1" tabindex="-1" role="dialog" aria-labelledby="myModalLabel4" aria-hidden="true">
+                                <div class="modal-dialog modal-notice">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <button type="button" class="close" data-dismiss="modal" aria-hidden="true"><i class="material-icons">clear</i></button>
+                                            <h5 class="modal-title" id="myModalLabel4">
+                                                <b>Void Bill For Order #<span id="currentOrderId"></span></b>
+                                            </h5>
+                                        </div>
+
+                                        <div class="modal-body">
+                                            <div class="card">
+                                                <form id="managerPass" method="POST">
+                                                    <div class="card-header card-header-icon" data-background-color="rose">
+                                                        <i class="material-icons">contacts</i>
+                                                    </div>
+                                                    <div class="card-content">
+                                                        <h4 class="card-title">Please Enter Manager Password</h4>
+
+                                                        <div class="form-group label-floating">
+                                                            <label class="control-label">Password
+                                                                <star>*</star>
+                                                            </label>
+                                                            <input class="form-control managerPassword" name="manager_password" id="managerPassword" type="password" required="true" />                                                       
+                                                        </div>
+
+                                                        <div id="managerPasswordErrorMessage"></div>
+
+                                                        <div class="text-right">
+                                                            
+                                                            <button type="button" class="btn btn-primary btn-round" name="verify_pass" id="verifyPassBtn">VOID BILL</button>
+                                                            
+                                                            <button type="button" class="btn btn-default btn-round" data-dismiss="modal">Cancel</button>
+                                                        </div>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <!--Modal Code End-->
+                            
+                            
+                            
+                            <!-- nck verification popup -->
+                             
+                             <div class="modal fade" id="nckBillVerifyModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel4" aria-hidden="true">
+                                <div class="modal-dialog modal-notice">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <button type="button" class="close" data-dismiss="modal" aria-hidden="true"><i class="material-icons">clear</i></button>
+                                            <h5 class="modal-title" id="myModalLabel4">
+                                                <b>Nck Bill For Order #<span id="currentOrderId"></span></b>
+                                            </h5>
+                                        </div>
+
+                                        <div class="modal-body">
+                                            <div class="card">
+                                                <form id="managerPassForNck" method="POST">
+                                                    <div class="card-header card-header-icon" data-background-color="rose">
+                                                        <i class="material-icons">contacts</i>
+                                                    </div>
+                                                    <div class="card-content">
+                                                        <h4 class="card-title">Please Enter Manager Password</h4>
+
+                                                        <div class="form-group label-floating">
+                                                            <label class="control-label">Password
+                                                                <star>*</star>
+                                                            </label>
+                                                            <input class="form-control managerPasswordForNck" name="manager_password" id="managerPasswordForNck" type="password" required="true" />                                                       
+                                                        </div>
+
+                                                        <div id="managerPasswordForNckErrorMessage"></div>
+
+                                                        <div class="text-right">
+                                                            
+                                                            <button type="button" class="btn btn-primary btn-round" name="verify_nck_pass" id="verifyNckPassBtn">NCK BILL</button>
+                                                            
+                                                            <button type="button" class="btn btn-default btn-round" data-dismiss="modal">Cancel</button>
+                                                        </div>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <!--Modal Code End-->
+
+
+                                    
+                                    <!-- 13-10-2020 -->
+                                     <!-- this is void bill modal popup -->
+                                     <div class="modal fade" id="nckBillModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel2" aria-hidden="true">
+										<div class="modal-dialog modal-notice">
+											<div class="modal-content" id="nckModalData">
 											</div>
 										</div>
 									</div>
@@ -165,11 +278,27 @@
 		    data: {'orderID':orderID}
         })
     	.done(function(response){
-			$('.modal-content').html(response);
+			$('#noticeModalData').html(response);
 			$('#noticeModal').modal('show');
 			// console.log(response);
         })
     }
+    
+     // 13-10-2020
+    function getNckBill(orderID=0)
+    {
+        $.ajax({
+            url: "<?= base_url('Restaurant/getNckBill') ?>",
+		    type: 'POST',
+		    data: {'orderID':orderID}
+        })
+    	.done(function(response){
+			$('#nckModalData').html(response);
+			$('#nckBillModal').modal('show');
+			console.log(response);
+        })
+    }
+    
     function updateOrder(orderID=0,status=null)
     {
         $.ajax({
@@ -196,4 +325,132 @@
     	    })
 	    }
 	}
+	
+	  // void bill manager password verification  
+	$(document).on("click", "div[id^=voidBillBtn-]", function(e) {
+
+        let msg = $(this).attr('id');  
+        let custom_id= msg.replace(/voidBillBtn-/g, "");    
+        
+        $('[id=currentOrderId]').text(custom_id);
+
+
+        $('#voidBillModal1').modal('show');
+    });
+
+
+	$("#verifyPassBtn").click(function(e) {
+
+        //order id fetch for each order and check 
+        e.preventDefault();
+
+        let orderId = document.getElementById("currentOrderId").innerHTML;
+
+		$('#managerPasswordErrorMessage').hide();
+
+		let managerPassword = $("#managerPassword").val(); 
+        let orderID = orderId;
+       
+		if (managerPassword == null || managerPassword == "") {
+			$('#managerPasswordErrorMessage').show();
+			$("#managerPasswordErrorMessage").html("Please enter password").css("color", "red");
+		} else {
+			let postData = {
+				'managerPassword' : managerPassword,
+                'orderID': orderID                             
+			}
+            
+		    $('#managerPasswordErrorMessage').hide();
+
+			$.ajax({
+				type: "POST",
+				url: "<?= base_url('/Restaurant/verifyMangerPassword/') ?>",
+				data: postData,
+				cache: false,
+				success: function(msg) {
+
+                    if(msg == "correct"){
+                       
+                        swal("Success!", "added to void orders successfully", "success");
+                       
+                        $('#voidBillModal1').modal('hide');  
+                    } else {
+                        swal("Incorrect Password!", "Please enter a valid password", "error");
+                    }
+
+					$('#managerPasswordErrorMessage').val('');
+                    $('#voidBillModal1').val(0);
+
+				}
+               
+			});
+		}
+	});
+	
+	
+// 	nck manager password
+
+    $(document).on("click", "div[id^=nckBillBtn-]", function(e) {
+
+        var msg = $(this).attr('id');  
+        
+        var custom_id= msg.replace(/nckBillBtn-/g, "");    
+        
+        $('[id=currentOrderId]').text(custom_id);
+
+        $('#nckBillVerifyModal').modal('show');
+    });
+
+
+	$("#verifyNckPassBtn").click(function(e) {
+
+        //order id fetch for each order and check 
+
+        e.preventDefault();
+
+        var orderId = document.getElementById("currentOrderId").innerHTML;
+
+		$('#managerPasswordForNckErrorMessage').hide();
+
+		let managerPasswordForNck = $("#managerPasswordForNck").val(); 
+
+        let orderID = orderId;
+       
+        
+		if (managerPasswordForNck == null || managerPasswordForNck == "") {
+			$('#managerPasswordForNckErrorMessage').show();
+			$("#managerPasswordForNckErrorMessage").html("Please enter password").css("color", "red");
+		} else {
+			let postData = {
+				'managerPasswordForNck' : managerPasswordForNck,
+                'orderID': orderID                             
+			}
+            
+		    $('#managerPasswordForNckErrorMessage').hide();
+
+			$.ajax({
+				type: "POST",
+				url: "<?= base_url('/Restaurant/verifyMangerPasswordForNck/') ?>",
+				data: postData,
+				// dataType: "html",
+				cache: false,
+				success: function(msg) {
+                    // $('#managerPasswordForNckErrorMessage').show();
+                    // $('#managerPasswordForNckErrorMessage').html(msg);
+
+                    if(msg == "correct"){
+                       
+                        swal("Success!", "added to nck orders successfully", "success");
+                       
+                        $('#nckBillVerifyModal').modal('hide');  
+                    } else {
+                        swal("Incorrect Password!", "Please enter a valid password", "error");
+                    }
+
+					$('#managerPasswordForNck').val('');
+                    $('#nckBillVerifyModal').val(0);
+				}
+			});
+		}
+	});
 </script>

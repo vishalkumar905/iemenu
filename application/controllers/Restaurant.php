@@ -37,6 +37,7 @@ class Restaurant extends Main
 	        $name=trim($_POST['name']);
 	        $email=trim($_POST['email']);
 	        $password=trim($_POST['password']);
+	        $manager_password=trim($_POST['manager_password']);
 	        $online_pay = (isset($_POST['online_pay'])) ? trim($_POST['online_pay']) : "off" ;
 	        $token = rand();
 	        
@@ -44,6 +45,7 @@ class Restaurant extends Main
 				'name' => $name,
 				'email' => $email,
 				'password' => md5($password),
+				'manager_password' => $manager_password,
 				'email_verification_code' => md5($token),
 				'online_pay_status' => $online_pay
 			);
@@ -74,12 +76,14 @@ class Restaurant extends Main
 	        $name=trim($_POST['name']);
 	        $email=trim($_POST['email']);
 	        $password=trim($_POST['password']);
+	        $manager_password=trim($_POST['manager_password']);
 	        $online_pay = (isset($_POST['online_pay'])) ? trim($_POST['online_pay']) : "off" ;
 	        
 	        $data = array(
 				'name' => $name,
 				'email' => $email,
 				'password' => md5($password),
+				'manager_password' => $manager_password,
 				'online_pay_status' => $online_pay
 			);
 			
@@ -157,6 +161,21 @@ class Restaurant extends Main
 	{
 	    $this->load->view('restaurant/reportorderlist');
 	}
+
+
+	//11-10-2020
+	public function voidorderlist()
+	{
+	    $this->load->view('restaurant/voidorderlist');
+	}
+	
+	
+	//13-10-2020
+	public function nckorderlist()
+	{
+	    $this->load->view('restaurant/nckorderlist');
+	}
+
 	
 	public function ajaxorderlist($type="")
 	{
@@ -166,7 +185,63 @@ class Restaurant extends Main
             $curr_date = $date->format('Y-m-d');
     		$condition = array('res_id'=>$rid, 'DATE(created_at)'=>$curr_date);
     		
-    		$orders = $this->restaurantModel->getOrderList($condition);
+			$orders = $this->restaurantModel->getOrderList($condition);
+			
+			// 11-10-2020
+		} else if($type=='voidBillReport'){
+			$this->db->order_by('id','DESC');
+		    $this->db->where('res_id',$rid);
+			$this->db->where('order_status',3);
+			
+			// add filteration code
+
+			if($_POST['isFilter']=='yes')
+			{
+		        $date=json_decode($_POST['formdata'],true); $from=$date['from']; $to=$date['to'];
+				if($from!='' && $to !='') 
+				{ 
+					$this->db->where("DATE(created_at) BETWEEN '$from' AND '$to'"); 
+				}
+				elseif($date['from'] !='')
+				{ 
+					$this->db->where("DATE(created_at) >= '$from'"); 
+				}
+				elseif($date['to'] !='') 
+				{ 
+					$this->db->where("DATE(created_at) <= '$to'"); 
+				}
+			}
+			
+    		$query = $this->db->get('orders');
+    		$orders = $query->result();
+			
+		} else if($type=='nckBill'){
+			$this->db->order_by('id','DESC');
+		    $this->db->where('res_id',$rid);
+			$this->db->where('order_status',4);
+			
+			// add filteration code
+
+			if($_POST['isFilter']=='yes')
+			{
+		        $date=json_decode($_POST['formdata'],true); $from=$date['from']; $to=$date['to'];
+				if($from!='' && $to !='') 
+				{ 
+					$this->db->where("DATE(created_at) BETWEEN '$from' AND '$to'"); 
+				}
+				elseif($date['from'] !='')
+				{ 
+					$this->db->where("DATE(created_at) >= '$from'"); 
+				}
+				elseif($date['to'] !='') 
+				{ 
+					$this->db->where("DATE(created_at) <= '$to'"); 
+				}
+			}
+			
+    		$query = $this->db->get('orders');
+    		$orders = $query->result();
+			
 		} else {
 		    $this->db->order_by('id','DESC');
 		    $this->db->where('res_id',$rid);
@@ -197,8 +272,20 @@ class Restaurant extends Main
 	    $data = array(); $i=1;
         foreach ( $orders as $order )
         {
-            if($order->order_status=='0'){ $order_status='<span class="label label-success">OPEN</span>'; }elseif($order->order_status=='1'){ $order_status='<span class="label label-warning">CONFIRM</span>'; }else{ $order_status='<span class="label label-default">CLOSE</span>'; }
-            $onclick=($order->order_status=='0') ? 'disabled="disabled"' : 'onclick="updateOrder('. $order->order_id .',2)"';
+            if($order->order_status=='0'){ 
+				$order_status='<span class="label label-success">OPEN</span>'; 
+			}elseif($order->order_status=='1'){ 
+				$order_status='<span class="label label-warning">CONFIRM</span>'; 
+			}elseif($order->order_status=='2'){ 
+				$order_status='<span class="label label-default">CLOSE</span>'; 
+			}elseif($order->order_status=='3'){ 
+				// 11-10-2020
+				$order_status='<span class="label label-default">VOID BILL</span>'; 
+			} else {
+				$order_status='<span class="label label-default">NCK BILL</span>'; 
+			}
+		   
+			$onclick=($order->order_status=='0') ? 'disabled="disabled"' : 'onclick="updateOrder('. $order->order_id .',2)"';
 			
 			if($order->payment_mode == '1') 
 			{ 
@@ -230,9 +317,63 @@ class Restaurant extends Main
 			if($type=='reportorder'){ 
                 $sub_array[] = $order->created_at; 
                 $sub_array[] = '<div class="text-right"><a href="javascript:getOrderView('. $order->order_id .')" title="View" class="btn btn-sm btn-danger"> View</a></div>';
-            } else {
-                $sub_array[] = '<div class="text-right"><a href="javascript:getOrderView('. $order->order_id .')" title="View" class="btn btn-sm btn-danger"> View</a><a href="javascript:void(0)" data-id="'. $order->id.'" class="btn btn-sm btn-default" '.$onclick.' >Close</a></div>';
+			
+			
+			} else if($type=='voidBillReport'){ 
+                $sub_array[] = $order->created_at; 
+                $sub_array[] = '<div class="text-right"><a href="javascript:getOrderView('. $order->order_id .')" title="View" class="btn btn-sm btn-danger"> View</a></div>';
+			
+			
+			} else if($type=='nckBill'){ 
+                $sub_array[] = $order->created_at; 
+                $sub_array[] = '<div class="text-right"><a href="javascript:getOrderView('. $order->order_id .')" title="View" class="btn btn-sm btn-danger"> View</a></div>';
+			
+			
+			} 
+			
+			else 
+			
+			{  
+			    if ($order->order_status=='0') {
+
+				$sub_array[] = '<div class="text-right">
+				<a href="javascript:getOrderView('. $order->order_id .')" title="View" class="btn btn-xs btn-success"> View</a>
+				<div id="nckBillBtn-'. $order->order_id .'" title="NCK Bill" class="btn btn-xs btn-danger"> NCK Bill </div>
+				</div>';
+				
+            } 	else if ($order->order_status=='1') {
+				
+				$sub_array[] = '<div class="text-right">
+				<a href="javascript:getOrderView('. $order->order_id .')" title="View" class="btn btn-xs btn-success"> View</a>
+				<a href="javascript:void(0)" data-id="'. $order->id.'" class="btn btn-xs btn-default" '.$onclick.' >Close</a>
+				<div id="nckBillBtn-'. $order->order_id .'" title="NCK Bill" class="btn btn-xs btn-danger"> NCK Bill </div>
+				</div>';
             }
+			
+			else if ($order->order_status=='2') {
+				
+				$sub_array[] = '<div class="text-right">
+				<a href="javascript:getOrderView('. $order->order_id .')" title="View" class="btn btn-xs btn-success"> View</a>
+				<div id="voidBillBtn-'. $order->order_id .'" title="Void Bill" class="btn btn-xs btn-danger"> Void Bill</div>
+				</div>';
+            }
+            
+			else if ($order->order_status=='3') {
+				
+				$sub_array[] = '<div class="text-right">
+				<a href="javascript:getOrderView('. $order->order_id .')" title="View" class="btn btn-xs btn-success"> View</a>
+				</div>';
+				
+            } else if ($order->order_status=='4') {
+                
+                $sub_array[] = '<div class="text-right">
+				<a href="javascript:getOrderView('. $order->order_id .')" title="View" class="btn btn-xs btn-success"> View</a>
+				<a href="javascript:getNckBill('. $order->order_id .')" title="NCK Bill" class="btn btn-xs btn-danger"> NCK Bill</a>
+				</div>';
+                
+            } 
+            
+			}
             
             $data[] = $sub_array;
             $i++;
@@ -341,6 +482,106 @@ class Restaurant extends Main
         }
 	}
 	
+	
+	public function exportSheetForNck($type='csv',$rid=0,$from='',$to='')
+	{
+	    $rid = $this->session->userid;
+	    $this->db->order_by('id','DESC');
+	    $this->db->where('res_id',$rid);
+	    $this->db->where('order_status',4);
+	    
+        if($from!='' && $to!=''){
+	        if($from!='NaN' && $to!='NaN') { $from=date("Y-m-d",$from); $to=date("Y-m-d",$to); $this->db->where(" DATE(created_at) BETWEEN '$from' AND '$to'"); }
+	        elseif($from!='NaN') { $from = date("Y-m-d",$from); $this->db->where(" DATE(created_at) >= '$from'"); }
+	        elseif($to!='NaN') { $to = date("Y-m-d",$to); $this->db->where(" DATE(created_at) <= '$to'"); }
+	    }
+    	    
+		$query = $this->db->get('orders');
+		$orders = $query->result();
+		
+		$data[] = ['Order Status','Order Id','Table Id','Customer Name','Phone Number','Order Type','Payment Mode', 'Sub Total', 'Total Tax', 'Total Amount', 'Roundoff', 'Total Billed','Created Date'];
+		
+		$grandTotalTaxes = $grandSubTotal = $grandTotalAmount = $grandRoundOff = $grandTotalBilledAmount = 0;
+
+		foreach ( $orders as $order )
+        {
+            if($order->order_status=='0'){ $order_status='OPEN'; }elseif($order->order_status=='4'){ $order_status='NCK BILL'; }
+			$CartLists=json_decode($order->item_details, true);
+			
+			$totalTaxes = 0;
+			$subTotal = $this->calculateItemsSubtotal($order);
+			$allCombinedTaxes = $this->calculateAllCombinedTaxes($order);
+			
+			foreach($allCombinedTaxes as $taxName => $taxValue)
+			{
+				$totalTaxes += $taxValue;
+			}
+
+			$totalAmount = $subTotal + $totalTaxes;
+			$totalAmount = number_format($totalAmount, 2, '.', '');
+			$totalBilledAmount = $this->cartTotal($CartLists,'no',$rid);
+			$roundOff = number_format($totalBilledAmount - $totalAmount, 2, '.', '');
+
+            $sub_array   = array();
+            $sub_array[] = $order_status;
+            $sub_array[] = $order->order_id;
+            $sub_array[] = ($order->table_id) ? ($this->getTableDetail($order->table_id)) ? $this->getTableDetail($order->table_id)->table_name : '-' : '-';
+            $sub_array[] = $order->buyer_name;
+            $sub_array[] = $order->buyer_phone_number;
+            $sub_array[] = $order->order_type;
+            $sub_array[] = $this->paymentMethod($order->payment_mode);
+            $sub_array[] = $subTotal;
+            $sub_array[] = $totalTaxes; 
+            $sub_array[] = $totalAmount; 
+            $sub_array[] = $roundOff; 
+            $sub_array[] = $totalBilledAmount; 
+            $sub_array[] = $order->created_at; 
+
+			$grandTotalTaxes += $totalTaxes;
+			$grandSubTotal += $subTotal;
+			$grandTotalAmount += $totalAmount;
+			$grandRoundOff += $roundOff;
+			$grandTotalBilledAmount += $totalBilledAmount;
+
+            $data[] = $sub_array;
+		}
+		
+		if (count($data) > 1)
+		{
+			$sub_array   = array();
+			$sub_array[] = '';
+            $sub_array[] = '';
+           	$sub_array[] = '';
+           	$sub_array[] = '';
+            $sub_array[] = '';
+            $sub_array[] = '';
+            $sub_array[] = '';
+            $sub_array[] = $grandSubTotal;
+            $sub_array[] = $grandTotalTaxes; 
+            $sub_array[] = $grandTotalAmount; 
+            $sub_array[] = $grandRoundOff; 
+            $sub_array[] = $grandTotalBilledAmount; 
+			$sub_array[] = '';
+			
+			$data[] = $sub_array;
+		}
+
+        
+        if('excel'==strtolower($type)) {
+            $this->getExcel($data);
+        }
+        elseif('csv'==strtolower($type)) {
+            $this->getCSV($data);
+        }
+        else {
+            echo 'No other sheet and data available.';
+            return false;
+        }
+	}
+	
+		
+	
+	
 	public function getExcel($data=array())
 	{
 	    $report = array();
@@ -399,7 +640,7 @@ class Restaurant extends Main
 	
 	public function printInvoice($orderid=0)
 	{
-	    $condition = array('order_id'=>$orderid);
+	    $condition = array('order_id'=>$orderid, 'res_id' => $this->session->userid);
         $data['order'] = $this->restaurantModel->getOrderList($condition)[0];
         $this->load->view('restaurant/invoice', $data);
 	}
@@ -407,7 +648,7 @@ class Restaurant extends Main
 	public function printInvoice2($orderid=0)
 	{
 	    $data=array();
-        $condition = array('order_id'=>$orderid);
+        $condition = array('order_id'=>$orderid, 'res_id' => $this->session->userid);
 		$data['order'] = $this->restaurantModel->getOrderList($condition)[0];
 		$data['showTaxColumn'] = $this->checkIfTaxIsAvaliable($data['order']);
 		$data['paymentMethodName'] = $this->paymentMethod($data['order']->payment_mode);
@@ -433,7 +674,7 @@ class Restaurant extends Main
 	public function printInvoice3($orderid=0)
 	{
 	    $data=array();
-        $condition = array('order_id'=>$orderid);
+        $condition = array('order_id'=>$orderid, 'res_id' => $this->session->userid);
         $data['order'] = $this->restaurantModel->getOrderList($condition)[0];
 		$data['showTaxColumn'] = $this->checkIfTaxIsAvaliable($data['order']);
 		$data['allCombinedTaxes'] = $this->calculateAllCombinedTaxes($data['order']);
@@ -551,10 +792,38 @@ class Restaurant extends Main
             $postdata = $_POST;
 	    }
 		
-        $condition = array('order_id'=>$postdata['orderID']);
+        $condition = array('order_id'=>$postdata['orderID'], 'res_id' => $this->session->userid);
         $data['order'] = $this->restaurantModel->getOrderList($condition)[0];
 		$data['paymentMethodName'] = $this->paymentMethod($data['order']->payment_mode);
         $this->load->view('restaurant/orderPopup', $data);
+	}
+
+	//11-10-2020
+	public function getVoidBill($postdata=array())
+	{
+	    if(!empty($_POST))
+	    {
+            $postdata = $_POST;
+	    }
+		
+        $condition = array('order_id'=>$postdata['orderID'], 'res_id' => $this->session->userid);
+        $data['order'] = $this->restaurantModel->getOrderList($condition)[0];
+		$data['paymentMethodName'] = $this->paymentMethod($data['order']->payment_mode);
+        $this->load->view('restaurant/voidBillPopup', $data);
+	}
+	
+	//13-10-2020
+	public function getNckBill($postdata=array())
+	{
+	    if(!empty($_POST))
+	    {
+            $postdata = $_POST;
+	    }
+		
+        $condition = array('order_id'=>$postdata['orderID'], 'res_id' => $this->session->userid);
+        $data['order'] = $this->restaurantModel->getOrderList($condition)[0];
+		$data['paymentMethodName'] = $this->paymentMethod($data['order']->payment_mode);
+        $this->load->view('restaurant/nckBillPopup', $data);
 	}
 
 	public function paymentMethod($paymentId)
@@ -653,7 +922,7 @@ class Restaurant extends Main
 	    if(!empty($_POST))
 	    {
 	        $rid = $this->session->userid;
-	        $condition = array('order_id'=>$_POST['orderID']);
+	        $condition = array('order_id'=>$_POST['orderID'], 'res_id' => $this->session->userid);
 	        $order = $this->restaurantModel->getOrderList($condition)[0];
 	        
 	        $cartArray = json_decode($order->item_details, true);
@@ -676,14 +945,37 @@ class Restaurant extends Main
 	
 	public function updateOrderStatus()
 	{
-	    if(!empty($_POST))
-	    {
-	        $data['order_status'] = $_POST['status'];
-	        $this->restaurantModel->placeOrder($data,$_POST['orderID']);
+
+				$data['order_status'] = $_POST['status'];
+	        	$this->restaurantModel->placeOrder($data,$_POST['orderID']);
+			
+		
+	    // if(!empty($_POST['manager_password']))
+	    // {
+	    //     if($_POST['manager_password'] == '123456'){
+		// 		echo 'alert(work)';
+		// 		$data['order_status'] = $_POST['status'];
+	    //     	$this->restaurantModel->placeOrder($data,$_POST['orderID']);
 	        
-	        echo '1';
-	    }
-	}
+	    //     	echo '1';
+		// 	} else {
+		// 		echo 'didnt work';
+		// 	}
+	    // }
+	}  
+	
+
+	// //11-10-2020
+	// public function voidOrderStatus()
+	// {
+	//     if(!empty($_POST))
+	//     {
+	//         $data['order_status'] = $_POST['status'];
+	//         $this->restaurantModel->placeOrder($data,$_POST['orderID']);
+	        
+	//         echo '1';
+	//     }
+	// }
 	
 	public function getTableDetail($tableID=0)
 	{
@@ -714,8 +1006,143 @@ class Restaurant extends Main
 	}
 	
 	
+	public function exportSheetForVoid($type='csv',$rid=0,$from='',$to='')
+	{
+	    $rid = $this->session->userid;
+	    $this->db->order_by('id','DESC');
+	    $this->db->where('res_id',$rid);
+	    $this->db->where('order_status',3);
+	    
+        if($from!='' && $to!=''){
+	        if($from!='NaN' && $to!='NaN') { $from=date("Y-m-d",$from); $to=date("Y-m-d",$to); $this->db->where(" DATE(created_at) BETWEEN '$from' AND '$to'"); }
+	        elseif($from!='NaN') { $from = date("Y-m-d",$from); $this->db->where(" DATE(created_at) >= '$from'"); }
+	        elseif($to!='NaN') { $to = date("Y-m-d",$to); $this->db->where(" DATE(created_at) <= '$to'"); }
+	    }
+    	    
+		$query = $this->db->get('orders');
+		$orders = $query->result();
+		
+		$data[] = ['Order Status','Order Id','Table Id','Customer Name','Phone Number','Order Type','Payment Mode', 'Sub Total', 'Total Tax', 'Total Amount', 'Roundoff', 'Total Billed','Created Date'];
+		
+		$grandTotalTaxes = $grandSubTotal = $grandTotalAmount = $grandRoundOff = $grandTotalBilledAmount = 0;
+
+		foreach ( $orders as $order )
+        {
+            if($order->order_status=='0'){ $order_status='OPEN'; }elseif($order->order_status=='1'){ $order_status='CONFIRM'; }elseif($order->order_status=='2'){ $order_status='CLOSE'; }else{ $order_status='VOID BILL'; }
+			$CartLists=json_decode($order->item_details, true);
+			
+			$totalTaxes = 0;
+			$subTotal = $this->calculateItemsSubtotal($order);
+			$allCombinedTaxes = $this->calculateAllCombinedTaxes($order);
+			
+			foreach($allCombinedTaxes as $taxName => $taxValue)
+			{
+				$totalTaxes += $taxValue;
+			}
+
+			$totalAmount = $subTotal + $totalTaxes;
+			$totalAmount = number_format($totalAmount, 2, '.', '');
+			$totalBilledAmount = $this->cartTotal($CartLists,'no',$rid);
+			$roundOff = number_format($totalBilledAmount - $totalAmount, 2, '.', '');
+
+            $sub_array   = array();
+            $sub_array[] = $order_status;
+            $sub_array[] = $order->order_id;
+            $sub_array[] = ($order->table_id) ? ($this->getTableDetail($order->table_id)) ? $this->getTableDetail($order->table_id)->table_name : '-' : '-';
+            $sub_array[] = $order->buyer_name;
+            $sub_array[] = $order->buyer_phone_number;
+            $sub_array[] = $order->order_type;
+            $sub_array[] = $this->paymentMethod($order->payment_mode);
+            $sub_array[] = $subTotal;
+            $sub_array[] = $totalTaxes; 
+            $sub_array[] = $totalAmount; 
+            $sub_array[] = $roundOff; 
+            $sub_array[] = $totalBilledAmount; 
+            $sub_array[] = $order->created_at; 
+
+			$grandTotalTaxes += $totalTaxes;
+			$grandSubTotal += $subTotal;
+			$grandTotalAmount += $totalAmount;
+			$grandRoundOff += $roundOff;
+			$grandTotalBilledAmount += $totalBilledAmount;
+
+            $data[] = $sub_array;
+		}
+		
+		if (count($data) > 1)
+		{
+			$sub_array   = array();
+			$sub_array[] = '';
+            $sub_array[] = '';
+           	$sub_array[] = '';
+           	$sub_array[] = '';
+            $sub_array[] = '';
+            $sub_array[] = '';
+            $sub_array[] = '';
+            $sub_array[] = $grandSubTotal;
+            $sub_array[] = $grandTotalTaxes; 
+            $sub_array[] = $grandTotalAmount; 
+            $sub_array[] = $grandRoundOff; 
+            $sub_array[] = $grandTotalBilledAmount; 
+			$sub_array[] = '';
+			
+			$data[] = $sub_array;
+		}
+
+        
+        if('excel'==strtolower($type)) {
+            $this->getExcel($data);
+        }
+        elseif('csv'==strtolower($type)) {
+            $this->getCSV($data);
+        }
+        else {
+            echo 'No other sheet and data available.';
+            return false;
+        }
+	}
 	
 	
+	
+	public function verifyMangerPassword()
+	{	
+		$user_id = $this->session->userdata('userid');
+		
+		$managerPassword = $this->restaurantModel->getManagerPass($user_id);
+			
+
+			if($_POST['managerPassword'] == $managerPassword) {
+
+				$data['order_status'] = 3;
+
+				$this->restaurantModel->placeOrder($data,$_POST['orderID']);
+								
+				echo 'correct';
+			} else {
+				echo '<span>Incorrect password</span>';
+			}
+
+	}
+	
+	public function verifyMangerPasswordForNck()
+	{	
+		$user_id = $this->session->userdata('userid');
+		
+		$managerPassword = $this->restaurantModel->getManagerPass($user_id);
+			
+	
+			if($_POST['managerPasswordForNck'] == $managerPassword) {
+	
+				$data['order_status'] = 4;
+	
+				$this->restaurantModel->placeOrder($data,$_POST['orderID']);
+								
+				echo 'correct';
+			} else {
+				echo '<span>Incorrect password</span>';
+			}
+	
+	}
 
 	
 }

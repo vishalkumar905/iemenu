@@ -9,14 +9,31 @@
         <?php $ci=get_instance(); ?>
         <div class="">
             <div class="">
-                <div style="padding-bottom:10px; text-align:center; font-size: 13px;">
-            	    <strong><?= ($order->res_id) ? ($ci->getRestaurantDetail($order->res_id)) ? $ci->getRestaurantDetail($order->res_id)[0]->name : '-' : '-'; ?></strong>
+             <!--   <div style="text-align:center; font-size: 13px;">-->
+            	<!--    <strong><?= ($order->res_id) ? ($ci->getRestaurantDetail($order->res_id)) ? $ci->getRestaurantDetail($order->res_id)[0]->name : '-' : '-'; ?></strong>-->
+            	<!--</div>-->
+            	
+            	<!--<div style="padding-bottom:10px; text-align:center; font-size: 10px;">-->
+            	<!--    <b><?= ($order->res_id) ? ($ci->getRestaurantDetail($order->res_id)) ? $ci->getRestaurantDetail($order->res_id)[0]->tagline : '-' : '-'; ?></b>-->
+            	<!--</div>-->
+            	
+            	<br>
+            	<div style="padding-bottom:10px; text-align:center; font-size: 10px;">
+            	    <b>KOT</b>
             	</div>
+            	
+            	<div style="padding-bottom:10px; text-align:center; font-size: 10px;">
+            	    <b><?= ($order->res_id) ? ($ci->getRestaurantDetail($order->res_id)) ? $ci->getRestaurantDetail($order->res_id)[0]->tagline : '-' : '-'; ?></b>
+            	</div>
+            	
+            	
                 <div>
                     <b>Order #<?= $order->order_id ?></b>&nbsp;(<?= ($order->table_id) ? ($ci->getTableDetail($order->table_id)) ? $ci->getTableDetail($order->table_id)->table_name : '-' : '-'; ?>) <br/>
                     <b>Date : </b><?= date('d-m-Y h:i:s a'); ?> <br/>
 				    <strong>Payment Method : </strong><?= $paymentMethodName ; ?> <br/>
-				    <strong>GSTIN : </strong>07AASFV8263C1ZQ
+				    
+				    <strong><?= ($order->res_id) ? ($ci->getRestaurantDetail($order->res_id)) ? $ci->getRestaurantDetail($order->res_id)[0]->tax_name : '-' : '-'; ?> : 
+				    </strong><?= ($order->res_id) ? ($ci->getRestaurantDetail($order->res_id)) ? $ci->getRestaurantDetail($order->res_id)[0]->rest_reg_no : '-' : '-'; ?>
             	</div>
             	<hr class="new">
             	<?php $CartLists=json_decode($order->item_details, true); ?>
@@ -54,7 +71,7 @@
 									}
 						?>
     				        <div style="width:75%; float:left;">
-								<?= $itemDataArray['itemName'] ?> (<?= $itemDataId ?>)
+								<?= $itemDataArray['itemName'] ?> <?= $itemDataId ?>
 								<?php if(!empty($taxName)) {
 									$tax = implode(', ', $taxName);
 									// echo "<br><span style='font-size:10px;'>Tax: $tax </span>"; 

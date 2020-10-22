@@ -131,6 +131,18 @@ class RestaurantModel extends CI_Model
 		return false;
     }
     
+    // 11-10-2020
+	function VoidOrderStatus($data=array(), $orderID=0)
+    {
+        $this->db->where('order_id',$orderID);
+        $updated = $this->db->update('orders', $data);
+        if($updated){
+			return true;
+		}
+		return false;
+	}
+	
+    
     public function getTableInfo($id)
     {
 		$this->db->where('table_id', $id);
@@ -138,4 +150,13 @@ class RestaurantModel extends CI_Model
 		return $query;
 	}
 	
+	public function getManagerPass($id){
+
+		$this->db->select('manager_password');
+		$this->db->from('erp_user');
+		$this->db->where('rest_id',$id);
+		$query = $this->db->get();
+		$result = $query->row();
+		return $result->manager_password;
+	}
 }

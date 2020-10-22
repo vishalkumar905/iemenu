@@ -24,7 +24,12 @@
                     </div>
                     <div class="info">
                         <a data-toggle="collapse" href="#collapseExample" class="collapsed">
+                            
                             <?php echo $res[0]->name; ?>
+                            <br>
+                             <?php echo $res[0]->tagline; ?>
+                            
+                            
                             <b class="caret"></b>
                         </a>
                         <div class="collapse" id="collapseExample">
@@ -45,12 +50,33 @@
                    $url_key_third = $this->uri->segment(3);
                 ?>
                 <ul class="nav">
+                    
                     <li <?php if($url_key == 'dashboard'){ echo 'class="active"'; }?>>
                         <a href="<?php echo base_url('dashboard'); ?>">
                             <i class="material-icons">dashboard</i>
                             <p>Dashboard</p>
                         </a>
                     </li>
+                    <?php if($userrole == 0){  ?>
+                     <li <?php if($url_key_sec == 'orderlist'||$url_key_sec == 'translist'){ echo 'class="active"'; }?>>
+                        <a data-toggle="collapse" href="#order">
+                            <i class="material-icons">reorder</i>
+                            <p>Order
+                                <b class="caret"></b>
+                            </p>
+                        </a>
+                        <div class="collapse" id="order">
+                            <ul class="nav">
+                                <li>
+                                    <a href="<?php echo base_url(); ?>Restaurant/orderlist">View order</a>
+                                </li>
+								<li>
+                                    <a href="<?php echo base_url(); ?>Restaurant/translist">View Transaction</a>
+                                </li>
+                            </ul>
+                        </div>
+                    </li>
+                    <?php }?>
 					<?php if($userrole == 1){  ?>
                     <li <?php if($url_key == 'Restaurant'){ echo 'class="active"'; }?>>
                         <a data-toggle="collapse" href="#Restaurents">
@@ -161,24 +187,7 @@
                             </ul>
                         </div>
                     </li>
-                    <li <?php if($url_key_sec == 'orderlist'||$url_key_sec == 'translist'){ echo 'class="active"'; }?>>
-                        <a data-toggle="collapse" href="#order">
-                            <i class="material-icons">reorder</i>
-                            <p>Order
-                                <b class="caret"></b>
-                            </p>
-                        </a>
-                        <div class="collapse" id="order">
-                            <ul class="nav">
-                                <li>
-                                    <a href="<?php echo base_url(); ?>Restaurant/orderlist">View order</a>
-                                </li>
-								<li>
-                                    <a href="<?php echo base_url(); ?>Restaurant/translist">View Transaction</a>
-                                </li>
-                            </ul>
-                        </div>
-                    </li>
+                   
                     <?php if($res[0]->online_pay_status == 'on'){  ?>
                     <li <?php if($url_key == 'payment'){ echo 'class="active"'; }?>>
                         <a href="<?php echo base_url('payment/paymentConfig'); ?>">
@@ -188,7 +197,7 @@
                         </a>
                     </li>
                     <?php }  ?>
-                    <li <?php if($url_key_sec == 'reportorderlist'||$url_key_sec == 'reporttranslist'){ echo 'class="active"'; }?>>
+                    <li <?php if($url_key_sec == 'reportorderlist' || $url_key_sec == 'voidorderlist' ||$url_key_sec == 'reporttranslist'){ echo 'class="active"'; }?>>
                         <a data-toggle="collapse" href="#report">
                             <i class="material-icons">data_usage</i>
                             <p>Report
@@ -200,6 +209,14 @@
                                 <li>
                                     <a href="<?php echo base_url(); ?>Restaurant/reportorderlist">Order Report</a>
                                 </li>
+                                 <li>
+                                    <a href="<?php echo base_url(); ?>Restaurant/voidorderlist">Void Bill Report</a>
+                                </li>
+                                
+                                <li>
+                                    <a href="<?php echo base_url(); ?>Restaurant/nckorderlist">NCK Bill Report</a>
+                                </li>
+
 								<li>
                                     <a href="<?php echo base_url(); ?>Restaurant/reporttranslist">Transaction Report</a>
                                 </li>

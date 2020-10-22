@@ -38,8 +38,27 @@
                                             <div class="col-md-6">
                                                 <div class="form-group label-floating">
                                                     <label class="control-label">Username</label>
-                                                    <input type="text" name="uname" value="<?php echo $profile[0]->name; ?>" class="form-control">
+                                                        <input type="text" name="uname" value="<?php echo $profile[0]->name; ?>" class="form-control">
+                                               </div>
+                                                
+                                                <div class="form-group label-floating">
+                                                    <label class="control-label">Tagline</label>
+                                                       <input type="text" name="tagline" value="<?php echo $profile[0]->tagline; ?>" class="form-control">
                                                 </div>
+                                                
+                                                <div class="form-group label-floating">
+                                                    <label class="control-label">Tax Name</label>
+                                                       <input type="text" name="tax_name" value="<?php echo $profile[0]->tax_name ; ?>" class="form-control">
+                                                </div>
+                                                
+                                                <div class="form-group label-floating">
+                                                    <label class="control-label">Registration Number</label>
+                                                       <input type="text" name="rest_reg_no" value="<?php echo $profile[0]->rest_reg_no ; ?>" class="form-control">
+                                                </div>
+                                                
+                                                
+                                                
+                                                
                                             </div>
                                             <div class="col-md-6">
                                                 <legend>Regular Image</legend>

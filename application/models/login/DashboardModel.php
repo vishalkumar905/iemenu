@@ -10,6 +10,10 @@ class dashboardModel extends CI_Model
 	public function UpdateUsersInfo($id){
 		
 		$Name = $this->input->post('uname');
+		$Tagline = $this->input->post('tagline');
+		$Tax_name = $this->input->post('tax_name');
+		$Registered_no = $this->input->post('rest_reg_no');
+		
 // 		$Email = $this->input->post('uemail');
 // 		$Phone = $this->input->post('mobile');
 // 		$Address = $this->input->post('address');
@@ -41,16 +45,22 @@ class dashboardModel extends CI_Model
 								'password' => $Pass,
 								'address' => $Address,
 								'phone' => $Phone,*/
+								'tagline' => $Tagline,
+								'tax_name' => $Tax_name,
+								'rest_reg_no' => $Registered_no,
 								'userimg' => $img_url
 							);
             }else{
 				$data = array();
 				$data = array(
-								'name' => $Name/*,
-								'email' => $Email,
+								'name' => $Name,
+								/*'email' => $Email,
 								'password' => $Pass,
 								'address' => $Address,
 								'phone' => $Phone*/
+								'tagline' => $Tagline,
+								'tax_name' => $Tax_name,
+								'rest_reg_no' => $Registered_no,
 							);
 			}
 		$this->db->where('rest_id', $id);

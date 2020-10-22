@@ -430,7 +430,7 @@ class UserMenu extends CI_Controller
 			{
     	        $data['payment_mode'] = 1;
     	        $data['payment_status'] = 2;
-    	        $data['order_id'] = $this->lastOrder();
+    	        $data['order_id'] = $this->lastOrder($data['res_id']);
     	        $added = $this->usermodel->placeOrder($data);
 				if($added)
 				{
@@ -451,7 +451,7 @@ class UserMenu extends CI_Controller
 			{
 				$data['payment_mode'] = 3;
 				$data['payment_status'] = 2;
-				$data['order_id'] = $this->lastOrder();
+				$data['order_id'] = $this->lastOrder($data['res_id']);
 				$added = $this->usermodel->placeOrder($data);
 				if($added)
 				{
@@ -463,7 +463,7 @@ class UserMenu extends CI_Controller
 			{
 				$data['payment_mode'] = 4;
 				$data['payment_status'] = 2;
-				$data['order_id'] = $this->lastOrder();
+				$data['order_id'] = $this->lastOrder($data['res_id']);
 				$added = $this->usermodel->placeOrder($data);
 				if($added)
 				{
@@ -505,7 +505,7 @@ class UserMenu extends CI_Controller
         	    $data['item_temp_details'] = $this->session->userdata('CartList');
         	    $data['payment_mode'] = 2;
     	        $data['payment_status'] = 1;
-    	        $data['order_id'] = $this->lastOrder();
+    	        $data['order_id'] = $this->lastOrder($data['res_id']);
     	        $data['total'] = $total;
     	        $data['created_at'] = date('Y-m-d H:i:s');
     	        
@@ -675,10 +675,10 @@ class UserMenu extends CI_Controller
 	    }
 	}
 	
-	public function lastOrder()
+	public function lastOrder($restId)
 	{
 	    $O_ID = 10000001;
-	    $data = $this->usermodel->lastOrder();
+	    $data = $this->usermodel->lastOrder($restId);
 	    if(!empty($data))
 	    {
 			if($data[0]->order_id == '') 

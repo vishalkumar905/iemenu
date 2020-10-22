@@ -43,6 +43,15 @@
                                                 </div>
                                             </div>
                                         </div>
+                                         <div class="row">
+                                            <label class="col-sm-2 label-on-left">Manager Password</label>
+                                            <div class="col-sm-10">
+                                                <div class="form-group label-floating is-empty">
+                                                    <label class="control-label"></label>
+                                                    <input type="password" class="form-control" placeholder="New Password" name="manager_password" required>
+                                                </div>
+                                            </div>
+                                        </div>
                                         <div class="row">
                                             <label class="col-md-2 col-sm-2 label-on-left">Online Pay</label>
                                             <div class="col-md-10 col-sm-10">

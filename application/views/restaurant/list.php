@@ -22,6 +22,7 @@
                                                     <th>#</th>
                                                     <th>Name</th>
                                                     <th>Email</th>
+                                                    <th>Manager Password</th>
                                                     <th>Status</th>
                                                     <th class="disabled-sorting text-right">Actions</th>
                                                 </tr>
@@ -31,6 +32,7 @@
                                                     <th>#</th>
                                                     <th>Name</th>
                                                     <th>Email</th>
+                                                    <th>Manager Password</th>
                                                     <th>Status</th>
                                                     <th class="text-right">Actions</th>
                                                 </tr>
@@ -43,6 +45,7 @@
                                                     <td><?php echo ++$i; ?></td>
                                                     <td><?php echo $restaurant->name; ?></td>
                                                     <td><?php echo $restaurant->email; ?></td>
+                                                    <td><?php echo $restaurant->manager_password; ?></td>
                                                     <td><?php if($restaurant->varified=='1') echo 'Verified'; else echo 'Not Verified'; ?></td>
                                                     <td class="text-right">
                                                         <!--a href="datatables.net.html#" class="btn btn-simple btn-info btn-icon like"><i class="material-icons">favorite</i></a-->

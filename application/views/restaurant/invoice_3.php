@@ -9,14 +9,19 @@
         <?php $ci=get_instance(); ?>
         <div class="">
             <div class="">
-                <div style="padding-bottom:10px; text-align:center; font-size: 13px;">
+                <div style="text-align:center; font-size: 13px;">
             	    <strong><?= ($order->res_id) ? ($ci->getRestaurantDetail($order->res_id)) ? $ci->getRestaurantDetail($order->res_id)[0]->name : '-' : '-'; ?></strong>
             	</div>
+            	<div style="padding-bottom:10px; text-align:center; font-size: 10px;">
+            	    <b><?= ($order->res_id) ? ($ci->getRestaurantDetail($order->res_id)) ? $ci->getRestaurantDetail($order->res_id)[0]->tagline : '-' : '-'; ?></b>
+            	</div>
+            	
                 <div>
                     <b>Order #<?= $order->order_id ?></b>&nbsp;(<?= ($order->table_id) ? ($ci->getTableDetail($order->table_id)) ? $ci->getTableDetail($order->table_id)->table_name : '-' : '-'; ?>) <br/>
                     <b>Date : </b><?= date('d-m-Y h:i:s a'); ?> <br/>
 				    <strong>Payment Method : </strong><?= $paymentMethodName ?> <br/>
-				    <strong>GSTIN : </strong>07AASFV8263C1ZQ
+				    <strong><?= ($order->res_id) ? ($ci->getRestaurantDetail($order->res_id)) ? $ci->getRestaurantDetail($order->res_id)[0]->tax_name : '-' : '-'; ?> : 
+				    </strong><?= ($order->res_id) ? ($ci->getRestaurantDetail($order->res_id)) ? $ci->getRestaurantDetail($order->res_id)[0]->rest_reg_no : '-' : '-'; ?>
             	</div>
             	<hr class="new">
             	<?php $CartLists=json_decode($order->item_details, true); ?>
@@ -46,11 +51,13 @@
 								$totalQuantity += $itemDataArray['itemCount'];
 						?>
     				        <div style="width:60%; float:left;">
-								<?= $itemDataArray['itemName'] ?> (<?= $itemDataId ?>)
-								<?php if(!empty($taxName)) {
-									$tax = implode(', ', $taxName);
-									echo "<br><span style='font-size:10px;'>Tax: $tax </span><br>"; 
-								}  ?>
+								<?= $itemDataArray['itemName'] ?> <?= $itemDataId ?>
+								
+						
+							<!--//mj code of tax will come  here.-->
+								
+								
+								
 							</div>
 							<div style="width:13%; float:left; text-align:center;">
 								<?= $itemDataArray['itemCount'] ?>
@@ -85,7 +92,7 @@
 				<div style="width:100%;">
 					<?php foreach ($allCombinedTaxes as $taxName => $taxAmount) { $subTotalAmount += $taxAmount; ?>
 				    <div>
-				        <div style="width:60%; float:left; text-align:left;"><strong><?=$taxName?>:</strong></div>
+				        <div style="width:60%; float:left; text-align:left;"><strong><?=$taxName?>:</strong> <b>5%</b></div>
 				        <div style="width:13%; float:left; text-align:right;">&nbsp;&nbsp;</div>
 				        <div style="width:25%; float:left; text-align:right;">₹ <?= $taxAmount ?></div>
 					</div>
@@ -109,6 +116,7 @@
 				</div>
 				<?php /* ?>
 				<br>
+            	
             	<div style="padding-top:5px; text-align:center; font-size: 10px;">
 					Customer Copy<br>
 					*All PRICES ARE INCLUDING TAXES
@@ -122,9 +130,15 @@
             	    Powered by Fligobeam Networks
 				</div>
 				<?php */ ?>
+				    <br>
+					<div style="padding-bottom:10px; text-align:center; font-size: 10px;">
+            	    <b>Customer Care Number : 1800 120 5877</b>
+            	</div>
             </div>
         </div>
         
     </div>
 </body>
 </html>
+
+
