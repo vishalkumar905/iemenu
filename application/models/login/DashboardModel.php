@@ -77,6 +77,7 @@ class dashboardModel extends CI_Model
 		$query = $this->db->get();
 		return $query->result();
 	}
+	
 	public function getOrderList($cond=array())
 	{
 		$this->db->select('*');

@@ -41,6 +41,9 @@ class UserModel extends CI_Model
     
     function placeOrder($data)
     {
+        log_message('debug', 'Order details ' . PHP_EOL . json_encode($data));
+        log_message('debug', '-----------------------------------------------');
+
         $added = $this->db->insert('orders', $data);
         if($added){
 			return $this->db->insert_id();

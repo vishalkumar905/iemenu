@@ -22,6 +22,7 @@ class UserMenu extends CI_Controller
 		$this->restaurantTaxes = [];
 		$this->restInfo = [];
 	}
+
 	
 	public function menuPage($tableToken=NULL, $restID=NULL)
 	{
@@ -425,6 +426,10 @@ class UserMenu extends CI_Controller
 			$orderId = 'NA';
 			$paymentMethods = ['Cash', 'Pay Online', 'UPI QR Scan', 'Card Swipe'];
 			$paymentMethod = $this->input->post('pay_method');
+
+			$logMessage = sprintf('Order is placing for restaurant %s', $data['res_id']). PHP_EOL;
+			$tableToken .= sprintf('item_details %s, item_temp_details %s', $data['item_details'], $data['item_temp_details']);
+			log_message('info', $logMessage);
 
 			if($paymentMethod == 'Cash')
 			{

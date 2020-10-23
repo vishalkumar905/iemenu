@@ -121,9 +121,9 @@ class RestaurantModel extends CI_Model
 		return $query->result();
 	}
 	
-	function placeOrder($data=array(), $orderID=0)
+	function placeOrder($data=array(), $condition)
     {
-        $this->db->where('order_id',$orderID);
+        $this->db->where($condition);
         $updated = $this->db->update('orders', $data);
         if($updated){
 			return true;

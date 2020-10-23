@@ -935,10 +935,11 @@ class Restaurant extends Main
 	        }
 	        
 	        $data['item_details'] = json_encode($cartArray);
-	        $data['total'] = $this->cartTotal($cartArray, 'yes', $rid);
+			$data['total'] = $this->cartTotal($cartArray, 'yes', $rid);
+
+			$this->restaurantModel->placeOrder($data, $condition);
 	    }
 	    
-	    $this->restaurantModel->placeOrder($data,$_POST['orderID']);
 	    
 	    $this->getOrderView($_POST);
 	}
@@ -946,8 +947,13 @@ class Restaurant extends Main
 	public function updateOrderStatus()
 	{
 
-				$data['order_status'] = $_POST['status'];
-	        	$this->restaurantModel->placeOrder($data,$_POST['orderID']);
+		$condition = array(
+			'order_id' => $_POST['orderID'], 
+			'res_id' => $this->session->userid
+		);
+
+		$data['order_status'] = $_POST['status'];
+		$this->restaurantModel->placeOrder($data, $condition);
 			
 		
 	    // if(!empty($_POST['manager_password']))
@@ -1109,38 +1115,42 @@ class Restaurant extends Main
 		$user_id = $this->session->userdata('userid');
 		
 		$managerPassword = $this->restaurantModel->getManagerPass($user_id);
-			
+		
+		if($_POST['managerPassword'] == $managerPassword) {
+			$condition = array(
+				'order_id' => $_POST['orderID'], 
+				'res_id' => $this->session->userid
+			);
 
-			if($_POST['managerPassword'] == $managerPassword) {
+			$data['order_status'] = 3;
 
-				$data['order_status'] = 3;
-
-				$this->restaurantModel->placeOrder($data,$_POST['orderID']);
-								
-				echo 'correct';
-			} else {
-				echo '<span>Incorrect password</span>';
-			}
-
+			$this->restaurantModel->placeOrder($data, $condition);
+							
+			echo 'correct';
+		} else {
+			echo '<span>Incorrect password</span>';
+		}
 	}
 	
 	public function verifyMangerPasswordForNck()
 	{	
 		$user_id = $this->session->userdata('userid');
-		
 		$managerPassword = $this->restaurantModel->getManagerPass($user_id);
+
+		if($_POST['managerPasswordForNck'] == $managerPassword) {
+			$condition = array(
+				'order_id' => $_POST['orderID'], 
+				'res_id' => $this->session->userid
+			);
 			
-	
-			if($_POST['managerPasswordForNck'] == $managerPassword) {
-	
-				$data['order_status'] = 4;
-	
-				$this->restaurantModel->placeOrder($data,$_POST['orderID']);
-								
-				echo 'correct';
-			} else {
-				echo '<span>Incorrect password</span>';
-			}
+			$data['order_status'] = 4;
+
+			$this->restaurantModel->placeOrder($data, $condition);
+							
+			echo 'correct';
+		} else {
+			echo '<span>Incorrect password</span>';
+		}
 	
 	}
 
