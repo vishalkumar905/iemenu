@@ -313,6 +313,11 @@ class Restaurant extends Main
             $sub_array[] = $order->buyer_phone_number;
             $sub_array[] = $order->order_type;
 			$sub_array[] = $payment_mode;
+			
+			if($type=='voidBillReport' || $type=='nckBill'){
+			    $sub_array[] = $order->reason;
+			}
+			
             
 			if($type=='reportorder'){ 
                 $sub_array[] = $order->created_at; 
@@ -499,7 +504,7 @@ class Restaurant extends Main
 		$query = $this->db->get('orders');
 		$orders = $query->result();
 		
-		$data[] = ['Order Status','Order Id','Table Id','Customer Name','Phone Number','Order Type','Payment Mode', 'Sub Total', 'Total Tax', 'Total Amount', 'Roundoff', 'Total Billed','Created Date'];
+		$data[] = ['Order Status','Order Id','Table Id','Customer Name','Phone Number','Order Type','Payment Mode', 'Reason', 'Sub Total', 'Total Tax', 'Total Amount', 'Roundoff', 'Total Billed','Created Date'];
 		
 		$grandTotalTaxes = $grandSubTotal = $grandTotalAmount = $grandRoundOff = $grandTotalBilledAmount = 0;
 
@@ -530,6 +535,7 @@ class Restaurant extends Main
             $sub_array[] = $order->buyer_phone_number;
             $sub_array[] = $order->order_type;
             $sub_array[] = $this->paymentMethod($order->payment_mode);
+            $sub_array[] = $order->reason;
             $sub_array[] = $subTotal;
             $sub_array[] = $totalTaxes; 
             $sub_array[] = $totalAmount; 
@@ -553,6 +559,7 @@ class Restaurant extends Main
             $sub_array[] = '';
            	$sub_array[] = '';
            	$sub_array[] = '';
+            $sub_array[] = '';
             $sub_array[] = '';
             $sub_array[] = '';
             $sub_array[] = '';
@@ -1028,7 +1035,7 @@ class Restaurant extends Main
 		$query = $this->db->get('orders');
 		$orders = $query->result();
 		
-		$data[] = ['Order Status','Order Id','Table Id','Customer Name','Phone Number','Order Type','Payment Mode', 'Sub Total', 'Total Tax', 'Total Amount', 'Roundoff', 'Total Billed','Created Date'];
+		$data[] = ['Order Status','Order Id','Table Id','Customer Name','Phone Number','Order Type','Payment Mode', 'Reason', 'Sub Total', 'Total Tax', 'Total Amount', 'Roundoff', 'Total Billed','Created Date'];
 		
 		$grandTotalTaxes = $grandSubTotal = $grandTotalAmount = $grandRoundOff = $grandTotalBilledAmount = 0;
 
@@ -1059,6 +1066,7 @@ class Restaurant extends Main
             $sub_array[] = $order->buyer_phone_number;
             $sub_array[] = $order->order_type;
             $sub_array[] = $this->paymentMethod($order->payment_mode);
+            $sub_array[] = $order->reason;
             $sub_array[] = $subTotal;
             $sub_array[] = $totalTaxes; 
             $sub_array[] = $totalAmount; 
@@ -1082,6 +1090,7 @@ class Restaurant extends Main
             $sub_array[] = '';
            	$sub_array[] = '';
            	$sub_array[] = '';
+            $sub_array[] = '';
             $sub_array[] = '';
             $sub_array[] = '';
             $sub_array[] = '';
@@ -1123,6 +1132,7 @@ class Restaurant extends Main
 			);
 
 			$data['order_status'] = 3;
+			$data['reason'] = $_POST['reason'];
 
 			$this->restaurantModel->placeOrder($data, $condition);
 							
@@ -1144,9 +1154,8 @@ class Restaurant extends Main
 			);
 			
 			$data['order_status'] = 4;
-
+            $data['reason'] = $_POST['reasonForNck'];
 			$this->restaurantModel->placeOrder($data, $condition);
-							
 			echo 'correct';
 		} else {
 			echo '<span>Incorrect password</span>';

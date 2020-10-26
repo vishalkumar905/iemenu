@@ -31,9 +31,13 @@
                                     <p class="hidden-lg hidden-md">Profile</p>
                                 </a>
 								<ul class="dropdown-menu">
+								    <li>
+                                        <a href="http://iemenu.in/inventory/" target="_blank">Inventory</a>
+                                    </li>
                                     <li>
                                         <a href="<?php echo base_url('login/logout'); ?>">Log Out</a>
                                     </li>
+                                    
                                 </ul>
                             </li>
                             <li class="separator hidden-lg hidden-md"></li>

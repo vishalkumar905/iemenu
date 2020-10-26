@@ -42,6 +42,7 @@
                                                 <th>Phone Number</th>
                                                 <th>Order Type</th>
                                                 <th>Payment Mode</th>
+                                                <th>Reason</th>
                                                 <th>Created Date</th>
                                                 <th class="disabled-sorting text-right">Actions</th>
                                             </tr>
@@ -56,6 +57,7 @@
                                                 <th>Phone Number</th>
                                                 <th>Order Type</th>
                                                 <th>Payment Mode</th>
+                                                <th>Reason</th>
                                                 <th>Created Date</th>
                                                 <th class="disabled-sorting text-right">Actions</th>
                                             </tr>
@@ -219,6 +221,9 @@
                         },
                         {
                             'data': 9
+                        },
+                        {
+                            'data': 10
                         }
 
 

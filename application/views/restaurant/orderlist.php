@@ -90,9 +90,15 @@
                                                                 <star>*</star>
                                                             </label>
                                                             <input class="form-control managerPassword" name="manager_password" id="managerPassword" type="password" required="true" />                                                       
-                                                        </div>
-
+                                                        </div>        
                                                         <div id="managerPasswordErrorMessage"></div>
+                                                        
+                                                        <div class="form-group label-floating">
+                                                            <label class="control-label">Reason</label>
+                                                            <input class="form-control managerPassword" name="reason" id="reason" type="text" required="true" />                                      
+                                                        </div>
+                                                        <div id="reasonErrorMessage"></div>
+                                                        
 
                                                         <div class="text-right">
                                                             
@@ -138,8 +144,17 @@
                                                             </label>
                                                             <input class="form-control managerPasswordForNck" name="manager_password" id="managerPasswordForNck" type="password" required="true" />                                                       
                                                         </div>
-
                                                         <div id="managerPasswordForNckErrorMessage"></div>
+                                                        
+                                                        
+                                                        <div class="form-group label-floating">
+                                                            <label class="control-label">Reason
+                                                                
+                                                            </label>
+                                                            <input class="form-control managerPasswordForNck" name="reasonForNck" id="reasonForNck" type="text" required="true" />                                                       
+                                                        </div>
+                                                        <div id="reasonErrorMessageForNck"></div>
+                                                        
 
                                                         <div class="text-right">
                                                             
@@ -349,14 +364,23 @@
 		$('#managerPasswordErrorMessage').hide();
 
 		let managerPassword = $("#managerPassword").val(); 
+		let reason = $("#reason").val();
         let orderID = orderId;
+        
+         
+        
        
-		if (managerPassword == null || managerPassword == "") {
+		if (managerPassword == null || managerPassword == "" ) {
 			$('#managerPasswordErrorMessage').show();
 			$("#managerPasswordErrorMessage").html("Please enter password").css("color", "red");
-		} else {
+		} else if (reason == null || reason == "" ) {
+			$('#reasonErrorMessage').show();
+			$("#reasonErrorMessage").html("Please enter a reason").css("color", "red");
+		}
+		else {
 			let postData = {
 				'managerPassword' : managerPassword,
+				'reason' : reason,
                 'orderID': orderID                             
 			}
             
@@ -413,16 +437,20 @@
 		$('#managerPasswordForNckErrorMessage').hide();
 
 		let managerPasswordForNck = $("#managerPasswordForNck").val(); 
-
+        let reasonForNck = $("#reasonForNck").val();
         let orderID = orderId;
        
         
 		if (managerPasswordForNck == null || managerPasswordForNck == "") {
 			$('#managerPasswordForNckErrorMessage').show();
 			$("#managerPasswordForNckErrorMessage").html("Please enter password").css("color", "red");
+		} else if (reasonForNck == null || reasonForNck == "" ) {
+			$('#reasonErrorMessageForNck').show();
+			$("#reasonErrorMessageForNck").html("Please enter a reason").css("color", "red");
 		} else {
 			let postData = {
 				'managerPasswordForNck' : managerPasswordForNck,
+				'reasonForNck' : reasonForNck,
                 'orderID': orderID                             
 			}
             
@@ -435,13 +463,8 @@
 				// dataType: "html",
 				cache: false,
 				success: function(msg) {
-                    // $('#managerPasswordForNckErrorMessage').show();
-                    // $('#managerPasswordForNckErrorMessage').html(msg);
-
                     if(msg == "correct"){
-                       
                         swal("Success!", "added to nck orders successfully", "success");
-                       
                         $('#nckBillVerifyModal').modal('hide');  
                     } else {
                         swal("Incorrect Password!", "Please enter a valid password", "error");
