@@ -162,6 +162,133 @@ class Restaurant extends Main
 	    $this->load->view('restaurant/reportorderlist');
 	}
 
+	public function itemWiseReport()
+	{
+		$from = $this->input->get('from');
+		$to = $this->input->get('to');
+		$condition = [
+			'res_id' => $this->session->userid,
+			'order_status' => 2,
+		];
+
+		if($from !='' && $to !='') 
+		{ 
+			$condition["DATE(created_at) BETWEEN '$from' AND '$to'"] = null; 
+		}
+		elseif($from !='')
+		{ 
+			$condition["DATE(created_at) >= '$from'"] = null;
+		}
+		elseif($to !='') 
+		{ 
+			$condition["DATE(created_at) <= '$to'"] = null;
+		}
+
+		$orders = $this->getItemWiseReportQuery($condition);
+
+		if (empty($orders))
+		{
+			redirect(base_url('Restaurant/reportorderlist'));
+		}
+
+		$products = [];
+
+		if (!empty($orders))
+		{
+			foreach($orders as $order)
+			{
+				$itemDetails = json_decode($order['item_details'], true);
+
+				if (!empty($itemDetails))
+				{
+					foreach($itemDetails as $itemId => $items)
+					{
+						foreach($items as $itemType => $item)
+						{
+							$products[$itemId]['itemName'] = $item['itemName'];
+							$products[$itemId]['items'][] = $item;
+
+							unset($item);
+						}
+					}
+				}
+			}
+		}
+
+		if (!empty($products))
+		{
+			foreach($products as &$product)
+			{
+				$subTotal = 0;
+				$itemQuantity = 0;
+				$itemTaxTotal = 0;
+				if (!empty($product['items']))
+				{
+					foreach($product['items'] as $row)
+					{
+						$itemQuantity +=  $row['itemCount'];
+						$itemPrice = (isset($row['itemOldPrice']) ? $row['itemOldPrice'] : $row['itemPrice']) * $row['itemCount'];
+						$subTotal += $itemPrice;
+
+						if (!empty($row['itemTaxes']))
+						{
+							$singleItemTaxAmount = 0; 
+							foreach($row['itemTaxes'] as $itemTax)
+							{
+								$singleItemTaxAmount += ($itemPrice * $itemTax['taxPercentage']) / 100;							
+
+								unset($itemTax);
+							}
+
+							$itemTaxTotal +=  $singleItemTaxAmount;
+						}
+					}
+
+					unset($product['items']);
+				}
+
+				$grossTotal = $subTotal + $itemTaxTotal;
+				$roundOff = number_format(round($grossTotal) - $grossTotal, 2, '.', '');
+
+				$product['subTotal'] = number_format($subTotal, 2, '.', '');
+				$product['itemQuantity'] = $itemQuantity;
+				$product['itemTotalTax'] = number_format($itemTaxTotal, 2, '.', '');
+				$product['grossAmount'] = number_format($grossTotal, 2, '.', '');
+				$product['grossTotal'] = number_format(round($grossTotal), 2, '.', '');
+				$product['roundOff'] = $roundOff;
+			}
+		}
+
+		$excelData[] = ['S.No.', 'Item Name', 'Quantity', 'Sub Total', 'Total Tax', 'Gross Amount', 'Roundoff', 'Gross Total'];
+		$counter = 1;
+		foreach($products as $rowData)
+		{
+			$data = [];
+
+			$data[] = $counter;
+			$data[] = $rowData['itemName'];
+			$data[] = $rowData['itemQuantity'];
+			$data[] = $rowData['subTotal'];
+			$data[] = $rowData['itemTotalTax'];
+			$data[] = $rowData['grossAmount'];
+			$data[] = $rowData['roundOff'];
+			$data[] = $rowData['grossTotal'];
+
+			$excelData[] = $data;
+
+			++$counter;
+		}
+
+		$this->getExcel($excelData);
+	}
+
+	private function getItemWiseReportQuery($condition) 
+	{
+		$this->db->select(['id', 'order_id', 'item_details']);
+		$this->db->from('orders');
+		$this->db->where($condition);
+		return $this->db->get()->result_array();
+	}
 
 	//11-10-2020
 	public function voidorderlist()

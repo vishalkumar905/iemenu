@@ -20,15 +20,13 @@
                                     <div class="col-md-3">
                                         <input type="date" name="to_date" id="to_date" class="form-control" placeholder="To Date" />
                                     </div>
-                                    <div class="col-md-2">
+                                    <div class="col-md-6" style="text-align:right;">
                                         <input type="button" name="filter" id="filter" value="Filter" class="btn btn-info" />
-                                    </div>
-                                    <div class="col-md-2">
                                         <input type="button" name="csv" id="csv" value="CSV" class="btn btn-info" />
-                                    </div>
-                                    <div class="col-md-2">
                                         <input type="button" name="excel" id="excel" value="Excel" class="btn btn-info" />
+                                        <input type="button" name="itemWiseReport" id="itemWiseReport" value="Item Wise Report" class="btn btn-info" />
                                     </div>
+                                
                                 </div>
                                 <div class="material-datatables">
                                     <table id="datatables" class="table table-striped table-no-bordered table-hover" cellspacing="0" width="100%" style="width:100%">
@@ -94,8 +92,12 @@
                 background: #dddddd;
             }
         </style>
-        <?php $this->load->view('comman/footer'); ?>
+        <?php 
+            $this->load->view('comman/footer'); 
+            
+        ?>
         <script>
+            var BASE_URL = "<?=base_url()?>";
             jQuery(document).ready(function() {
                 var rid = "<?= $this->session->userid ?>";
 
@@ -132,6 +134,16 @@
                     $('#datatables').DataTable().destroy();
                     fetchData('yes', json);
                 });
+
+                $("#itemWiseReport").click(function() {
+                    let data = {
+                        from: $('#from_date').val(),
+                        to: $('#to_date').val(),
+                    };
+
+                    let url = BASE_URL + 'restaurant/itemWiseReport?from=' + data.from + '&to' + data.to;
+                    window.location.href = url;
+                })
 
                 $('#csv').on('click', function() {
                     var data = {};
