@@ -108,10 +108,27 @@
 				        <div style="width:10%; float:left; text-align:right;">&nbsp;&nbsp;</div>
 				        <div style="width:30%; float:left; text-align:right;">₹ <?= number_format($subTotalAmount, 2, '.', '') ?></div>
 				    </div>
+				    
+				    <?php if(!empty($order->discount_coupon_percent)) {?>
+				    <div>
+				        <div style="width:60%; float:left; text-align:right;"><strong>Special Discount : </strong></div>
+				        <div style="width:10%; float:left; text-align:right;">&nbsp;&nbsp;</div>
+				        <div style="width:30%; float:left; text-align:right;"> <?= $order->discount_coupon_percent;?> % </div>
+				    </div>
+				    <?php } ?>
+				    
+				    <?php if(!empty($order->flat_amount_discount)) {?>
+				    <div>
+				        <div style="width:60%; float:left; text-align:right;"><strong>Special Discount Flat Off: </strong></div>
+				        <div style="width:10%; float:left; text-align:right;">&nbsp;&nbsp;</div>
+				        <div style="width:30%; float:left; text-align:right;"> ₹ <?= $order->flat_amount_discount;?> </div>
+				    </div>
+				    <?php } ?>
+				    
 				    <div>
 				        <div style="width:60%; float:left; text-align:right;"><strong>Total Billed : </strong></div>
 				        <div style="width:10%; float:left; text-align:right;">&nbsp;&nbsp;</div>
-				        <div style="width:30%; float:left; text-align:right;">₹ <?= $ci->cartTotal($CartLists,'yes',$order->res_id) ?></div>
+				        <div style="width:30%; float:left; text-align:right;">₹ <?= $order->total ?></div>
 				    </div>
 				</div>
 				<?php /* ?>

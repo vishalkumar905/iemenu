@@ -187,6 +187,25 @@
                             </ul>
                         </div>
                     </li>
+                    
+                     <li <?php if(($url_key_sec == 'addDiscount'||$url_key_sec == 'discountList')){ echo 'class="active"'; }?>>
+                        <a data-toggle="collapse" href="#discount">
+                            <i class="material-icons">style</i>
+                            <p>Discount
+                                <b class="caret"></b>
+                            </p>
+                        </a>
+                        <div class="collapse" id="discount">
+                            <ul class="nav">
+                                <li>
+                                    <a href="<?php echo base_url(); ?>Restaurant/addDiscount">Add Discount</a>
+                                </li>
+								<li>
+                                    <a href="<?php echo base_url(); ?>Restaurant/discountList">View Discount</a>
+                                </li>
+                            </ul>
+                        </div>
+                    </li>
                    
                     <?php if($res[0]->online_pay_status == 'on'){  ?>
                     <li <?php if($url_key == 'payment'){ echo 'class="active"'; }?>>

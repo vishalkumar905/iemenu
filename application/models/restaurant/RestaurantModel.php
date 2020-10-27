@@ -124,10 +124,37 @@ class RestaurantModel extends CI_Model
 	function placeOrder($data=array(), $condition)
     {
         $this->db->where($condition);
+        
+        $discAmount = $this->session->userdata('finalDiscAmount');
+        $flatAmountOff = $this->session->userdata('finalFlatOffAmount');
+        $discPercent = $this->session->userdata('discPercent');
+        $flatAmountPrice = $this->session->userdata('flatAmountPrice');
+        
+        
+        
+        
+        if(!empty($discAmount)){
+            $this->db->set('total', $discAmount, FALSE);
+        }  else if(!empty($flatAmountOff)){
+            $this->db->set('total', $flatAmountOff, FALSE); 
+        } 
+        
+         
+         if(!empty($discPercent)){
+            $this->db->set('discount_coupon_percent', $discPercent, FALSE);
+         }
+         
+         if(!empty($flatAmountPrice)){
+            $this->db->set('flat_amount_discount', $flatAmountPrice, FALSE);
+        }
+          
+        
         $updated = $this->db->update('orders', $data);
         if($updated){
 			return true;
 		}
+		
+		
 		return false;
     }
     
@@ -159,4 +186,55 @@ class RestaurantModel extends CI_Model
 		$result = $query->row();
 		return $result->manager_password;
 	}
+	
+	public function getDiscountList($cond=array())
+	{
+		$this->db->select('*');
+		$this->db->from('res_discount');
+		if(!empty($cond))
+		    $this->db->where($cond);
+		$query = $this->db->get();
+		return $query->result();
+	}
+
+	public function getOnlyDiscountList($rid){
+		$this->db->select('*');
+		$this->db->from('res_discount');
+		$this->db->where('rest_id', $rid);
+		$query = $this->db->get();
+		return $query->result();
+	}
+	
+	public function insertDiscountInfo($data=array())
+	{
+		if(is_array($data) && !empty($data))
+		{
+		    $inserted = $this->db->insert('res_discount',$data);
+    		if($inserted){
+    			return true;
+    		}
+    		return false;
+		}
+	}
+	
+	public function deleteDiscountInfo($id=0)
+	{
+	    if($id!=0)
+		{
+		    $this->db->where('discount_id',$id);
+		    $updated = $this->db->delete('res_discount');
+    		if($updated){
+    			return true;
+    		}
+    		return false;
+		}
+	}
+	
+	
+	
+	
+	
+	
+	
+	
 }

@@ -162,133 +162,6 @@ class Restaurant extends Main
 	    $this->load->view('restaurant/reportorderlist');
 	}
 
-	public function itemWiseReport()
-	{
-		$from = $this->input->get('from');
-		$to = $this->input->get('to');
-		$condition = [
-			'res_id' => $this->session->userid,
-			'order_status' => 2,
-		];
-
-		if($from !='' && $to !='') 
-		{ 
-			$condition["DATE(created_at) BETWEEN '$from' AND '$to'"] = null; 
-		}
-		elseif($from !='')
-		{ 
-			$condition["DATE(created_at) >= '$from'"] = null;
-		}
-		elseif($to !='') 
-		{ 
-			$condition["DATE(created_at) <= '$to'"] = null;
-		}
-
-		$orders = $this->getItemWiseReportQuery($condition);
-
-		if (empty($orders))
-		{
-			redirect(base_url('Restaurant/reportorderlist'));
-		}
-
-		$products = [];
-
-		if (!empty($orders))
-		{
-			foreach($orders as $order)
-			{
-				$itemDetails = json_decode($order['item_details'], true);
-
-				if (!empty($itemDetails))
-				{
-					foreach($itemDetails as $itemId => $items)
-					{
-						foreach($items as $itemType => $item)
-						{
-							$products[$itemId]['itemName'] = $item['itemName'];
-							$products[$itemId]['items'][] = $item;
-
-							unset($item);
-						}
-					}
-				}
-			}
-		}
-
-		if (!empty($products))
-		{
-			foreach($products as &$product)
-			{
-				$subTotal = 0;
-				$itemQuantity = 0;
-				$itemTaxTotal = 0;
-				if (!empty($product['items']))
-				{
-					foreach($product['items'] as $row)
-					{
-						$itemQuantity +=  $row['itemCount'];
-						$itemPrice = (isset($row['itemOldPrice']) ? $row['itemOldPrice'] : $row['itemPrice']) * $row['itemCount'];
-						$subTotal += $itemPrice;
-
-						if (!empty($row['itemTaxes']))
-						{
-							$singleItemTaxAmount = 0; 
-							foreach($row['itemTaxes'] as $itemTax)
-							{
-								$singleItemTaxAmount += ($itemPrice * $itemTax['taxPercentage']) / 100;							
-
-								unset($itemTax);
-							}
-
-							$itemTaxTotal +=  $singleItemTaxAmount;
-						}
-					}
-
-					unset($product['items']);
-				}
-
-				$grossTotal = $subTotal + $itemTaxTotal;
-				$roundOff = number_format(round($grossTotal) - $grossTotal, 2, '.', '');
-
-				$product['subTotal'] = number_format($subTotal, 2, '.', '');
-				$product['itemQuantity'] = $itemQuantity;
-				$product['itemTotalTax'] = number_format($itemTaxTotal, 2, '.', '');
-				$product['grossAmount'] = number_format($grossTotal, 2, '.', '');
-				$product['grossTotal'] = number_format(round($grossTotal), 2, '.', '');
-				$product['roundOff'] = $roundOff;
-			}
-		}
-
-		$excelData[] = ['S.No.', 'Item Name', 'Quantity', 'Sub Total', 'Total Tax', 'Gross Amount', 'Roundoff', 'Gross Total'];
-		$counter = 1;
-		foreach($products as $rowData)
-		{
-			$data = [];
-
-			$data[] = $counter;
-			$data[] = $rowData['itemName'];
-			$data[] = $rowData['itemQuantity'];
-			$data[] = $rowData['subTotal'];
-			$data[] = $rowData['itemTotalTax'];
-			$data[] = $rowData['grossAmount'];
-			$data[] = $rowData['roundOff'];
-			$data[] = $rowData['grossTotal'];
-
-			$excelData[] = $data;
-
-			++$counter;
-		}
-
-		$this->getExcel($excelData);
-	}
-
-	private function getItemWiseReportQuery($condition) 
-	{
-		$this->db->select(['id', 'order_id', 'item_details']);
-		$this->db->from('orders');
-		$this->db->where($condition);
-		return $this->db->get()->result_array();
-	}
 
 	//11-10-2020
 	public function voidorderlist()
@@ -441,6 +314,11 @@ class Restaurant extends Main
             $sub_array[] = $order->order_type;
 			$sub_array[] = $payment_mode;
 			
+			if($type=='reportorder'){ 
+			$sub_array[] = $order->discount_coupon_percent;
+			$sub_array[] = $order->flat_amount_discount ;
+			}
+			
 			if($type=='voidBillReport' || $type=='nckBill'){
 			    $sub_array[] = $order->reason;
 			}
@@ -534,7 +412,7 @@ class Restaurant extends Main
 		$query = $this->db->get('orders');
 		$orders = $query->result();
 		
-		$data[] = ['Order Status','Order Id','Table Id','Customer Name','Phone Number','Order Type','Payment Mode', 'Sub Total', 'Total Tax', 'Total Amount', 'Roundoff', 'Total Billed','Created Date'];
+		$data[] = ['Order Status','Order Id','Table Id','Customer Name','Phone Number','Order Type','Payment Mode', 'Discount Percentage (%)' , 'Discount Flat Rupees Off ', 'Sub Total', 'Total Tax', 'Total Amount', 'Roundoff', 'Total Billed','Created Date'];
 		
 		$grandTotalTaxes = $grandSubTotal = $grandTotalAmount = $grandRoundOff = $grandTotalBilledAmount = 0;
 
@@ -565,6 +443,8 @@ class Restaurant extends Main
             $sub_array[] = $order->buyer_phone_number;
             $sub_array[] = $order->order_type;
             $sub_array[] = $this->paymentMethod($order->payment_mode);
+            $sub_array[] = $order->discount_coupon_percent;
+			$sub_array[] = $order->flat_amount_discount ;
             $sub_array[] = $subTotal;
             $sub_array[] = $totalTaxes; 
             $sub_array[] = $totalAmount; 
@@ -588,6 +468,8 @@ class Restaurant extends Main
             $sub_array[] = '';
            	$sub_array[] = '';
            	$sub_array[] = '';
+            $sub_array[] = '';
+            $sub_array[] = '';
             $sub_array[] = '';
             $sub_array[] = '';
             $sub_array[] = '';
@@ -929,6 +811,10 @@ class Restaurant extends Main
         $condition = array('order_id'=>$postdata['orderID'], 'res_id' => $this->session->userid);
         $data['order'] = $this->restaurantModel->getOrderList($condition)[0];
 		$data['paymentMethodName'] = $this->paymentMethod($data['order']->payment_mode);
+		
+		// 26-10-2020
+		$rid = $this->session->userid;
+		$data['percentOff'] = $this->restaurantModel->getOnlyDiscountList($rid);
         $this->load->view('restaurant/orderPopup', $data);
 	}
 
@@ -1088,34 +974,8 @@ class Restaurant extends Main
 
 		$data['order_status'] = $_POST['status'];
 		$this->restaurantModel->placeOrder($data, $condition);
-			
 		
-	    // if(!empty($_POST['manager_password']))
-	    // {
-	    //     if($_POST['manager_password'] == '123456'){
-		// 		echo 'alert(work)';
-		// 		$data['order_status'] = $_POST['status'];
-	    //     	$this->restaurantModel->placeOrder($data,$_POST['orderID']);
-	        
-	    //     	echo '1';
-		// 	} else {
-		// 		echo 'didnt work';
-		// 	}
-	    // }
 	}  
-	
-
-	// //11-10-2020
-	// public function voidOrderStatus()
-	// {
-	//     if(!empty($_POST))
-	//     {
-	//         $data['order_status'] = $_POST['status'];
-	//         $this->restaurantModel->placeOrder($data,$_POST['orderID']);
-	        
-	//         echo '1';
-	//     }
-	// }
 	
 	public function getTableDetail($tableID=0)
 	{
@@ -1288,6 +1148,80 @@ class Restaurant extends Main
 			echo '<span>Incorrect password</span>';
 		}
 	
+	}
+    
+    
+    public function addDiscount()
+	{
+	    if(isset($_POST) && !empty($_POST))
+	    {
+	        $discName = trim($_POST['discName']);
+	        $discPercent = trim($_POST['discPercent']);
+			$rid = $this->session->userid;
+
+	        $data = array(
+				'discount_name' => $discName,
+				'discount_percent' => $discPercent,
+				'rest_id' => $rid
+			);
+			
+			if($this->restaurantModel->insertDiscountInfo($data))
+	           {
+	               $this->session->set_flashdata('Success MSG','Tax Information Inserted...');
+	               redirect('Restaurant/discountList','refresh');
+	           }
+		}
+			    
+	    $this->load->view('restaurant/addDiscount');
+	}
+
+	public function deleteDiscount($id)
+	{
+	    if($this->restaurantModel->deleteDiscountInfo($id))
+	        $this->session->set_flashdata('Success MSG','Record Deleted Successfully...');
+		else
+		    $this->session->set_flashdata('Fail MSG','Error in record deletion...');
+		
+		redirect('Restaurant/discountList','refresh');
+	}
+	
+	public function discountList()
+	{
+		$rid = $this->session->userid;
+	    $condition = array('rest_id'=>$rid);
+	    $data['discount'] = $this->restaurantModel->getDiscountList($condition);
+	    $this->load->view('restaurant/discountList', $data);
+	}
+
+
+	public function check_offer_coupon_and_apply()
+	{
+		$discValue = $_POST['discPercent'];
+		
+		//diccount percentage
+		$this->session->set_userdata('discPercent',$discValue);
+		
+		
+		$finalDisc = $discValue / 100;
+		$amount = $this->session->userdata('totalAmt');
+		$finalAmount = round($amount - ($amount * $finalDisc));
+		
+		$this->session->set_userdata('finalDiscAmount',$finalAmount);
+		// subtract percent from total
+		echo '<span style="color:black">Discount Added! Total Amount to pay is ₹</span>'.'<span style="color:black;">'.$finalAmount.'</span>';
+
+	}
+
+
+	public function apply_flat_amount_off(){
+		$offerAmount = $_POST['amountOff'];
+		//flat off price 
+		$this->session->set_userdata('flatAmountPrice',$offerAmount);
+		$amount = $this->session->userdata('totalAmt');
+		$finalAmount = round($amount - $offerAmount);
+		$this->session->set_userdata('finalFlatOffAmount',$finalAmount);
+		echo '<span style="color:black">Flat Discount Amount Added! Total Amount to pay is ₹</span>'.'<span style="color:black;">'.$finalAmount.'</span>';
+
 	}
 
 	

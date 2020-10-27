@@ -3,6 +3,8 @@
         <div class="main-panel">
             <?php $this->load->view('comman/headNav'); ?>
             <div class="content">
+                
+                
                 <div class="container-fluid">
                     <div class="row">
                         <div class="col-md-12">
@@ -323,9 +325,13 @@
         })
     	.done(function(response){
 			location.reload();
+			
 			// console.log(response);
         })
     }
+    
+    
+    
     function removeCart(orderID=0,itemid=0,itemtype=null)
 	{
 	    if(orderID!==0 && itemid!==0 && itemtype!==null) {

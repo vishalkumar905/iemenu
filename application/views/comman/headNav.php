@@ -17,6 +17,7 @@
                         else{
                             if($this->uri->segment(2) == 'add' || $this->uri->segment(2) == 'update' || $this->uri->segment(2) == 'list') { $nav_brand= 'Restaurant'; }
                             if($this->uri->segment(2) == 'addtax' || $this->uri->segment(2) == 'taxlist') { $nav_brand= 'Tax'; }
+                            if($this->uri->segment(2) == 'addDiscount' || $this->uri->segment(2) == 'discountList') { $nav_brand= 'Discount'; }
                             if($this->uri->segment(2) == 'orderlist' || $this->uri->segment(2) == 'translist') { $nav_brand= 'Order'; }
                             if($this->uri->segment(2) == 'reportorderlist' || $this->uri->segment(2) == 'reporttranslist' || $this->uri->segment(2) == 'voidorderlist' || $this->uri->segment(2) == 'nckorderlist') { $nav_brand= 'Report'; }
                             }

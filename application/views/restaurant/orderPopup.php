@@ -1,8 +1,31 @@
 <?php $ci=get_instance(); ?>
+<style>
+    .box{
+        color: #fff;
+        padding: 20px;
+        display: none;
+        margin-top: 20px;
+    }
+    .percentOff{ background: #D1E6F0; }
+    .amountOff{ background: #D1E6F0; }
+  
+</style>
 <div class="modal-header">
 	<button type="button" class="close" data-dismiss="modal" aria-hidden="true"><i class="material-icons">clear</i></button>
 	<h5 class="modal-title" id="myModalLabel"><b>Order #<?= $order->order_id ?></b></h5>
 </div>
+
+
+
+
+                <?php $this->session->unset_userdata('finalDiscAmount'); ?>
+                <?php $this->session->unset_userdata('finalFlatOffAmount');?>
+                <?php $this->session->unset_userdata('totalAmt');?>
+                <?php $this->session->unset_userdata('discPercent');?>
+                <?php $this->session->unset_userdata('flatAmountPrice');?>
+                
+        
+
 <div class="modal-body">
     <div class="instruction">
 	    <div class="row">
@@ -23,6 +46,59 @@
 			    <?php $CartLists=json_decode($order->item_details, true); ?>
 				<p><strong>Total Amount : </strong>₹ <?= $ci->cartTotal($CartLists) ?></p>
 				<p><strong>Total Billed : </strong>₹ <?= $ci->cartTotal($CartLists,'yes',$order->res_id) ?></p>
+				
+				<?php if($order->order_status == 1 || $order->order_status == 2) { ?>
+				    <?php if(!empty($order->discount_coupon_percent)){ ?>
+    				<p><strong>Disount % : </strong> <?= $order->discount_coupon_percent; ?> %</p>
+    				<?php } ?>
+    				<?php if(!empty($order->flat_amount_discount)){?>
+    				    <p><strong>Flat Amount Off : </strong>₹ <?= $order->flat_amount_discount; ?></p>
+    				<?php } ?>
+                    <p><strong>Amount Paid : </strong>₹ <?= $order->total; ?></p>
+				<?php } ?>
+				
+				<!-- total_amount -->
+				
+				<?php if($order->order_status == 0) { ?>
+				<?php $this->session->set_userdata('totalAmt', $ci->cartTotal($CartLists));?>
+				
+				<div>
+					<strong>Add Discount : </strong>
+					<span>
+								<input class="radio-btn" type="radio" name="discount_type" id="percent" value="percentOff">
+								<label for="" class="pr-10 pl-5 radio-label">Percent Off</label>
+
+								<input class="radio-btn" type="radio" name="discount_type" id="amount" value="amountOff">
+								<label for="" class="pr-10 pl-5 radio-label">Amount</label></span>
+
+				</div>				
+
+				<!-- percent off dropdown -->
+				<div class="percentOff box">
+					<?php if(!empty($percentOff)) { ?> 
+							<label style="color:black" for="discPercent">Select Coupon For % Off : </label>								
+									<select style="color:black" name="discPercent" id="discPercent" value="">
+										<option value="">None Selected</option>
+										<?php foreach($percentOff as $percent) { ?>
+											<option style="color:black" value="<?= $percent->discount_percent;?>"><?= $percent->discount_name;?></option>
+										<?php } ?>
+									</select>						
+									<br>
+									<div id="DiscMsg"></div>
+					<?php } else {?>
+						<b style="color: red;"> No offers Availaible!</b>
+					<?php } ?>		
+				</div>
+
+				
+
+				<!-- amount off text box -->
+				<div class="amountOff box">					
+					<b style="color:black">Flat Amount Off: ₹ </b><input name="amountOff" id="amountOff" style="color:black" type="number" value="">
+					<div id="AmountOffMsg"></div>
+					<button type="submit" name="add_discount" id="add_discount" class="btn btn-xs btn-danger">Add Discount</button>
+				</div>
+				<?php } ?>
 			</div>
 		</div>
 	</div>
@@ -94,3 +170,87 @@
 		<button type="button" class="btn btn-default btn-round" data-dismiss="modal">Cancel</button>
 	</div>
 </div>
+
+
+<script>
+$(document).ready(function(){
+    $('input[type="radio"]').click(function(){
+        var inputValue = $(this).attr("value");
+        var targetBox = $("." + inputValue);
+        $(".box").not(targetBox).hide();
+        $(targetBox).show();
+    });
+});
+
+// offer discount coupon
+$(document).ready(function() {
+		$("#discPercent").change(function(e) {
+		
+		var discPercentValue = $("#discPercent").val();
+		
+			$('#DiscMsg').hide();
+			if (discPercentValue == null || discPercentValue == "") {
+				$('#DiscMsg').show();
+				$("#DiscMsg").html("Please select offer coupon").css("color", "red");
+			} else {
+			
+			// alert(discPercentValue);
+				$.ajax({			
+					type: "POST",
+					url: "<?php echo base_url('restaurant/check_offer_coupon_and_apply/');?>", 
+					data: $('#discPercent').serialize(),
+					dataType: "html",
+					cache: false,
+					success: function(msg) {
+						$('#DiscMsg').show();
+						$("#DiscMsg").html(msg);
+					},
+					error: function(jqXHR, textStatus, errorThrown) {
+						$('#DiscMsg').show();
+						$("#DiscMsg").html(textStatus + " " + errorThrown);
+					}
+				});
+			}
+		});
+	});
+
+
+// offer flat rupees off
+$(document).ready(function() {
+		$("#add_discount").on("click", function(e) {		
+		let amountOff = $('#amountOff').val();
+			$('#AmountOffMsg').hide();
+			if (amountOff == null || amountOff == "") {
+				$('#AmountOffMsg').show();
+				$("#AmountOffMsg").html("Please add amount").css("color", "red");
+			} else {
+				$.ajax({
+					type: "POST",
+					url: "<?php echo base_url('restaurant/apply_flat_amount_off/');?>", 
+					data: $('#amountOff').serialize(),
+					dataType: "html",
+					cache: false,
+					success: function(msgs) {
+						$('#AmountOffMsg').show();
+						$("#AmountOffMsg").html(msgs);
+					},
+					error: function(jqXHR, textStatus, errorThrown) {
+						$('#AmountOffMsg').show();
+						$("#AmountOffMsg").html(textStatus + " " + errorThrown);
+					}
+				});
+			}
+		});
+	});
+	
+// diable radio button on select
+document.getElementById('amount').onclick = function() {
+    document.getElementById('percent').disabled = true;
+}
+
+document.getElementById('percent').onclick = function() {
+    document.getElementById('amount').disabled = true;
+}
+
+
+</script>
