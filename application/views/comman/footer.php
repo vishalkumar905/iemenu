@@ -55,5 +55,48 @@
     <script src="<?php echo base_url('/assets/js/material-dashboard.js'); ?>"></script>
     <!-- Material Dashboard DEMO methods, don't include it in your project! -->
     <script src="<?php echo base_url('/assets/js/demo.js'); ?>"></script>
+    <script>
+        $("#ieMenuInventoryLink").click(function() {
+            let hostname = window.location.hostname;
+            let baseUrl = hostname == 'localhost' ? 'http://localhost/inventory/' : 'https://iemenu.in/inventory/'; 
+            let url = baseUrl + 'home/generateLoginToken';
+            let data = {
+                userId: "<?=$this->session->userid?>",
+                name: "<?=$this->session->name?>",
+                email: "<?=$this->session->email?>",
+                role: "<?=$this->session->adminrole?>",
+            }
+
+            alert('Click ok to redirect you to inventory');
+
+            $.post(url, data, function(response) {
+                if (response.isSuccess == false)
+                {
+                    alert('Something went wrong');
+                }
+                else
+                {
+                    window.open(response.response.url,'_blank');
+                }
+            }, 'json');
+        });
+
+        $("#logoutSession").click(function() {
+            let hostname = window.location.hostname;
+            let baseUrl = hostname == 'localhost' ? 'http://localhost/inventory/' : 'https://iemenu.in/inventory/'; 
+            let url = baseUrl + 'home/destroySession';
+            let logoutLink = $(this).attr("datahref");
+            $.post(url, {}, function(response) {
+                if (response.isSuccess == false)
+                {
+                    alert('Something went wrong');
+                }
+                else
+                {
+                    window.location.href = logoutLink;
+                }
+            }, 'json');
+        });
+    </script>
 </body>
 </html>

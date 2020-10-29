@@ -33,10 +33,10 @@
                                 </a>
 								<ul class="dropdown-menu">
 								    <li>
-                                        <a href="http://iemenu.in/inventory/" target="_blank">Inventory</a>
+                                        <a href="#" id="ieMenuInventoryLink">Inventory</a>
                                     </li>
                                     <li>
-                                        <a href="<?php echo base_url('login/logout'); ?>">Log Out</a>
+                                        <a href="#" datahref="<?php echo base_url('login/logout'); ?>" id="logoutSession">Log Out</a>
                                     </li>
                                     
                                 </ul>

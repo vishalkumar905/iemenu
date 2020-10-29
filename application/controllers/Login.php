@@ -27,6 +27,7 @@ class Login extends CI_Controller {
                 {
                     $this->session->userid = $row->rest_id;
                     $this->session->email =  $row->email;
+                    $this->session->name =  $row->name;
                     $this->session->adminrole =  $row->role;
                     redirect('dashboard','refresh');
                 }
