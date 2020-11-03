@@ -168,7 +168,7 @@
                         to: $('#to_date').val(),
                     };
 
-                    let url = BASE_URL + 'restaurant/itemWiseReport?from=' + data.from + '&to' + data.to;
+                    let url = BASE_URL + 'restaurant/itemWiseReport?from=' + data.from + '&to=' + data.to;
                     window.location.href = url;
                 });
 
