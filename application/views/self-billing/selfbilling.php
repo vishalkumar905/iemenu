@@ -1,48 +1,8 @@
 <?php $this->load->view('comman/header'); ?>
 <?php $this->load->view('comman/sidebar'); ?>
+<?php $this->load->view('self-billing/style'); ?>
 
-<style>
-.table-container {
-height: 193px;
-}
-.table-container table {
-    display: flex;
-    flex-flow: column;
-    height: 100%;
-    width: 100%;
-}
-.table-container table thead {
-    /* head takes the height it requires, 
-    and it's not scaled when table is resized */
-    flex: 0 0 auto;
-    width: calc(100% - 0.9em);
-}
-.table-container table tbody {
-    /* body takes all the remaining available space */
-    flex: 1 1 auto;
-    display: block;
-    overflow-y: scroll;
-}
-.table-container table tbody tr {
-    width: 100%;
-}
-.table-container table thead,
-.table-container table tbody tr {
-    display: table;
-    table-layout: fixed;
-}
 
-.table-container table {
-    border: 1px solid lightgrey;
-}
-.table-container table td, .table-container table th {
-    padding: 0.3em;
-    border: 1px solid lightgrey;
-}
-.table-container table th {
-    border: 1px solid grey;
-}
-</style>
 <div class="main-panel">
     <div class="content">
         <div class="container-fluid">
@@ -55,70 +15,61 @@ height: 193px;
                             </div>
                             <div class="card-content">
                                 <div class="row">
-                                    <label class="col-sm-1 label-on-left">Name</label>
-                                    <div class="col-sm-5">
-                                        <div class="form-group label-floating is-empty has-success">
-                                            <label class="control-label"></label>
+                                    <div class="col-md-6">
+                                        <div class="form-group label-floating">
+                                            <label class="control-label">Customer Name</label>
                                             <input type="text" class="form-control" value="">
                                         </div>
                                     </div>
-                                    <label class="col-sm-1 label-on-left">Mobile No.</label>
-                                    <div class="col-sm-5">
-                                        <div class="form-group label-floating is-empty has-success">
-                                            <label class="control-label"></label>
+                                    <div class="col-md-6">
+                                        <div class="form-group label-floating">
+                                            <label class="control-label">Mobile No</label>
                                             <input type="text" class="form-control" value="">
                                         </div>
                                     </div>
                                 </div>
+
                                 <div class="row">
-                                    <label class="col-sm-1 label-on-left">Address</label>
-                                    <div class="col-sm-5">
-                                        <div class="form-group label-floating is-empty has-success">
-                                            <label class="control-label"></label>
+                                    <div class="col-md-6">
+                                        <div class="form-group label-floating">
+                                            <label class="control-label">Address</label>
                                             <input type="text" class="form-control" value="">
                                         </div>
                                     </div>
-                                    <div class="col-sm-6">
-                                        <div class="checkbox checkbox-inline">
-                                            <label>
-                                                <input type="checkbox" name="optionsCheckboxes">Delivery
-                                            </label>
-                                        </div>
-                                        <div class="checkbox checkbox-inline">
-                                            <label>
-                                                <input type="checkbox" name="optionsCheckboxes">Pick Up
-                                            </label>
-                                        </div>
-                                        <div class="checkbox checkbox-inline">
-                                            <label>
-                                                <input type="checkbox" name="optionsCheckboxes">Dine In
-                                            </label>
-                                        </div>
-                                    </div>
-                                </div>
-                                <hr>
-                                <div class="row">
-                                    <label class="col-sm-1 label-on-left">Item</label>
-                                    <div class="col-sm-5">
-                                        <div class="form-group label-floating is-empty has-success">
-                                            <label class="control-label"></label>
-                                            <input type="text" class="form-control" value="" id="item">
-                                            <ul class= "list-group" id="suggestion">
-                                                
-                                            </ul>
-                                        </div>
-                                    </div>
-                                    <label class="col-sm-1 label-on-left">Special Note</label>
-                                    <div class="col-sm-5">
-                                        <div class="form-group label-floating is-empty has-success">
-                                            <label class="control-label"></label>
-                                            <input type="text" class="form-control" value="" id="specialNote">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <div class="radio radio-inline">
+                                                <label>
+                                                    <input type="radio" name="orderType">Delivery
+                                                </label>
+                                            </div>
+                                            <div class="radio radio-inline">
+                                                <label>
+                                                    <input type="radio" name="orderType">Pick Up
+                                                </label>
+                                            </div>
+                                            <div class="radio radio-inline">
+                                                <label>
+                                                    <input type="radio" name="orderType">Dine In
+                                                </label>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
+                                
+
+                                </br></br>
                                 <div class="table-container">
                                     <table>
                                         <thead>
+                                            <tr>
+                                                <th colspan="2">
+                                                    <input type="text" style="width:100%"  id="item" placeholder="Search Items"/>
+                                                    <ul class= "list-group" id="suggestion"></ul>
+                                                </th>
+                                                <th colspan="3"><input type="text" style="width:100%" id="specialNote" placeholder="Special Note"/></th>
+                                            </tr>
+                                        
                                             <tr>
                                                 <th>Item</th>
                                                 <th>Special Note</th>
@@ -128,18 +79,12 @@ height: 193px;
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            <tr>
-                                                <td>content1</td>
-                                                <td>content2</td>
-                                                <td>content3</td>
-                                                <td>content4</td>
-                                                <td>content4</td>
-                                            </tr>
+                                            
                                         </tbody>
                                     </table>
                                 </div>
                                 <div class="table-responsive">
-                                    <table class="table">
+                                    <table class="table table-bordered">
                                         <tbody>
                                             <tr>
                                                 <td colspan="3" class="text-right">Total Qty.</td>
@@ -204,7 +149,7 @@ height: 193px;
                 {
                     data.push('<li class="list-group-item" onclick="getItems('+ items[i] +')">'+ items[i].name +'</li>');
                 }
-                $("#suggestion").html(data);
+                $("#suggestion").html(data).show();
             }
         })
     }
@@ -216,7 +161,14 @@ height: 193px;
 
     $("#item").keyup(function(){
         let itemText = $("#item").val();
-        getMenuItems(itemText);
+        if (itemText) 
+        {
+            getMenuItems(itemText);
+        }
+        else
+        {
+            $("#suggestion").hide();
+        }
     });
     
 </script>
