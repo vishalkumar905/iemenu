@@ -53,4 +53,8 @@
         max-height: 294px;
         overflow-y: auto;
     }
+
+    .quantity {
+        width: 60%;
+    }
 </style>

@@ -11,7 +11,7 @@
                     <div class="card">
                         <form method="get" action="" class="form-horizontal">
                             <div class="card-header card-header-text" data-background-color="rose">
-                                <h4 class="card-title">Generate Bill</h4>
+                                <h4 class="card-title">Self Billing</h4>
                             </div>
                             <div class="card-content">
                                 <div class="row">
@@ -72,13 +72,14 @@
                                         
                                             <tr>
                                                 <th>Item</th>
+                                                <th>Item Type</th>
                                                 <th>Special Note</th>
                                                 <th>Qty.</th>
                                                 <th>Price</th>
                                                 <th>Amount</th>
                                             </tr>
                                         </thead>
-                                        <tbody>
+                                        <tbody id="menuItems">
                                             
                                         </tbody>
                                     </table>
@@ -147,16 +148,22 @@
                 let data = [];
                 for(i=0; i < items.length; i++)
                 {
-                    data.push('<li class="list-group-item" onclick="getItems('+ items[i] +')">'+ items[i].name +'</li>');
+                    let price = items[i].price.replace(/[\[\]"']+/g, "");
+                    let itemType = items[i].price_desc.replace(/[\[\]"']+/g, "");
+                    
+                    let tax = null;
+                    if(items[i].taxes != null)
+                    {
+                        tax = items[i].taxes.replace(/["']/g, "");
+                    }
+
+                    data.push('<li class="list-group-item" id="items-'+ items[i].item_id +'" data-price="'+ price +'" data-menuid="'+ items[i].menu_id +'" data-itemType="'+ itemType +'" data-tax="'+ tax +'" data-name="'+ items[i].name +'" >'+ items[i].name +'</li>');
                 }
                 $("#suggestion").html(data).show();
+
+                $("[id^=items-]").click(addItem); 
             }
         })
-    }
-
-    function getItems(getItems) 
-    {
-        console.log(getItems);
     }
 
     $("#item").keyup(function(){
@@ -170,5 +177,55 @@
             $("#suggestion").hide();
         }
     });
+
+    let addItem = function() {
+        let id = $(this).attr("id").split("-");
+            id= id[1];
+        let itemName = $(this).attr("data-name");
+        let price = $(this).attr("data-price");
+        let menuId = $(this).attr("data-menuid");
+        let tax = $(this).attr("data-tax");
+        let itemType = $(this).attr("data-itemType");
+        let itemTypeToArray = itemType.split(",");
+        let priceToArray = price.split(",");
+
+        $("#item").val(itemName);
+        $("#suggestion").hide();
+       
+        var selectBox = "";
+                
+        if(itemTypeToArray.length > 1)
+        {
+            selectBox += "<select id='itemType'>";
+            selectBox += "<option>Select Type</option>";
+            selectBox += "<option value='"+ itemTypeToArray[0] +"'>"+ itemTypeToArray[0] +"</option>";
+            selectBox += "<option value='"+ itemTypeToArray[1] +"'>"+ itemTypeToArray[1] +"</option>";
+            selectBox += "</select>";
+        } 
+        else 
+        {
+            selectBox += "<select id='itemType'>";
+            selectBox += "<option value='"+ itemTypeToArray[0] +"'>"+ itemTypeToArray[0] +"</option>";
+            selectBox += "</select>";
+        }
+        var priceValue = "";
+        if(priceToArray.length > 1)
+        {
+            priceValue = '';
+        }
+
+        var itemData = "";
+        itemData += "'<tr>";
+        itemData += "<td>"+ itemName +" </td>";
+        itemData += "<td>"+ selectBox +" </td>";
+        itemData += "<td></td>";
+        itemData += "<td> <input type='number' value='1' class='quantity'> </td>";
+        itemData += "<td>"+ price +" </td>";
+        itemData += "<td>"+ price +" </td>";
+        itemData += "</tr>'"
+
+        $("#menuItems").append(itemData);
+    }
+
     
 </script>

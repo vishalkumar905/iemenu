@@ -73,6 +73,9 @@
 								<li>
                                     <a href="<?php echo base_url(); ?>Restaurant/translist">View Transaction</a>
                                 </li>
+                                <li>
+                                    <a href="<?php echo base_url(); ?>Selfbilling">Self Billing</a>
+                                </li>
                             </ul>
                         </div>
                     </li>
