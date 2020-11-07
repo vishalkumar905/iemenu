@@ -89,7 +89,9 @@
                                             </tr>
                                         </thead>
                                         <tbody id="menuItems">
-                                            
+                                            <div id="itemErr" class="alert alert-danger displaynone" role="alert">
+                                                <span aria-hidden="true"></span> Please select some item
+                                            </div>
                                         </tbody>
                                     </table>
                                 </div>
@@ -323,31 +325,30 @@
         let mobieNumber = $("#mobieNumber").val();
         let orderType = $("input[name='orderType']:checked").val();
 
+        $("#nameError").hide();
+        $("#addressErr").hide();
+        $("#mobileErr").hide();
+        $("#itemErr").hide();
+    
         if(customerName == "")
         {
             $("#nameError").show();
-        }
-        else
-        {
-            $("#nameError").hide();
+            return;
         }
 
         if(address == "")
         {
             $("#addressErr").show();
         }
-        else 
-        {
-            $("#addressErr").hide();
-        }
 
         if(mobieNumber == "")
         {
             $("#mobileErr").show();
         }
-        else
+
+        if(jQuery.isEmptyObject(selectedMenuItems))
         {
-            $("#mobileErr").hide();
+            $("#itemErr").show();
         }
 
         let data = {
