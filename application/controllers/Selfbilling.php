@@ -13,6 +13,7 @@ class Selfbilling extends CI_Controller
             redirect('login');
         }
 		$this->load->model('login/DashboardModel','dashboardModel');
+		$this->load->model('UserModel','usermodel');
 		$this->load->model('SelfbillingModel','Selfbilling');
 	}
 
@@ -27,8 +28,88 @@ class Selfbilling extends CI_Controller
 		header("Content-Type: application/json", true);
         $search = $this->input->get('search');
         $userId = $this->session->userid;
-        $data['items'] = $this->Selfbilling->getMenuItems($userId, $search);
+        $results = $this->Selfbilling->getMenuItems($userId, $search);
+        
+        if(!empty($results))
+        {
+            foreach ($results as &$result) {
+                $result['price'] = json_decode($result['price']);
+                $result['price_desc'] = json_decode($result['price_desc']);
+                // $result['name'] = json_decode($result['name']);
+                if(!empty($result['taxes']))
+                {
+                    $result['taxes'] = str_replace('"', '', $result['taxes']);
+                }
+            }
+        }
+
+        $data['items'] = $results;
         echo json_encode($data);
+    }
+
+    public function lastOrder($restId)
+    {
+        $O_ID = 10000001;
+        $data = $this->usermodel->lastOrder($restId);
+        if(!empty($data))
+        {
+            if($data[0]->order_id == '') 
+            { 
+                $O_ID = $O_ID; 
+            }
+            else 
+            { 
+                $O_ID = $data[0]->order_id + 1; 
+            }
+        }
+        
+        return $O_ID;
+    }
+
+    public function saveSelfBilling()
+    {   
+        header('Access-Control-Allow-Origin: *');  
+		header("Content-Type: application/json", true);
+        $data = $this->input->post();
+
+        foreach($data['selectedItem'] as &$items) 
+        {
+            $items = [
+                $items['itemType']=> [
+                    "itemName" => $items['itemName'],
+                    "itemPrice"=> $items['itemPrice'],
+                    "itemImage"=> "",
+                    "itemType"=> $items['itemType'],
+                    "itemOldPrice"=> $items['itemPrice'],
+                    "itemFoodType"=> "",
+                    "itemCount"=> $items['itemQty'],
+                    "itemTaxes"=> ""
+                ]
+            ];               
+        }
+
+        $userId = $this->session->userid;
+        $orderId = $this->lastOrder($userId);
+        $items = json_encode($data['selectedItem']);
+        
+        $data = [
+            "order_id" => $orderId,
+            "res_id" => $userId,
+            "buyer_name" => $data['customerName'],
+            "buyer_address" => $data['address'],
+            "buyer_phone_number" => $data['mobile'],
+            "order_type" => $data['orderType'],
+            "item_details" => $items,
+            "item_temp_details" => $items
+        ];
+
+        $this->db->insert('orders', $data);
+
+        $response = [
+            'status' => "success",
+            'msg' => "Order created successfully"
+        ];
+        echo json_encode($response);
     }
 }
 

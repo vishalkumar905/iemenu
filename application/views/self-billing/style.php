@@ -54,7 +54,14 @@
         overflow-y: auto;
     }
 
-    .quantity {
+    #suggestion li {
+        cursor: pointer;
+    }
+
+    .width60 {
         width: 60%;
+    }
+    .displaynone {
+        display: none;
     }
 </style>
