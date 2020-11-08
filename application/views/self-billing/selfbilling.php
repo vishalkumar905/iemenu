@@ -75,8 +75,10 @@
                                                 </th>
                                                 <th colspan="3"><input type="text" style="width:100%" id="specialNote" placeholder="Special Note"/></th>
                                             </tr>
-                                        
+                                        </thead>
+                                        <thead>
                                             <tr>
+                                                <th style="width: 5% !important;">#</th>
                                                 <th>Item</th>
                                                 <th>Item Type</th>
                                                 <th>Special Note</th>
@@ -98,7 +100,7 @@
                                         <tbody>
                                             <tr>
                                                 <td colspan="3" class="text-right" >Total Qty.</td>
-                                                <td class="text-right"><span id="totalQty">1</span></td>
+                                                <td class="text-right"><span id="totalQty">0</span></td>
                                                 <td class="text-right">Sub Total</td>
                                                 <td><span id="subTotal"></span></td>
                                             </tr>
@@ -273,16 +275,17 @@
         selectBox += "</select>";
 
 
-        var itemData = "";
-        itemData += "'<tr>";
-        itemData += "<td>"+ itemName +" </td>";
-        itemData += "<td>"+ selectBox +" </td>";
-        itemData += "<td><span itemid='"+ id +"' id='item[itemNote]["+ id +"]'>"+ specialNote +"</span></td>";
-        itemData += "<td> <input type='number' min='1' value='1' itemid='"+ id +"' class='width60' name='item[qty]["+ id +"]'> </td>";
-        itemData += "<td><span itemid='"+ id +"' id='item[price]["+ id +"]'> "+ priceArray[0] +" </span></td>";
-        itemData += "<td><span itemid='"+ id +"' id='item[tax]["+ id +"]'> "+ taxAmount +" </span></td>";
-        itemData += "<td><span itemid='"+ id +"' id='item[totalPrice]["+ id +"]'> "+ itemTotalAmount +" </span></td>";
-        itemData += "</tr>'"
+        let itemData = "";
+            itemData += "<tr id='itemRow-"+ id +"'>";
+            itemData += "<td class='width5'><span class='pointer' itemid='"+ id +"' id='removeItem-"+ id +"'><i class='material-icons cursor-pointer'>clear</i></span></td>";
+            itemData += "<td>"+ itemName +" </td>";
+            itemData += "<td>"+ selectBox +" </td>";
+            itemData += "<td><span itemid='"+ id +"' id='item[itemNote]["+ id +"]'>"+ specialNote +"</span></td>";
+            itemData += "<td> <input type='number' min='1' value='1' itemid='"+ id +"' class='width60' name='item[qty]["+ id +"]'> </td>";
+            itemData += "<td><span itemid='"+ id +"' id='item[price]["+ id +"]'> "+ priceArray[0] +" </span></td>";
+            itemData += "<td><span itemid='"+ id +"' id='item[tax]["+ id +"]'> "+ taxAmount +" </span></td>";
+            itemData += "<td><span itemid='"+ id +"' id='item[totalPrice]["+ id +"]'> "+ itemTotalAmount +" </span></td>";
+            itemData += "</tr>";
 
         $("#menuItems").append(itemData);
         
@@ -318,6 +321,16 @@
             selectedMenuItems[itemId].itemQty = qty;
             selectedMenuItems[itemId].itemTotalAmount = totalAmount;
             calculateOrderTotal();
+        });
+
+        $("span[id^='removeItem-']").click(function() {
+            let itemId = Number($(this).attr('itemid'));
+            if (selectedMenuItems[itemId])
+            {
+                delete selectedMenuItems[itemId];
+                calculateOrderTotal();
+                $("#itemRow-" + itemId).remove();
+            }
         });
     }
 

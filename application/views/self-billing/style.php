@@ -1,4 +1,11 @@
 <style>
+
+    .width60 {
+        width: 60%;
+    }
+    .width5 {
+        width: 5% !important;
+    }
     .table-container {
         height: 350px;
     }
@@ -58,10 +65,12 @@
         cursor: pointer;
     }
 
-    .width60 {
-        width: 60%;
-    }
     .displaynone {
         display: none;
+    }
+
+    .pointer
+    {
+        cursor: pointer;
     }
 </style>
