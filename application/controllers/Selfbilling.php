@@ -45,6 +45,7 @@ class Selfbilling extends CI_Controller
                     {
                         $taxDetails[] = ['taxName' =>  $tax['tax_type'], 'taxPercentage' => $tax['tax_percent']];
                     }
+
                     $result['taxes'] = $taxDetails;
                 }
             }
@@ -77,18 +78,18 @@ class Selfbilling extends CI_Controller
     {   
         header('Access-Control-Allow-Origin: *');  
 		header("Content-Type: application/json", true);
-        $data = $this->input->post();
+        $postData = $this->input->post();
         
-        foreach($data['selectedItem'] as &$items) 
+        foreach($postData['selectedItem'] as &$items) 
         {
-            $totalPrice = $items['itemPrice'] + $items['itemTax']; 
+            $totalPrice = floatval($items['itemPrice']) + floatval($items['itemTax']); 
             $items = [
-                $items['itemType']=> [
+                $items['itemType'] => [
                     "itemName" => $items['itemName'],
                     "itemPrice"=> $totalPrice,
                     "itemImage"=> "",
                     "itemType"=> $items['itemType'],
-                    "itemOldPrice"=> $items['itemPrice'],
+                    "itemOldPrice"=> floatval($items['itemPrice']),
                     "itemFoodType"=> "",
                     "itemCount"=> $items['itemQty'],
                     "itemTaxes"=> $items['itemTaxDetails']
@@ -98,30 +99,41 @@ class Selfbilling extends CI_Controller
 
         $userId = $this->session->userid;
         $orderId = $this->lastOrder($userId);
-        $items = json_encode($data['selectedItem']);
+        $items = json_encode($postData['selectedItem']);
         
         $data = [
             "order_id" => $orderId,
             "res_id" => $userId,
-            "buyer_name" => $data['customerName'],
-            "buyer_address" => $data['address'],
-            "buyer_phone_number" => $data['mobile'],
-            "order_type" => $data['orderType'],
+            "buyer_name" => $postData['customerName'],
+            "buyer_address" => $postData['address'],
+            "buyer_phone_number" => $postData['mobile'],
+            "order_type" => $postData['orderType'],
             "item_details" => $items,
             "item_temp_details" => $items,
             "order_status" => 1,
-            "txn_id" => $data['transictionId'],
-            "total" => $data['grandTotal'],
+            "txn_id" => $postData['transictionId'],
+            "total" => $postData['grandTotal'],
             "payment_status" => 1,
-            "payment_mode" => $data['paymentType']
+            "payment_mode" => $postData['paymentType'],
+            "created_at" => date('Y-m-d H:i:s'),
+            "container_charge" => $this->input->post('containerCharge'),
+            "delivery_charge" => $this->input->post('deliveryCharge'),
+            "customer_paid" => floatval($this->input->post('customerPaid')),
         ];
-
-        $this->db->insert('orders', $data);
 
         $response = [
-            'status' => "success",
-            'msg' => "Order created successfully"
+            'status' => "false",
+            'msg' => "Something went wrong"
         ];
+
+        if ($this->db->insert('orders', $data))
+        {
+            $response = [
+                'status' => "success",
+                'msg' => "Order created successfully"
+            ];
+        }
+
         echo json_encode($response);
     }
 

@@ -2,8 +2,8 @@
 <?php $this->load->view('comman/sidebar'); ?>
 <?php $this->load->view('self-billing/style'); ?>
 
-
 <div class="main-panel">
+    <?php $this->load->view('comman/headNav'); ?>
     <div class="content">
         <div class="container-fluid">
             <div class="row">
@@ -69,7 +69,7 @@
                                     <table>
                                         <thead>
                                             <tr>
-                                                <th colspan="3">
+                                                <th colspan="4">
                                                     <input type="text" style="width:100%"  id="item" placeholder="Search Items"/>
                                                     <ul class= "list-group" id="suggestion"></ul>
                                                 </th>
@@ -371,14 +371,12 @@
         $("#grandTotal").text(roundOff);
     }
 
-    $("#deliveryCharge").keyup(calculateOrderTotal);
-
-    $("#containerCharge").keyup(calculateOrderTotal);
+    $("#deliveryCharge").on('keyup, change', calculateOrderTotal);
+    $("#containerCharge").on('keyup, change', calculateOrderTotal);
 
     $("#customerPaid").keyup(calculateOrderTotal); 
 
-    $('input:radio[name="paymentType"]').change(
-    function(){
+    $('input:radio[name="paymentType"]').change(function(){
         $("#TransictionIdField").hide();
         if (this.checked && this.value == '4') {
             $("#TransictionIdField").show();
@@ -393,6 +391,9 @@
         let paymentType = $("input[name='paymentType']:checked").val();
         let transictionId = $("#transictionId").val();
         let grandTotal = $("#grandTotal").text();
+        let deliveryCharge = $("#deliveryCharge").val();
+        let containerCharge = $("#containerCharge").val();
+        let customerPaid = $("#customerPaid").val();
 
         $("#nameError").hide();
         $("#addressErr").hide();
@@ -432,7 +433,10 @@
             paymentType: paymentType,
             grandTotal: grandTotal,
             transictionId: transictionId,
-            selectedItem: selectedMenuItems
+            selectedItem: selectedMenuItems,
+            deliveryCharge,
+            containerCharge,
+            customerPaid
         };
 
         $.ajax({
@@ -443,8 +447,11 @@
             success: function(response) {
                 if(response.status == "success")
                 {
-                    alert(response.msg);
-                    location.reload();
+                    swal(response.msg, {
+					    icon: "success",
+					}).then((value) => {
+					    location.reload();
+					});
                 }
             }
         })
