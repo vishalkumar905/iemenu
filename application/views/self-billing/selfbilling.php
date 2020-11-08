@@ -334,6 +334,7 @@
         let totalTax = 0;
         let deliveryCharge = Number($("#deliveryCharge").val());
         let containerCharge = Number($("#containerCharge").val());
+        let customerPaid = Number($("#customerPaid").val());
 
         for(let item in selectedMenuItems)
         {
@@ -353,6 +354,16 @@
         let totalOrderAmount = totalItemsPrice + deliveryCharge + containerCharge;
         let roundOff = Math.round(totalOrderAmount);
 
+        if(customerPaid != "")
+        {
+            let returnToCustomer = customerPaid - roundOff;
+            $("#customerReturn").text(returnToCustomer);
+        }
+        else 
+        {
+            $("#customerReturn").text("");
+        }
+
         $("#subTotal").text(totalItemsPrice);
         $("#total").text(totalItemsPrice);
         $("#totalQty").text(totalQty);
@@ -362,7 +373,9 @@
 
     $("#deliveryCharge").keyup(calculateOrderTotal);
 
-    $("#containerCharge").keyup(calculateOrderTotal); 
+    $("#containerCharge").keyup(calculateOrderTotal);
+
+    $("#customerPaid").keyup(calculateOrderTotal); 
 
     $('input:radio[name="paymentType"]').change(
     function(){
