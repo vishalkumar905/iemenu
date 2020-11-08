@@ -195,7 +195,7 @@
                 }
                 $("#suggestion").html(data).show();
 
-                $("[id^=items-]").click(addItem); 
+                $("#suggestion > li").click(addItem); 
             }
         })
     }
