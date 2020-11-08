@@ -104,31 +104,31 @@
                                             </tr>
                                             <tr>
                                                 <td colspan="5" class="text-right">Total(&#x20B9;)</td>
-                                                <td><span id="total"></span></td>
+                                                <td class="col-md-3"><span id="total"></span></td>
                                             </tr>
                                             <tr>
                                                 <td colspan="5" class="text-right">Delivery Charge</td>
-                                                <td><input type="number" class="width60" min="0" value="0" id="deliveryCharge"></td>
+                                                <td class="col-md-3"><input type="number" class="width60" min="0" value="0" id="deliveryCharge"></td>
                                             </tr>
                                             <tr>
                                                 <td colspan="5" class="text-right">Container Charge</td>
-                                                <td><input type="number" class="width60" min="0"  value="0" id="containerCharge"></td>
+                                                <td class="col-md-3"><input type="number" class="width60" min="0"  value="0" id="containerCharge"></td>
                                             </tr>
                                             <tr>
                                                 <td colspan="5" class="text-right">Round off</td>
-                                                <td><span id="roundOff"></span></td>
+                                                <td class="col-md-3"><span id="roundOff"></span></td>
                                             </tr>
                                             <tr>
                                                 <td colspan="5" class="text-right">Grand Total (&#x20B9;)</td>
-                                                <td><span id="grandTotal"></span></td>
+                                                <td class="col-md-3"><span id="grandTotal"></span></td>
                                             </tr>
                                             <tr>
                                                 <td colspan="5" class="text-right">Customer Paid</td>
-                                                <td><input type="number" id="customerPaid" min="0" class="width60"></td>
+                                                <td class="col-md-3"><input type="number" id="customerPaid" min="0" class="width60"></td>
                                             </tr>
                                             <tr>
                                                 <td colspan="5" class="text-right">Return to Customer</td>
-                                                <td><span id="customerReturn"></span></td>
+                                                <td class="col-md-3"><span id="customerReturn"></span></td>
                                             </tr>
                                         </tbody>
                                     </table>
@@ -225,11 +225,14 @@
         let taxAmount = 0;
         let itemAmount = Number(priceArray[0]);
         let itemTotalAmount = itemAmount;
+        let specialNote = $("#specialNote").val();
 
         if(selectedMenuItems[id])
         {
             return false;
         }
+
+        $("#specialNote").val('');
 
         selectedMenuItems[id] = {
             itemId: id,
@@ -239,7 +242,8 @@
             itemTax: taxAmount,
             itemQty: 1,
             itemTaxDetails:null,
-            itemTotalAmount: itemTotalAmount
+            itemTotalAmount: itemTotalAmount,
+            specialNote: specialNote
         }
 
         if(taxes != ("null" || ""))
@@ -273,7 +277,7 @@
         itemData += "'<tr>";
         itemData += "<td>"+ itemName +" </td>";
         itemData += "<td>"+ selectBox +" </td>";
-        itemData += "<td><span itemid='"+ id +"' id='item[itemNote]["+ id +"]'></span></td>";
+        itemData += "<td><span itemid='"+ id +"' id='item[itemNote]["+ id +"]'>"+ specialNote +"</span></td>";
         itemData += "<td> <input type='number' min='1' value='1' itemid='"+ id +"' class='width60' name='item[qty]["+ id +"]'> </td>";
         itemData += "<td><span itemid='"+ id +"' id='item[price]["+ id +"]'> "+ priceArray[0] +" </span></td>";
         itemData += "<td><span itemid='"+ id +"' id='item[tax]["+ id +"]'> "+ taxAmount +" </span></td>";

@@ -86,6 +86,7 @@ class Selfbilling extends CI_Controller
             $items = [
                 $items['itemType'] => [
                     "itemName" => $items['itemName'],
+                    "itemNote" => $items['specialNote'],
                     "itemPrice"=> $totalPrice,
                     "itemImage"=> "",
                     "itemType"=> $items['itemType'],
@@ -94,7 +95,7 @@ class Selfbilling extends CI_Controller
                     "itemCount"=> $items['itemQty'],
                     "itemTaxes"=> $items['itemTaxDetails']
                 ]
-            ];               
+            ];
         }
 
         $userId = $this->session->userid;
