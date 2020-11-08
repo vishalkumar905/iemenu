@@ -35,14 +35,21 @@ class Selfbilling extends CI_Controller
             foreach ($results as &$result) {
                 $result['price'] = json_decode($result['price']);
                 $result['price_desc'] = json_decode($result['price_desc']);
-                // $result['name'] = json_decode($result['name']);
+                
                 if(!empty($result['taxes']))
                 {
-                    $result['taxes'] = str_replace('"', '', $result['taxes']);
+                    $taxId = unserialize($result['taxes']);
+                    $taxes = $this->Selfbilling->getTaxList($taxId, $userId);
+                    
+                    foreach ($taxes as $tax) 
+                    {
+                        $taxDetails[] = ['taxName' =>  $tax['tax_type'], 'taxPercentage' => $tax['tax_percent']];
+                    }
+                    $result['taxes'] = $taxDetails;
                 }
             }
         }
-
+       
         $data['items'] = $results;
         echo json_encode($data);
     }
@@ -71,19 +78,20 @@ class Selfbilling extends CI_Controller
         header('Access-Control-Allow-Origin: *');  
 		header("Content-Type: application/json", true);
         $data = $this->input->post();
-
+        
         foreach($data['selectedItem'] as &$items) 
         {
+            $totalPrice = $items['itemPrice'] + $items['itemTax']; 
             $items = [
                 $items['itemType']=> [
                     "itemName" => $items['itemName'],
-                    "itemPrice"=> $items['itemPrice'],
+                    "itemPrice"=> $totalPrice,
                     "itemImage"=> "",
                     "itemType"=> $items['itemType'],
                     "itemOldPrice"=> $items['itemPrice'],
                     "itemFoodType"=> "",
                     "itemCount"=> $items['itemQty'],
-                    "itemTaxes"=> ""
+                    "itemTaxes"=> $items['itemTaxDetails']
                 ]
             ];               
         }
@@ -100,7 +108,12 @@ class Selfbilling extends CI_Controller
             "buyer_phone_number" => $data['mobile'],
             "order_type" => $data['orderType'],
             "item_details" => $items,
-            "item_temp_details" => $items
+            "item_temp_details" => $items,
+            "order_status" => 1,
+            "txn_id" => $data['transictionId'],
+            "total" => $data['grandTotal'],
+            "payment_status" => 1,
+            "payment_mode" => $data['paymentType']
         ];
 
         $this->db->insert('orders', $data);
@@ -111,6 +124,7 @@ class Selfbilling extends CI_Controller
         ];
         echo json_encode($response);
     }
+
 }
 
 ?>

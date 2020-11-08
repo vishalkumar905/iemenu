@@ -29,5 +29,12 @@ class SelfbillingModel extends CI_MODEL
         $query = $this->db->get();
         return $query->result_array();
     }
+
+    public function getTaxList($taxId, $restId)
+    {
+        $this->db->select('*')->from('res_tax')->where_in('tax_id', $taxId)->where('rest_id', $restId);
+        $query = $this->db->get();
+        return $query->result_array();
+    }
 }
 ?>

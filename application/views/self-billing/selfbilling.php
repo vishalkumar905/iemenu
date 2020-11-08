@@ -19,7 +19,7 @@
                                         <div class="form-group label-floating">
                                             <label class="control-label">Customer Name</label>
                                                 <input type="text" class="form-control" value="" name="customerName" id="customerName">
-                                            <div id="nameError" class="alert alert-danger displaynone" role="alert">
+                                            <div id="nameError" class="text-danger displaynone" role="alert">
                                                 <span aria-hidden="true"></span> Please enter customer name
                                             </div>
                                         </div>
@@ -28,7 +28,7 @@
                                         <div class="form-group label-floating">
                                             <label class="control-label">Mobile No</label>
                                                 <input type="text" class="form-control" value="" name="mobieNumber" id="mobieNumber">
-                                            <div id="mobileErr" class="alert alert-danger displaynone" role="alert">
+                                            <div id="mobileErr" class="text-danger displaynone" role="alert">
                                                 <span aria-hidden="true"></span> Please enter mobile number
                                             </div>
                                         </div>
@@ -39,10 +39,7 @@
                                     <div class="col-md-6">
                                         <div class="form-group label-floating">
                                             <label class="control-label">Address</label>
-                                                <input type="text" class="form-control" value="" name="address" id="address">
-                                            <div id="addressErr" class="alert alert-danger displaynone" role="alert">
-                                                <span aria-hidden="true"></span> Please enter address
-                                            </div>
+                                            <input type="text" class="form-control" value="" name="address" id="address">
                                         </div>
                                     </div>
                                     <div class="col-md-6">
@@ -54,12 +51,12 @@
                                             </div>
                                             <div class="radio radio-inline">
                                                 <label>
-                                                    <input type="radio" name="orderType" value="Pick Up">Pick Up
+                                                    <input type="radio" name="orderType" value="Take Away">Pick Up
                                                 </label>
                                             </div>
                                             <div class="radio radio-inline">
                                                 <label>
-                                                    <input type="radio" name="orderType" value="Dine In">Dine In
+                                                    <input type="radio" name="orderType" value="Dine-in">Dine In
                                                 </label>
                                             </div>
                                         </div>
@@ -85,11 +82,12 @@
                                                 <th>Special Note</th>
                                                 <th>Qty.</th>
                                                 <th>Price</th>
+                                                <th>Tax</th>
                                                 <th>Amount</th>
                                             </tr>
                                         </thead>
                                         <tbody id="menuItems">
-                                            <div id="itemErr" class="alert alert-danger displaynone" role="alert">
+                                            <div id="itemErr" class="text-danger displaynone" role="alert">
                                                 <span aria-hidden="true"></span> Please select some item
                                             </div>
                                         </tbody>
@@ -140,19 +138,26 @@
                                         <div class="form-group">
                                             <div class="radio radio-inline">
                                                 <label>
-                                                    <input type="radio" name="orderType">Card
+                                                    <input type="radio" name="paymentType" value="1" checked="checked">Cash 
                                                 </label>
                                             </div>
                                             <div class="radio radio-inline">
                                                 <label>
-                                                    <input type="radio" name="orderType">Due Payment
+                                                    <input type="radio" name="paymentType" value="3">UPI QR Scan
                                                 </label>
                                             </div>
                                             <div class="radio radio-inline">
                                                 <label>
-                                                    <input type="radio" name="orderType">Part Payment
+                                                    <input type="radio" name="paymentType" value="4">Card Swipe
                                                 </label>
                                             </div>
+                                            <div class="displaynone" id="TransictionIdField">
+                                                <p>Transaction Id (If swiped by card)</p>
+                                                <input type="text" id="transictionId" placeholder="Enter by cashier" class="form-control">
+                                            </div>
+                                        </div>
+                                        <div id="paymentError" class="text-danger displaynone" role="alert">
+                                            <span aria-hidden="true"></span> Please input transiction id
                                         </div>
                                     </div>
                                     <div class="col-md-6">
@@ -183,9 +188,10 @@
             {
                 let items = response.items;
                 let data = [];
+
                 for(i=0; i < items.length; i++)
                 {
-                    data.push('<li class="list-group-item" id="items-'+ items[i].item_id +'" data-price="'+ items[i].price +'" data-menuid="'+ items[i].menu_id +'" data-itemType="'+ items[i].price_desc +'" data-tax="'+ items[i].taxes +'" data-name="'+ items[i].name +'" >'+ items[i].name +'</li>');
+                    data.push('<li class="list-group-item" id="items-'+ items[i].item_id +'" data-price="'+ items[i].price +'" data-menuid="'+ items[i].menu_id +'" data-itemType="'+ items[i].price_desc +'" data-tax='+ JSON.stringify(items[i].taxes) +' data-name="'+ items[i].name +'" >'+ items[i].name +'</li>');
                 }
                 $("#suggestion").html(data).show();
 
@@ -212,10 +218,13 @@
         let itemName = $(this).attr("data-name");
         let price = $(this).attr("data-price");
         let menuId = $(this).attr("data-menuid");
-        let tax = $(this).attr("data-tax");
+        let taxes = $(this).attr("data-tax");
         let itemType = $(this).attr("data-itemType");
         let itemArray = itemType.split(",");
         let priceArray = price.split(",");
+        let taxAmount = 0;
+        let itemAmount = Number(priceArray[0]);
+        let itemTotalAmount = itemAmount;
 
         if(selectedMenuItems[id])
         {
@@ -225,11 +234,25 @@
         selectedMenuItems[id] = {
             itemId: id,
             itemName: itemName,
-            itemPrice: priceArray[0],
+            itemPrice: itemAmount,
             itemType: itemArray[0],
-            itemTax: tax,
+            itemTax: taxAmount,
             itemQty: 1,
-            itemTotalAmount: priceArray[0]
+            itemTaxDetails:null,
+            itemTotalAmount: itemTotalAmount
+        }
+
+        if(taxes != ("null" || ""))
+        {
+            let tax = JSON.parse(taxes);
+            let itemTaxTotal = calculateItemTax(tax, itemAmount);
+            
+            taxAmount = itemTaxTotal;
+            itemTotalAmount += itemTaxTotal;
+
+            selectedMenuItems[id].itemTaxDetails = tax;
+            selectedMenuItems[id].itemTax = itemTaxTotal;
+            selectedMenuItems[id].itemTotalAmount = itemTotalAmount;
         }
 
         $("#item").val(itemName);
@@ -253,7 +276,8 @@
         itemData += "<td><span itemid='"+ id +"' id='item[itemNote]["+ id +"]'></span></td>";
         itemData += "<td> <input type='number' min='1' value='1' itemid='"+ id +"' class='width60' name='item[qty]["+ id +"]'> </td>";
         itemData += "<td><span itemid='"+ id +"' id='item[price]["+ id +"]'> "+ priceArray[0] +" </span></td>";
-        itemData += "<td><span itemid='"+ id +"' id='item[totalPrice]["+ id +"]'> "+ priceArray[0] +" </span></td>";
+        itemData += "<td><span itemid='"+ id +"' id='item[tax]["+ id +"]'> "+ taxAmount +" </span></td>";
+        itemData += "<td><span itemid='"+ id +"' id='item[totalPrice]["+ id +"]'> "+ itemTotalAmount +" </span></td>";
         itemData += "</tr>'"
 
         $("#menuItems").append(itemData);
@@ -272,9 +296,9 @@
             $("span[id='item[price]["+ itemId +"]']").text(itemPrice);
             $("span[id='item[totalPrice]["+ itemId +"]']").text(totalAmount);
 
-            selectedMenuItems[id].itemPrice = itemPrice;
-            selectedMenuItems[id].itemType = itemType;
-            selectedMenuItems[id].itemTotalAmount = totalAmount;
+            selectedMenuItems[itemId].itemPrice = itemPrice;
+            selectedMenuItems[itemId].itemType = itemType;
+            selectedMenuItems[itemId].itemTotalAmount = totalAmount;
             calculateOrderTotal();
         });
 
@@ -284,71 +308,107 @@
             let selectedItem = $("select[name='item[itemType]["+ itemId +"]']").find(':selected');
             let price = selectedItem.attr('price');
             let totalAmount = price * qty;
-
+            
             $("span[id='item[totalPrice]["+ itemId +"]']").text(totalAmount);
 
-            selectedMenuItems[id].itemQty = qty;
-            selectedMenuItems[id].itemTotalAmount = totalAmount;
+            selectedMenuItems[itemId].itemQty = qty;
+            selectedMenuItems[itemId].itemTotalAmount = totalAmount;
             calculateOrderTotal();
         });
+    }
+
+    var calculateItemTax = function(taxes, itemPrice) {
+        let taxAmount = 0;
+        if(taxes && typeof taxes == 'object')
+        {
+            taxes.forEach(function(tax) {
+                taxAmount += ((Number(tax.taxPercentage) * Number(itemPrice)) / 100);  
+            });    
+        }
+        return taxAmount;
     }
 
     var calculateOrderTotal = function() {
         let totalItemsPrice = 0;
         let totalQty = 0;
+        let totalTax = 0;
         let deliveryCharge = Number($("#deliveryCharge").val());
         let containerCharge = Number($("#containerCharge").val());
 
         for(let item in selectedMenuItems)
         {
             let menuItem = selectedMenuItems[item];
-            totalItemsPrice = totalItemsPrice + (Number(menuItem.itemQty) * Number(menuItem.itemPrice));
+            let menuItemTax = Number(menuItem.itemQty) * calculateItemTax(menuItem.itemTaxDetails, Number(menuItem.itemPrice));
+            let menuItemTotalPrice = menuItemTax + (Number(menuItem.itemQty) * Number(menuItem.itemPrice));
+            
+            totalItemsPrice = totalItemsPrice + menuItemTotalPrice;
             totalQty = totalQty + Number(menuItem.itemQty);
+            
+            $("span[id='item[tax]["+ menuItem.itemId +"]']").text(menuItemTax);
+            $("span[id='item[totalPrice]["+ menuItem.itemId +"]']").text(menuItemTotalPrice);
+            selectedMenuItems[menuItem.itemId].itemTax = menuItemTax;
+            selectedMenuItems[menuItem.itemId].itemTotalAmount = menuItemTotalPrice;
         }
 
         let totalOrderAmount = totalItemsPrice + deliveryCharge + containerCharge;
+        let roundOff = Math.round(totalOrderAmount);
 
         $("#subTotal").text(totalItemsPrice);
         $("#total").text(totalItemsPrice);
         $("#totalQty").text(totalQty);
-        $("#grandTotal").text(totalOrderAmount);
-        $("#roundOff").text(totalOrderAmount);
+        $("#roundOff").text(roundOff);
+        $("#grandTotal").text(roundOff);
     }
 
     $("#deliveryCharge").keyup(calculateOrderTotal);
 
     $("#containerCharge").keyup(calculateOrderTotal); 
-    
+
+    $('input:radio[name="paymentType"]').change(
+    function(){
+        $("#TransictionIdField").hide();
+        if (this.checked && this.value == '4') {
+            $("#TransictionIdField").show();
+        }
+    });
+
     $("#selfbilling").click(function() {
         let customerName = $("#customerName").val();
         let address = $("#address").val();
         let mobieNumber = $("#mobieNumber").val();
         let orderType = $("input[name='orderType']:checked").val();
+        let paymentType = $("input[name='paymentType']:checked").val();
+        let transictionId = $("#transictionId").val();
+        let grandTotal = $("#grandTotal").text();
 
         $("#nameError").hide();
         $("#addressErr").hide();
         $("#mobileErr").hide();
         $("#itemErr").hide();
-    
+        $("#paymentError").hide();
+
         if(customerName == "")
         {
             $("#nameError").show();
             return;
         }
 
-        if(address == "")
-        {
-            $("#addressErr").show();
-        }
-
         if(mobieNumber == "")
         {
             $("#mobileErr").show();
+            return;
         }
 
         if(jQuery.isEmptyObject(selectedMenuItems))
         {
             $("#itemErr").show();
+            return;
+        }
+        
+        if(paymentType == "4" && transictionId == "")
+        {
+            $("#paymentError").show();
+            return;
         }
 
         let data = {
@@ -356,6 +416,9 @@
             address: address,
             mobile: mobieNumber,
             orderType: orderType,
+            paymentType: paymentType,
+            grandTotal: grandTotal,
+            transictionId: transictionId,
             selectedItem: selectedMenuItems
         };
 
@@ -373,5 +436,7 @@
             }
         })
     });
+
+    
 
 </script>
