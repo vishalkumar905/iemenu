@@ -7,7 +7,7 @@
         width: 5% !important;
     }
     .table-container {
-        height: 350px;
+        height: 300px;
     }
     .table-container table {
         display: flex;
@@ -45,7 +45,7 @@
     }
 
     .table-container table td, .table-container table th {
-        padding: 12px 8px;
+        padding: 8px 8px;
         border: 1px solid #ccc;
     }
 
@@ -57,7 +57,7 @@
         z-index: 99;
         position: absolute;
         max-width: 300px;
-        max-height: 294px;
+        max-height: 254px;
         overflow-y: auto;
     }
 
@@ -72,5 +72,15 @@
     .pointer
     {
         cursor: pointer;
+    }
+
+    .customTableHead .table > tbody > tr > td
+    {
+        padding: 5px 8px !important;
+    }
+
+    .checkbox-inline, .radio-inline
+    {
+        padding-left: 0px;
     }
 </style>

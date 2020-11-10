@@ -1,181 +1,174 @@
-<?php $this->load->view('comman/header'); ?>
-<?php $this->load->view('comman/sidebar'); ?>
 <?php $this->load->view('self-billing/style'); ?>
-
-<div class="main-panel">
-    <?php $this->load->view('comman/headNav'); ?>
-    <div class="content">
-        <div class="container-fluid">
-            <div class="row">
-                <div class="col-md-12">
-                    <div class="card">
-                        <form class="form-horizontal">
-                            <div class="card-header card-header-text" data-background-color="rose">
-                                <h4 class="card-title">Self Billing</h4>
-                            </div>
-                            <div class="card-content">
-                                <div class="row">
-                                    <div class="col-md-6">
-                                        <div class="form-group label-floating">
-                                            <label class="control-label">Customer Name</label>
-                                                <input type="text" class="form-control" value="" name="customerName" id="customerName">
-                                            <div id="nameError" class="text-danger displaynone" role="alert">
-                                                <span aria-hidden="true"></span> Please enter customer name
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <div class="form-group label-floating">
-                                            <label class="control-label">Mobile No</label>
-                                                <input type="text" class="form-control" value="" name="mobieNumber" id="mobieNumber">
-                                            <div id="mobileErr" class="text-danger displaynone" role="alert">
-                                                <span aria-hidden="true"></span> Please enter mobile number
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="row">
-                                    <div class="col-md-6">
-                                        <div class="form-group label-floating">
-                                            <label class="control-label">Address</label>
-                                            <input type="text" class="form-control" value="" name="address" id="address">
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <div class="form-group">
-                                            <div class="radio radio-inline">
-                                                <label>
-                                                    <input type="radio" name="orderType" value="Delivery" checked="checked">Delivery
-                                                </label>
-                                            </div>
-                                            <div class="radio radio-inline">
-                                                <label>
-                                                    <input type="radio" name="orderType" value="Take Away">Pick Up
-                                                </label>
-                                            </div>
-                                            <div class="radio radio-inline">
-                                                <label>
-                                                    <input type="radio" name="orderType" value="Dine-in">Dine In
-                                                </label>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                
-
-                                </br></br>
-                                <div class="table-container">
-                                    <table>
-                                        <thead>
-                                            <tr>
-                                                <th colspan="4">
-                                                    <input type="text" style="width:100%"  id="item" placeholder="Search Items"/>
-                                                    <ul class= "list-group" id="suggestion"></ul>
-                                                </th>
-                                                <th colspan="3"><input type="text" style="width:100%" id="specialNote" placeholder="Special Note"/></th>
-                                            </tr>
-                                        </thead>
-                                        <thead>
-                                            <tr>
-                                                <th style="width: 5% !important;">#</th>
-                                                <th>Item</th>
-                                                <th>Item Type</th>
-                                                <th>Special Note</th>
-                                                <th>Qty.</th>
-                                                <th>Price</th>
-                                                <th>Tax</th>
-                                                <th>Amount</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody id="menuItems">
-                                            <div id="itemErr" class="text-danger displaynone" role="alert">
-                                                <span aria-hidden="true"></span> Please select some item
-                                            </div>
-                                        </tbody>
-                                    </table>
-                                </div>
-                                <div class="table-responsive">
-                                    <table class="table table-bordered">
-                                        <tbody>
-                                            <tr>
-                                                <td colspan="3" class="text-right" >Total Qty.</td>
-                                                <td class="text-right"><span id="totalQty">0</span></td>
-                                                <td class="text-right">Sub Total</td>
-                                                <td><span id="subTotal"></span></td>
-                                            </tr>
-                                            <tr>
-                                                <td colspan="5" class="text-right">Total(&#x20B9;)</td>
-                                                <td class="col-md-3"><span id="total"></span></td>
-                                            </tr>
-                                            <tr>
-                                                <td colspan="5" class="text-right">Delivery Charge</td>
-                                                <td class="col-md-3"><input type="number" class="width60" min="0" value="0" id="deliveryCharge"></td>
-                                            </tr>
-                                            <tr>
-                                                <td colspan="5" class="text-right">Container Charge</td>
-                                                <td class="col-md-3"><input type="number" class="width60" min="0"  value="0" id="containerCharge"></td>
-                                            </tr>
-                                            <tr>
-                                                <td colspan="5" class="text-right">Round off</td>
-                                                <td class="col-md-3"><span id="roundOff"></span></td>
-                                            </tr>
-                                            <tr>
-                                                <td colspan="5" class="text-right">Grand Total (&#x20B9;)</td>
-                                                <td class="col-md-3"><span id="grandTotal"></span></td>
-                                            </tr>
-                                            <tr>
-                                                <td colspan="5" class="text-right">Customer Paid</td>
-                                                <td class="col-md-3"><input type="number" id="customerPaid" min="0" class="width60"></td>
-                                            </tr>
-                                            <tr>
-                                                <td colspan="5" class="text-right">Return to Customer</td>
-                                                <td class="col-md-3"><span id="customerReturn"></span></td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
-                                </div>
-                                <div class="row">
-                                    <div class="col-md-6">
-                                        <div class="form-group">
-                                            <div class="radio radio-inline">
-                                                <label>
-                                                    <input type="radio" name="paymentType" value="1" checked="checked">Cash 
-                                                </label>
-                                            </div>
-                                            <div class="radio radio-inline">
-                                                <label>
-                                                    <input type="radio" name="paymentType" value="3">UPI QR Scan
-                                                </label>
-                                            </div>
-                                            <div class="radio radio-inline">
-                                                <label>
-                                                    <input type="radio" name="paymentType" value="4">Card Swipe
-                                                </label>
-                                            </div>
-                                            <div class="displaynone" id="TransictionIdField">
-                                                <p>Transaction Id (If swiped by card)</p>
-                                                <input type="text" id="transictionId" placeholder="Enter by cashier" class="form-control">
-                                            </div>
-                                        </div>
-                                        <div id="paymentError" class="text-danger displaynone" role="alert">
-                                            <span aria-hidden="true"></span> Please input transiction id
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <div class="form-group label-floating">
-                                            <button type="button" id="selfbilling" name="selfbilling" class="btn btn-rose pull-right">Add Self Billing</button>
-                                        </div>
-                                    </div>
+<div class="row">
+    <div class="col-md-12">
+        <div class="card " style="margin-top: 0px;">
+            <form class="form-horizontal">
+                <div class="card-header">
+                    <h4 class="card-title">Self Billing</h4>
+                </div>
+                <div class="card-content">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="form-group label-floating">
+                                <label class="control-label">Customer Name</label>
+                                    <input type="text" class="form-control" value="" name="customerName" id="customerName">
+                                <div id="nameError" class="text-danger displaynone" role="alert">
+                                    <span aria-hidden="true"></span> Please enter customer name
                                 </div>
                             </div>
-                        </form>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group label-floating">
+                                <label class="control-label">Mobile No</label>
+                                    <input type="text" class="form-control" value="" name="mobieNumber" id="mobieNumber">
+                                <div id="mobileErr" class="text-danger displaynone" role="alert">
+                                    <span aria-hidden="true"></span> Please enter mobile number
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <div class="form-group label-floating">
+                                <label class="control-label">Address</label>
+                                <input type="text" class="form-control" value="" name="address" id="address">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <div class="radio radio-inline">
+                                    <label>
+                                        <input type="radio" name="orderType" value="Delivery" checked="checked">Delivery
+                                    </label>
+                                </div>
+                                <div class="radio radio-inline">
+                                    <label>
+                                        <input type="radio" name="orderType" value="Take Away">Pick Up
+                                    </label>
+                                </div>
+                                <div class="radio radio-inline">
+                                    <label>
+                                        <input type="radio" name="orderType" value="Dine-in">Dine In
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+
+                    </br></br>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th colspan="4">
+                                        <input type="text" style="width:100%"  id="item" placeholder="Search Items"/>
+                                        <ul class= "list-group" id="suggestion"></ul>
+                                    </th>
+                                    <th colspan="3"><input type="text" style="width:100%" id="specialNote" placeholder="Special Note"/></th>
+                                </tr>
+                            </thead>
+                            <thead>
+                                <tr>
+                                    <th style="width: 5% !important;">#</th>
+                                    <th>Item</th>
+                                    <th>Item Type</th>
+                                    <th>Special Note</th>
+                                    <th>Qty.</th>
+                                    <th>Price</th>
+                                    <th>Tax</th>
+                                    <th>Amount</th>
+                                </tr>
+                            </thead>
+                            <tbody id="menuItems">
+                                <div id="itemErr" class="text-danger displaynone" role="alert">
+                                    <span aria-hidden="true"></span> Please select some item
+                                </div>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="table-responsive customTableHead">
+                        <table class="table table-bordered">
+                            <tbody>
+                                <tr>
+                                    <td colspan="3" class="text-right" >Total Qty.</td>
+                                    <td class="text-right"><span id="totalQty">0</span></td>
+                                    <td class="text-right">Sub Total</td>
+                                    <td><span id="subTotal"></span></td>
+                                </tr>
+                                <tr>
+                                    <td colspan="5" class="text-right">Total(&#x20B9;)</td>
+                                    <td class="col-md-3"><span id="total"></span></td>
+                                </tr>
+                                <tr>
+                                    <td colspan="5" class="text-right">Delivery Charge</td>
+                                    <td class="col-md-3"><input type="number" class="width60" min="0" value="0" id="deliveryCharge"></td>
+                                </tr>
+                                <tr>
+                                    <td colspan="5" class="text-right">Container Charge</td>
+                                    <td class="col-md-3"><input type="number" class="width60" min="0"  value="0" id="containerCharge"></td>
+                                </tr>
+                                <tr>
+                                    <td colspan="5" class="text-right">Round off</td>
+                                    <td class="col-md-3"><span id="roundOff"></span></td>
+                                </tr>
+                                <tr>
+                                    <td colspan="5" class="text-right">Grand Total (&#x20B9;)</td>
+                                    <td class="col-md-3"><span id="grandTotal"></span></td>
+                                </tr>
+                                <tr>
+                                    <td colspan="5" class="text-right">Customer Paid</td>
+                                    <td class="col-md-3"><input type="number" id="customerPaid" min="0" class="width60"></td>
+                                </tr>
+                                <tr>
+                                    <td colspan="5" class="text-right">Return to Customer</td>
+                                    <td class="col-md-3"><span id="customerReturn"></span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <div class="radio radio-inline">
+                                    <label>
+                                        <input type="radio" name="paymentType" value="1" checked="checked">Cash 
+                                    </label>
+                                </div>
+                                <div class="radio radio-inline">
+                                    <label>
+                                        <input type="radio" name="paymentType" value="3">UPI QR Scan
+                                    </label>
+                                </div>
+                                <div class="radio radio-inline">
+                                    <label>
+                                        <input type="radio" name="paymentType" value="4">Card Swipe
+                                    </label>
+                                </div>
+                                <div class="displaynone" id="TransictionIdField">
+                                    <p>Transaction Id (If swiped by card)</p>
+                                    <input type="text" id="transictionId" placeholder="Enter by cashier" class="form-control">
+                                </div>
+                            </div>
+                            <div id="paymentError" class="text-danger displaynone" role="alert">
+                                <span aria-hidden="true"></span> Please input transiction id
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group label-floating">
+                                <button type="button" id="selfbilling" name="selfbilling" class="btn btn-rose pull-right">Confirm Order</button>
+                            </div>
+                        </div>
                     </div>
                 </div>
-            </div>
+            </form>
         </div>
     </div>
-<?php $this->load->view('comman/footer'); ?>
+</div>
+<script src="<?php echo base_url('/assets/js/jquery-3.1.1.min.js'); ?>" type="text/javascript"></script>
 
 <script>
     var selectedMenuItems = {};
@@ -395,6 +388,13 @@
 
     $('input:radio[name="paymentType"]').change(function(){
         $("#TransictionIdField").hide();
+        ("#customerPaid").attr('disabled', false);
+
+        if (this.checked && this.value != '1') 
+        {
+            $("#customerPaid").val('').attr('disabled', 'true');
+        }
+
         if (this.checked && this.value == '4') {
             $("#TransictionIdField").show();
         }
@@ -456,24 +456,50 @@
             customerPaid
         };
 
+        $(this).attr('disabled', 'true');
         $.ajax({
             url: baseUrl + 'Selfbilling/saveSelfBilling',
             type: "POST",
             data: data,
             cache: false,
             success: function(response) {
+                $("#selfbilling").attr('disabled', false);
+
                 if(response.status == "success")
                 {
                     swal(response.msg, {
 					    icon: "success",
 					}).then((value) => {
-					    location.reload();
-					});
+                        resetFormData();
+                    });
+                    
+                    $('#datatables').DataTable().ajax.reload();
                 }
             }
         })
     });
 
+
+    var resetFormData = function() 
+    {
+        $("#customerName").val('');
+        $("#address").val('');
+        $("#mobieNumber").val('');
+        $("#transictionId").val('');
+        $("#subTotal").text('');
+        $("#roundOff").text('');
+        $("#total").text('');
+        $("#totalQty").text(0);
+        $("#grandTotal").text(0);
+        $("#deliveryCharge").val(0);
+        $("#containerCharge").val(0);
+        $("#customerPaid").val();
+        $("#menuItems").html('');
+        $("#item").val('');
+        $("#specialNote").val('');
+
+        selectedMenuItems = {};
+    };
     
 
 </script>
