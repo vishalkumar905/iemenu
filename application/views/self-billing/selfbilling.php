@@ -46,7 +46,7 @@
                                 </div>
                                 <div class="radio radio-inline">
                                     <label>
-                                        <input type="radio" name="orderType" value="Take Away">Pick Up
+                                        <input type="radio" name="orderType" value="Take Away">Take Away
                                     </label>
                                 </div>
                                 <div class="radio radio-inline">
@@ -64,11 +64,10 @@
                         <table>
                             <thead>
                                 <tr>
-                                    <th colspan="4">
+                                    <th colspan="7">
                                         <input type="text" style="width:100%"  id="item" placeholder="Search Items"/>
                                         <ul class= "list-group" id="suggestion"></ul>
                                     </th>
-                                    <th colspan="3"><input type="text" style="width:100%" id="specialNote" placeholder="Special Note"/></th>
                                 </tr>
                             </thead>
                             <thead>
@@ -220,14 +219,12 @@
         let taxAmount = 0;
         let itemAmount = Number(priceArray[0]);
         let itemTotalAmount = itemAmount;
-        let specialNote = $("#specialNote").val();
+        let specialNote = $("input[name='item[note][" + id + "]']").val();
 
-        if(selectedMenuItems[id])
+        if(selectedMenuItems[id]) 
         {
             return false;
         }
-
-        $("#specialNote").val('');
 
         selectedMenuItems[id] = {
             itemId: id,
@@ -273,8 +270,8 @@
             itemData += "<td class='width5'><span class='pointer' itemid='"+ id +"' id='removeItem-"+ id +"'><i class='material-icons cursor-pointer'>clear</i></span></td>";
             itemData += "<td>"+ itemName +" </td>";
             itemData += "<td>"+ selectBox +" </td>";
-            itemData += "<td><span itemid='"+ id +"' id='item[itemNote]["+ id +"]'>"+ specialNote +"</span></td>";
-            itemData += "<td> <input type='number' min='1' value='1' itemid='"+ id +"' class='width60' name='item[qty]["+ id +"]'> </td>";
+            itemData += "<td><input itemid='"+ id +"' type='text' style='width:100%'  name='item[note]["+ id +"]' placeholder='Special Note'/></td>";
+            itemData += "<td><input type='number' min='1' value='1' itemid='"+ id +"' class='width60' name='item[qty]["+ id +"]'> </td>";
             itemData += "<td><span itemid='"+ id +"' id='item[price]["+ id +"]'> "+ priceArray[0] +" </span></td>";
             itemData += "<td><span itemid='"+ id +"' id='item[tax]["+ id +"]'> "+ taxAmount +" </span></td>";
             itemData += "<td><span itemid='"+ id +"' id='item[totalPrice]["+ id +"]'> "+ itemTotalAmount +" </span></td>";
@@ -314,6 +311,12 @@
             selectedMenuItems[itemId].itemQty = qty;
             selectedMenuItems[itemId].itemTotalAmount = totalAmount;
             calculateOrderTotal();
+        });
+
+        
+        $("input[name^='item[note]']").keyup(function() {
+            let itemId = $(this).attr('itemid');
+            selectedMenuItems[itemId].specialNote = $(this).val();
         });
 
         $("span[id^='removeItem-']").click(function() {
@@ -388,11 +391,14 @@
 
     $('input:radio[name="paymentType"]').change(function(){
         $("#TransictionIdField").hide();
-        ("#customerPaid").attr('disabled', false);
-
-        if (this.checked && this.value != '1') 
+        
+        if (this.value == '1') 
         {
-            $("#customerPaid").val('').attr('disabled', 'true');
+            $("#customerPaid").attr('disabled', false);
+        }
+        else
+        {
+            
         }
 
         if (this.checked && this.value == '4') {
@@ -493,10 +499,11 @@
         $("#grandTotal").text(0);
         $("#deliveryCharge").val(0);
         $("#containerCharge").val(0);
-        $("#customerPaid").val();
+        $("#customerPaid").val('');
         $("#menuItems").html('');
         $("#item").val('');
         $("#specialNote").val('');
+        $("#customerReturn").text('');
 
         selectedMenuItems = {};
     };
