@@ -214,7 +214,7 @@
         let menuId = $(this).attr("data-menuid");
         let taxes = $(this).attr("data-tax");
         let itemType = $(this).attr("data-itemType");
-        let itemArray = itemType.split(",");
+        let itemArray = itemType ? itemType.split(",") : [];
         let priceArray = price.split(",");
         let taxAmount = 0;
         let itemAmount = Number(priceArray[0]);
@@ -230,7 +230,7 @@
             itemId: id,
             itemName: itemName,
             itemPrice: itemAmount,
-            itemType: itemArray[0],
+            itemType: itemArray ? itemArray[0] : '',
             itemTax: taxAmount,
             itemQty: 1,
             itemTaxDetails:null,
@@ -254,16 +254,17 @@
         $("#item").val(itemName);
         $("#suggestion").hide();
         
-        
-            
-        let selectBox = "<select id='itemType' name='item[itemType]["+ id +"]'>";  
-        
-        for(i=0; i < itemArray.length; i++) 
-        {
-            selectBox += "<option price='"+ priceArray[i] +"' itemid = '"+ id +"' value='"+ itemArray[i] +"'>"+ itemArray[i] +"</option>";
-        }
-        selectBox += "</select>";
+        let selectBox = '';
 
+        if (itemArray && itemArray.length > 0)
+        {
+            selectBox = "<select id='itemType' name='item[itemType]["+ id +"]'>"; 
+            for(i=0; i < itemArray.length; i++) 
+            {
+                selectBox += "<option price='"+ priceArray[i] +"' itemid = '"+ id +"' value='"+ itemArray[i] +"'>"+ itemArray[i] +"</option>";
+            }
+            selectBox += "</select>";
+        }
 
         let itemData = "";
             itemData += "<tr id='itemRow-"+ id +"'>";
@@ -338,6 +339,9 @@
                 taxAmount += ((Number(tax.taxPercentage) * Number(itemPrice)) / 100);  
             });    
         }
+
+        taxAmount = convertToDecimalIfNotAWholeNumber(taxAmount);
+        
         return taxAmount;
     }
 
@@ -355,9 +359,14 @@
             let menuItemTax = Number(menuItem.itemQty) * calculateItemTax(menuItem.itemTaxDetails, Number(menuItem.itemPrice));
             let menuItemTotalPrice = menuItemTax + (Number(menuItem.itemQty) * Number(menuItem.itemPrice));
             
+            menuItemTax = convertToDecimalIfNotAWholeNumber(menuItemTax);
+            menuItemTotalPrice = convertToDecimalIfNotAWholeNumber(menuItemTotalPrice);
+            
             totalItemsPrice = totalItemsPrice + menuItemTotalPrice;
             totalQty = totalQty + Number(menuItem.itemQty);
             
+            totalItemsPrice = convertToDecimalIfNotAWholeNumber(totalItemsPrice);
+
             $("span[id='item[tax]["+ menuItem.itemId +"]']").text(menuItemTax);
             $("span[id='item[totalPrice]["+ menuItem.itemId +"]']").text(menuItemTotalPrice);
             selectedMenuItems[menuItem.itemId].itemTax = menuItemTax;
@@ -507,6 +516,10 @@
 
         selectedMenuItems = {};
     };
-    
 
+    var convertToDecimalIfNotAWholeNumber = function(num)
+    {
+        return Number(num % 1 != 0 ? num.toFixed(2) : num);
+    }
+    
 </script>

@@ -33,9 +33,12 @@ class Selfbilling extends CI_Controller
         if(!empty($results))
         {
             foreach ($results as &$result) {
+                $priceDesc = json_decode($result['price_desc']);
+
+                $taxDetails = [];
                 $result['price'] = json_decode($result['price']);
-                $result['price_desc'] = json_decode($result['price_desc']);
-                
+                $result['price_desc'] = !empty(trim($priceDesc[0])) ? $priceDesc : [];
+
                 if(!empty($result['taxes']))
                 {
                     $taxId = unserialize($result['taxes']);
