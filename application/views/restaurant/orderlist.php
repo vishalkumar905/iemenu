@@ -6,6 +6,8 @@
                 
                 
                 <div class="container-fluid">
+                    <?php $this->load->view('self-billing/selfbilling'); ?>
+
                     <div class="row">
                         <div class="col-md-12">
                             <div class="card">
@@ -263,8 +265,6 @@
         $('.card .material-datatables label').addClass('form-group');
         
         setInterval(function(){ $('#datatables').DataTable().ajax.reload();  }, 15000);
-        
-        
         
     });
     
