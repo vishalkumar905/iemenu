@@ -99,6 +99,38 @@
                                     <td><span id="subTotal"></span></td>
                                 </tr>
                                 <tr>
+                                    <td colspan="5" class="text-right">
+
+                                        <div>
+                                            <label class='pr-10 pl-5 radio-label' style="color:#3C4858">Add Discount: </label>
+                                            <label class='pr-10 pl-5 radio-label'><input type="radio" name="discount" value="percent" />Percent Off </label>
+                                            <label class='pr-10 pl-5 radio-label'><input type="radio" name="discount" value="amount" />Amount </label>
+                                        </div>
+
+                                        <div class='displaynone' id="amountDiscountDiv">
+                                            <label>Flat Amount Off: ₹</label>
+                                            <input type="number" min="0" name="amountDiscount" id="amountDiscount" />
+                                        </div>
+
+                                        <div class='displaynone' id="percentDiscountDiv">
+                                            <label>Select Coupon For % Off: ₹</label>
+                                            <select name="percentDiscount" id="percentDiscount">
+                                                <option value="">None Selected</option>
+                                                <?php if (!empty($discountCoupons)) {
+                                                    foreach($discountCoupons as $discountCoupon)
+                                                    {
+                                                        echo sprintf('<option discount="%s" value="%s">%s</option>', $discountCoupon->discount_percent, $discountCoupon->discount_id, $discountCoupon->discount_name);
+                                                    }
+                                                } ?>
+                                            </select>
+                                        </div>
+                                        
+                                        <div><button type="button" class='btn btn-sm btn-danger displaynone' id="addDiscount">Add Discount</button></div>
+
+                                    </td>
+                                    <td><span id="discountAmount"></span></td>
+                                </tr>
+                                <tr>
                                     <td colspan="5" class="text-right">Total(&#x20B9;)</td>
                                     <td class="col-md-3"><span id="total"></span></td>
                                 </tr>
@@ -126,6 +158,7 @@
                                     <td colspan="5" class="text-right">Return to Customer</td>
                                     <td class="col-md-3"><span id="customerReturn"></span></td>
                                 </tr>
+                                
                             </tbody>
                         </table>
                     </div>
@@ -172,6 +205,11 @@
 <script>
     var selectedMenuItems = {};
     var baseUrl = "<?= base_url()?>";
+    var orderDiscountPercentage = 0;
+    var orderDiscountAmount = 0;
+    var orderDiscountDetail = {};
+    var isDiscountApplied = false;
+    var discountAmount = 0;
 
     let getMenuItems = function(searchText) {
         $.ajax({
@@ -345,6 +383,26 @@
         return taxAmount;
     }
 
+    var getTotalItemPrice = function() {
+        let totalItemsPrice = 0;
+
+        for(let item in selectedMenuItems)
+        {
+            let menuItem = selectedMenuItems[item];
+            let menuItemTax = Number(menuItem.itemQty) * calculateItemTax(menuItem.itemTaxDetails, Number(menuItem.itemPrice));
+            let menuItemTotalPrice = menuItemTax + (Number(menuItem.itemQty) * Number(menuItem.itemPrice));
+            
+            menuItemTax = convertToDecimalIfNotAWholeNumber(menuItemTax);
+            menuItemTotalPrice = convertToDecimalIfNotAWholeNumber(menuItemTotalPrice);
+            
+            totalItemsPrice = totalItemsPrice + menuItemTotalPrice;
+            
+            totalItemsPrice = convertToDecimalIfNotAWholeNumber(totalItemsPrice);
+        }
+
+        return totalItemsPrice;
+    }
+
     var calculateOrderTotal = function() {
         let totalItemsPrice = 0;
         let totalQty = 0;
@@ -373,6 +431,106 @@
             selectedMenuItems[menuItem.itemId].itemTotalAmount = menuItemTotalPrice;
         }
 
+        let totalOrderAmount = (totalItemsPrice + deliveryCharge + containerCharge) - discountAmount;
+        let roundOff = Math.round(totalOrderAmount);
+
+        if(customerPaid != "")
+        {
+            let returnToCustomer = customerPaid - roundOff;
+            $("#customerReturn").text(returnToCustomer);
+        }
+        else 
+        {
+            $("#customerReturn").text("");
+        }
+
+
+        $("#subTotal").text(totalItemsPrice);
+        $("#total").text(totalItemsPrice - discountAmount);
+        $("#totalQty").text(totalQty);
+        $("#roundOff").text(roundOff);
+        $("#grandTotal").text(roundOff);
+    }
+
+    $("#deliveryCharge").on('keyup, change', calculateOrderTotal);
+    $("#containerCharge").on('keyup, change', calculateOrderTotal);
+
+    $("#customerPaid").keyup(calculateOrderTotal); 
+
+    $('input:radio[name="discount"]').change(function() {
+        let discountType = $(this).val();
+
+        $("#percentDiscountDiv, #amountDiscountDiv").hide();
+
+        if (discountType == 'percent')
+        {
+            $("#percentDiscountDiv").show();
+        }
+
+        if (discountType == 'amount')
+        {
+            $("#amountDiscountDiv").show();
+        }
+
+        $("#addDiscount").show();
+    });
+
+    $("#addDiscount").click(function() {
+        
+        let deliveryCharge = Number($("#deliveryCharge").val());
+        let containerCharge = Number($("#containerCharge").val());
+        let customerPaid = Number($("#customerPaid").val());
+        let discountType = $('input:radio[name="discount"]:checked').val();
+        let totalItemsPrice = getTotalItemPrice();
+
+        if (isNaN(totalItemsPrice) || totalItemsPrice == 0)
+        {
+            return;
+        }
+
+        if (discountType == 'percent')
+        {
+            isDiscountApplied = true;
+            
+            let percentDiscount = parseFloat($("#percentDiscount option:selected").attr('discount'));
+            let percentDiscountId = $("#percentDiscount").val();
+
+            if (!isNaN(percentDiscount) && percentDiscount > 0)
+            {
+                let discountPrice = (totalItemsPrice * percentDiscount) / 100;
+
+                orderDiscountAmount = 0;
+                orderDiscountPercentage = percentDiscount;
+                totalItemsPrice = totalItemsPrice - discountPrice;
+
+                orderDiscountDetail = {
+                    percentDiscount,
+                    percentDiscountId
+                };
+
+                discountAmount = discountPrice;
+                $("#discountAmount").text(discountPrice);
+            }
+        }
+        
+        
+        if (discountType == 'amount')
+        {
+            isDiscountApplied = true;
+            
+            let amountDiscount = parseFloat($("#amountDiscount").val()); 
+            if (amountDiscount > 0)
+            {
+                orderDiscountAmount = amountDiscount;
+                totalItemsPrice = totalItemsPrice - amountDiscount;
+                $("#discountAmount").text(amountDiscount);
+            }
+            
+            orderDiscountDetail = {};
+            orderDiscountPercentage = 0;
+            discountAmount = amountDiscount;
+        }
+
         let totalOrderAmount = totalItemsPrice + deliveryCharge + containerCharge;
         let roundOff = Math.round(totalOrderAmount);
 
@@ -386,17 +544,12 @@
             $("#customerReturn").text("");
         }
 
-        $("#subTotal").text(totalItemsPrice);
         $("#total").text(totalItemsPrice);
-        $("#totalQty").text(totalQty);
         $("#roundOff").text(roundOff);
         $("#grandTotal").text(roundOff);
-    }
 
-    $("#deliveryCharge").on('keyup, change', calculateOrderTotal);
-    $("#containerCharge").on('keyup, change', calculateOrderTotal);
-
-    $("#customerPaid").keyup(calculateOrderTotal); 
+        calculateOrderTotal();
+    });
 
     $('input:radio[name="paymentType"]').change(function(){
         $("#TransictionIdField").hide();
@@ -468,7 +621,11 @@
             selectedItem: selectedMenuItems,
             deliveryCharge,
             containerCharge,
-            customerPaid
+            customerPaid,
+            orderDiscountPercentage,
+            orderDiscountAmount,
+            orderDiscountDetail,
+            isDiscountApplied
         };
 
         $(this).attr('disabled', 'true');
@@ -493,7 +650,6 @@
             }
         })
     });
-
 
     var resetFormData = function() 
     {

@@ -154,7 +154,18 @@ class Restaurant extends Main
 	
 	public function orderlist()
 	{
-	    $this->load->view('restaurant/orderlist');
+		$data['discountCoupons'] = $this->getDiscountCoupons($this->session->userid);
+
+	    $this->load->view('restaurant/orderlist', $data);
+	}
+
+	private function getDiscountCoupons($rid)
+    {
+		$this->db->select('*');
+		$this->db->from('res_discount');
+		$this->db->where('rest_id', $rid);
+		$query = $this->db->get();
+		return $query->result();
 	}
 	
 	public function reportorderlist()

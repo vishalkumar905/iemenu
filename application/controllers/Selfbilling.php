@@ -125,6 +125,18 @@ class Selfbilling extends CI_Controller
             "customer_paid" => floatval($this->input->post('customerPaid')),
         ];
 
+        if (isset($postData['isDiscountApplied']))
+        {
+            if ($postData['orderDiscountAmount'] > 0)
+            {
+                $data['flat_amount_discount'] = $postData['orderDiscountAmount'];
+            }
+            else if ($postData['orderDiscountPercent'] > 0)
+            {
+                $data['discount_coupon_percent'] = $postData['orderDiscountPercent'];
+            }
+        }
+
         $response = [
             'status' => "false",
             'msg' => "Something went wrong"
@@ -140,7 +152,6 @@ class Selfbilling extends CI_Controller
 
         echo json_encode($response);
     }
-
 }
 
 ?>
