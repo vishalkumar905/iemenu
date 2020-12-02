@@ -59,7 +59,18 @@
     <script>
         $("#ieMenuInventoryLink").click(function() {
             let hostname = window.location.hostname;
-            let baseUrl = hostname == 'localhost' ? 'http://localhost/inventory/' : 'https://iemenu.in/inventory/'; 
+            let baseUrl = hostname == 'localhost' ? 'http://localhost/inventory/' : 'https://iemenu.in/inventory/';
+            
+            if (hostname == 'iemenu.beginweb.in')
+            {
+                baseUrl = 'http://iemenu.beginweb.in/';
+            }
+            else if (hostname == 'iemenu.in')
+            {
+                baseUrl = 'https://iemenu.in/inventory/';
+            }
+
+
             let url = baseUrl + 'home/generateLoginToken';
             let data = {
                 userId: "<?=$this->session->userid?>",
