@@ -63,7 +63,7 @@
             
             if (hostname == 'iemenu.beginweb.in')
             {
-                baseUrl = 'http://iemenu.beginweb.in/';
+                baseUrl = 'http://inventory.beginweb.in/';
             }
             else if (hostname == 'iemenu.in')
             {
@@ -96,6 +96,16 @@
         $("#logoutSession").click(function() {
             let hostname = window.location.hostname;
             let baseUrl = hostname == 'localhost' ? 'http://localhost/inventory/' : 'https://iemenu.in/inventory/'; 
+
+            if (hostname == 'iemenu.beginweb.in')
+            {
+                baseUrl = 'http://inventory.beginweb.in/';
+            }
+            else if (hostname == 'iemenu.in')
+            {
+                baseUrl = 'https://iemenu.in/inventory/';
+            }
+            
             let url = baseUrl + 'home/destroySession';
             let logoutLink = $(this).attr("datahref");
             $.post(url, {}, function(response) {
