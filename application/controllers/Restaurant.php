@@ -158,7 +158,7 @@ class Restaurant extends Main
 
 	    $this->load->view('restaurant/orderlist', $data);
 	}
-
+	
 	private function getDiscountCoupons($rid)
     {
 		$this->db->select('*');
@@ -417,7 +417,6 @@ class Restaurant extends Main
 			}elseif($order->order_status=='2'){ 
 				$order_status='<span class="label label-default">CLOSE</span>'; 
 			}elseif($order->order_status=='3'){ 
-				// 11-10-2020
 				$order_status='<span class="label label-default">VOID BILL</span>'; 
 			} else {
 				$order_status='<span class="label label-default">NCK BILL</span>'; 
@@ -437,9 +436,12 @@ class Restaurant extends Main
 			{ 
 				$payment_mode='<span class="label label-danger">UPI QR SCAN</span>';
 			} 
-			else 
+			elseif($order->payment_mode == '4')  
 			{ 
 				$payment_mode='<span class="label label-success">CARD SWIPE</span>';
+			}
+			else {
+			    $payment_mode='<span class="label label-default">BTC</span>';
 			}
 
             $sub_array   = array();
@@ -550,9 +552,13 @@ class Restaurant extends Main
 		$query = $this->db->get('orders');
 		$orders = $query->result();
 		
-		$data[] = ['Order Status','Order Id','Table Id','Customer Name','Phone Number','Order Type','Payment Mode', 'Discount Percentage (%)' , 'Discount Flat Rupees Off ', 'Sub Total', 'Total Tax', 'Total Amount', 'Roundoff', 'Total Billed','Created Date'];
+// 		'Discount Flat Rupees Off '
+
+		$data[] = ['Order Status','Order Id','Table Id','Customer Name','Phone Number','Order Type','Payment Mode', 
+		'Sub Total', 'Total Tax', 'Roundoff', 'Total Amount',   'Discount Percentage (%)' , 
+		'Discount Amount', 'Bill Amount', 'Tax Amount', 'Roundoff 2', 'Total Billed','Created Date'];
 		
-		$grandTotalTaxes = $grandSubTotal = $grandTotalAmount = $grandRoundOff = $grandTotalBilledAmount = 0;
+		$grandTotalTaxes = $grandSubTotal = $grandTotalAmount = $grandRoundOff = $grandTotalBilledAmount = $grandBillAmount = $grandTaxAmount = $grandDiscountAmount = $grandRoundOff2 = 0;
 
 		foreach ( $orders as $order )
         {
@@ -569,9 +575,25 @@ class Restaurant extends Main
 			}
 
 			$totalAmount = $subTotal + $totalTaxes;
-			$totalAmount = number_format($totalAmount, 2, '.', '');
+			$totalAmount1 = number_format($totalAmount, 2, '.', '');
+			$totalAmount = round($totalAmount1);
+			
 			$totalBilledAmount = $this->cartTotal($CartLists,'no',$rid);
-			$roundOff = number_format($totalBilledAmount - $totalAmount, 2, '.', '');
+			$roundOff = number_format($totalBilledAmount - $totalAmount1, 2, '.', '');
+			
+			
+			
+			
+			$discountPercent = $order->discount_coupon_percent;
+			$finalDisc = $discountPercent / 100;
+    		$billAmount = $subTotal - ($subTotal * $finalDisc);
+    		$taxAmount = $totalTaxes - ($totalTaxes * $finalDisc);
+    		
+    		$totalValue = round($billAmount + $taxAmount);
+    		$totalValue1 = $billAmount + $taxAmount;
+    		$roundOff2 = number_format($totalValue - $totalValue1, 2, '.', '');
+    		
+    		$discountAmount = $totalAmount * $finalDisc;
 
             $sub_array   = array();
             $sub_array[] = $order_status;
@@ -581,20 +603,42 @@ class Restaurant extends Main
             $sub_array[] = $order->buyer_phone_number;
             $sub_array[] = $order->order_type;
             $sub_array[] = $this->paymentMethod($order->payment_mode);
-            $sub_array[] = $order->discount_coupon_percent;
-			$sub_array[] = $order->flat_amount_discount ;
+          
+// 			$sub_array[] = $order->flat_amount_discount ;
             $sub_array[] = $subTotal;
+            
             $sub_array[] = $totalTaxes; 
-            $sub_array[] = $totalAmount; 
             $sub_array[] = $roundOff; 
-            $sub_array[] = $totalBilledAmount; 
+            $sub_array[] = $totalAmount; 
+            
+            $sub_array[] = $discountPercent;
+            $sub_array[] = $discountAmount;
+             
+            //29-11-2020
+            
+            $sub_array[] = $billAmount; 
+            
+            $sub_array[] = $taxAmount; 
+            
+            $sub_array[] = $roundOff2; 
+            
+           
+            // $sub_array[] = $totalBilledAmount;
+            $sub_array[] = $order->total; 
             $sub_array[] = $order->created_at; 
 
 			$grandTotalTaxes += $totalTaxes;
 			$grandSubTotal += $subTotal;
 			$grandTotalAmount += $totalAmount;
 			$grandRoundOff += $roundOff;
-			$grandTotalBilledAmount += $totalBilledAmount;
+			
+			$grandBillAmount += $billAmount;
+			$grandTaxAmount += $taxAmount; 
+			$grandDiscountAmount += $discountAmount;
+			$grandRoundOff2 += $roundOff2;
+			
+// 			$grandTotalBilledAmount += $totalBilledAmount;
+            $grandTotalBilledAmount +=  $order->total; 
 
             $data[] = $sub_array;
 		}
@@ -604,8 +648,8 @@ class Restaurant extends Main
 			$sub_array   = array();
 			$sub_array[] = '';
             $sub_array[] = '';
-           	$sub_array[] = '';
-           	$sub_array[] = '';
+           	// $sub_array[] = '';
+           	// $sub_array[] = '';
             $sub_array[] = '';
             $sub_array[] = '';
             $sub_array[] = '';
@@ -613,8 +657,13 @@ class Restaurant extends Main
             $sub_array[] = '';
             $sub_array[] = $grandSubTotal;
             $sub_array[] = $grandTotalTaxes; 
-            $sub_array[] = $grandTotalAmount; 
             $sub_array[] = $grandRoundOff; 
+            $sub_array[] = $grandTotalAmount; 
+            $sub_array[] = '';
+            $sub_array[] = $grandDiscountAmount;
+            $sub_array[] = $grandBillAmount;
+            $sub_array[] = $grandTaxAmount;
+            $sub_array[] = $grandRoundOff2;
             $sub_array[] = $grandTotalBilledAmount; 
 			$sub_array[] = '';
 			
@@ -991,6 +1040,7 @@ class Restaurant extends Main
 			2 => 'ONLINE',
 			3 => 'UPI QR SCAN',
 			4 => 'CARD SWIPE',
+			5 => 'BTC'
 		];
 
 		return isset($paymentModes[$paymentId]) ? $paymentModes[$paymentId] : 'ONLINE';

@@ -32,7 +32,7 @@
                                     <p class="hidden-lg hidden-md">Profile</p>
                                 </a>
 								<ul class="dropdown-menu">
-								    <li>
+							        <li>
                                         <a href="#" id="ieMenuInventoryLink">Inventory</a>
                                     </li>
                                     <li>

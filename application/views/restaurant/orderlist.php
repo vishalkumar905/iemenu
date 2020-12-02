@@ -266,6 +266,8 @@
         
         setInterval(function(){ $('#datatables').DataTable().ajax.reload();  }, 15000);
         
+        
+        
     });
     
     // function checkUpdate()

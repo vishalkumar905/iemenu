@@ -54,18 +54,6 @@
     				<?php if(!empty($order->flat_amount_discount)){?>
     				    <p><strong>Flat Amount Off : </strong>₹ <?= $order->flat_amount_discount; ?></p>
     				<?php } ?>
-					<?php
-						if (!empty($order->delivery_charge))
-						{
-							echo "<p><strong>Delivery Charge : </strong>₹ $order->delivery_charge </p>";
-						}
-						
-						if (!empty($order->container_charge))
-						{
-							echo "<p><strong>Container Charge : </strong>₹ $order->container_charge </p>";
-						}
-					?>
-
                     <p><strong>Amount Paid : </strong>₹ <?= $order->total; ?></p>
 				<?php } ?>
 				
@@ -80,8 +68,8 @@
 								<input class="radio-btn" type="radio" name="discount_type" id="percent" value="percentOff">
 								<label for="" class="pr-10 pl-5 radio-label">Percent Off</label>
 
-								<input class="radio-btn" type="radio" name="discount_type" id="amount" value="amountOff">
-								<label for="" class="pr-10 pl-5 radio-label">Amount</label></span>
+								<!--<input class="radio-btn" type="radio" name="discount_type" id="amount" value="amountOff">-->
+								<!--<label for="" class="pr-10 pl-5 radio-label">Amount</label></span>-->
 
 				</div>				
 
@@ -256,13 +244,13 @@ $(document).ready(function() {
 	});
 	
 // diable radio button on select
-document.getElementById('amount').onclick = function() {
-    document.getElementById('percent').disabled = true;
-}
+// document.getElementById('amount').onclick = function() {
+//     document.getElementById('percent').disabled = true;
+// }
 
-document.getElementById('percent').onclick = function() {
-    document.getElementById('amount').disabled = true;
-}
+// document.getElementById('percent').onclick = function() {
+//     document.getElementById('amount').disabled = true;
+// }
 
 
 </script>

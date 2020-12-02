@@ -424,7 +424,7 @@ class UserMenu extends CI_Controller
 			
 			$orderMessage = 'Can&apos;t Place Order';
 			$orderId = 'NA';
-			$paymentMethods = ['Cash', 'Pay Online', 'UPI QR Scan', 'Card Swipe'];
+			$paymentMethods = ['Cash', 'Pay Online', 'UPI QR Scan', 'Card Swipe', 'BTC'];
 			$paymentMethod = $this->input->post('pay_method');
 
 			$logMessage = sprintf('Order is placing for restaurant %s', $data['res_id']). PHP_EOL;
@@ -467,6 +467,18 @@ class UserMenu extends CI_Controller
 			else if($paymentMethod == 'Card Swipe')
 			{
 				$data['payment_mode'] = 4;
+				$data['payment_status'] = 2;
+				$data['order_id'] = $this->lastOrder($data['res_id']);
+				$added = $this->usermodel->placeOrder($data);
+				if($added)
+				{
+					$orderMessage = 'Order Placed Successfully';
+					$orderId = $data['order_id'];
+				}
+			}
+			else if($paymentMethod == 'BTC')
+			{
+				$data['payment_mode'] = 5;
 				$data['payment_status'] = 2;
 				$data['order_id'] = $this->lastOrder($data['res_id']);
 				$added = $this->usermodel->placeOrder($data);

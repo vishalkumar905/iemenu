@@ -125,6 +125,11 @@
 							<span><input class="radio-btn" id="cash-label" type="radio" name="pay_method" value="Cash" checked="" form="paycash-form"><label for="cash-label" class="pr-10 pl-5 radio-label">Cash / UPI</label></span>
                             <span><input class="radio-btn" id="upi-label" type="radio" name="pay_method" value="UPI QR Scan" form="paycash-form"><label for="upi-label" class="pr-10 pl-5 radio-label">UPI QR Scan</label></span>
                             <span><input class="radio-btn" id="card-label" type="radio" name="pay_method" value="Card Swipe" form="paycash-form"><label for="card-label" class="pr-10 pl-5 radio-label">Card Swipe</label></span>
+							<span><input class="radio-btn" id="btc-label" type="radio" name="pay_method" value="BTC" form="paycash-form"><label for="btc-label" class="pr-10 pl-5 radio-label">BTC</label></span>
+
+							
+							
+							
 							<?php
 							if (!empty($conf) && !empty($userConf)) {
 								if ($conf->status == 'on' && $userConf[0]->online_pay_status == 'on') {
@@ -209,6 +214,11 @@
 				    $("#pay-now").hide();
 					$("#pay-later").show();
 					$("#card-pay").show();
+					$('input[form^="pay"]').attr('form', 'paycash-form');
+				} else if(this.value == 'BTC') {
+				    $("#pay-later").show();
+					$("#pay-now").hide();
+					$("#card-pay").hide();
 					$('input[form^="pay"]').attr('form', 'paycash-form');
 				} else {
 					$("#pay-now").show();

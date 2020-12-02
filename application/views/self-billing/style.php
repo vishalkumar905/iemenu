@@ -83,4 +83,11 @@
     {
         padding-left: 0px;
     }
+    
+    .box{
+        color: #fff;
+        padding: 10px;
+        display: none;
+        
+    }
 </style>

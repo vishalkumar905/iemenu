@@ -86,13 +86,15 @@ class Selfbilling extends CI_Controller
         foreach($postData['selectedItem'] as &$items) 
         {
             $totalPrice = floatval($items['itemPrice']) + floatval($items['itemTax']); 
+            $itemType = isset($items['itemType']) ? $items['itemType']: "";
+
             $items = [
-                $items['itemType'] => [
+                $itemType => [
                     "itemName" => $items['itemName'],
-                    "itemNote" => $items['specialNote'],
+                    "itemNote" => $items['specialNote'] ?? '',
                     "itemPrice"=> $totalPrice,
                     "itemImage"=> "",
-                    "itemType"=> $items['itemType'],
+                    "itemType"=> $itemType,
                     "itemOldPrice"=> floatval($items['itemPrice']),
                     "itemFoodType"=> "",
                     "itemCount"=> $items['itemQty'],
@@ -131,9 +133,9 @@ class Selfbilling extends CI_Controller
             {
                 $data['flat_amount_discount'] = $postData['orderDiscountAmount'];
             }
-            else if ($postData['orderDiscountPercent'] > 0)
+            else if ($postData['orderDiscountPercentage'] > 0)
             {
-                $data['discount_coupon_percent'] = $postData['orderDiscountPercent'];
+                $data['discount_coupon_percent'] = $postData['orderDiscountPercentage'];
             }
         }
 

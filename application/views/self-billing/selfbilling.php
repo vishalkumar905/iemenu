@@ -100,33 +100,34 @@
                                 </tr>
                                 <tr>
                                     <td colspan="5" class="text-right">
-
-                                        <div>
-                                            <label class='pr-10 pl-5 radio-label' style="color:#3C4858">Add Discount: </label>
-                                            <label class='pr-10 pl-5 radio-label'><input type="radio" name="discount" value="percent" />Percent Off </label>
-                                            <label class='pr-10 pl-5 radio-label'><input type="radio" name="discount" value="amount" />Amount </label>
+                                        <div id="discountBox">
+                                            <div>
+                                                <label class='pr-10 pl-5 radio-label' style="color:#3C4858">Add Discount: </label>
+                                                <label class='pr-10 pl-5 radio-label'><input type="radio" name="discount" value="percent" />Percent Off </label>
+                                                <!--<label class='pr-10 pl-5 radio-label'><input type="radio" name="discount" value="amount" />Amount </label>-->
+                                            </div>
+    
+                                            <div class='displaynone' id="amountDiscountDiv">
+                                                <label>Flat Amount Off: ₹</label>
+                                                <input type="number" min="0" name="amountDiscount" id="amountDiscount" />
+                                            </div>
+    
+                                            <div class='displaynone' id="percentDiscountDiv">
+                                                <label>Select Coupon For % Off: ₹</label>
+                                                <select name="percentDiscount" id="percentDiscount">
+                                                    <option value="">None Selected</option>
+                                                    <?php if (!empty($discountCoupons)) {
+                                                        foreach($discountCoupons as $discountCoupon)
+                                                        {
+                                                            echo sprintf('<option discount="%s" value="%s">%s</option>', $discountCoupon->discount_percent, $discountCoupon->discount_id, $discountCoupon->discount_name);
+                                                        }
+                                                    } ?>
+                                                </select>
+                                            </div>
+                                            
+                                            <div><button type="button" class='btn btn-sm btn-danger displaynone' id="addDiscount">Add Discount</button></div>
                                         </div>
-
-                                        <div class='displaynone' id="amountDiscountDiv">
-                                            <label>Flat Amount Off: ₹</label>
-                                            <input type="number" min="0" name="amountDiscount" id="amountDiscount" />
-                                        </div>
-
-                                        <div class='displaynone' id="percentDiscountDiv">
-                                            <label>Select Coupon For % Off: ₹</label>
-                                            <select name="percentDiscount" id="percentDiscount">
-                                                <option value="">None Selected</option>
-                                                <?php if (!empty($discountCoupons)) {
-                                                    foreach($discountCoupons as $discountCoupon)
-                                                    {
-                                                        echo sprintf('<option discount="%s" value="%s">%s</option>', $discountCoupon->discount_percent, $discountCoupon->discount_id, $discountCoupon->discount_name);
-                                                    }
-                                                } ?>
-                                            </select>
-                                        </div>
-                                        
-                                        <div><button type="button" class='btn btn-sm btn-danger displaynone' id="addDiscount">Add Discount</button></div>
-
+                                        <div id="discountAppliedMessage"></div>
                                     </td>
                                     <td><span id="discountAmount"></span></td>
                                 </tr>
@@ -178,6 +179,11 @@
                                 <div class="radio radio-inline">
                                     <label>
                                         <input type="radio" name="paymentType" value="4">Card Swipe
+                                    </label>
+                                </div>
+                                <div class="radio radio-inline">
+                                    <label>
+                                        <input type="radio" name="paymentType" value="5">BTC
                                     </label>
                                 </div>
                                 <div class="displaynone" id="TransictionIdField">
@@ -508,6 +514,12 @@
                     percentDiscountId
                 };
 
+                if (totalItemsPrice < 0)
+                {
+                    alert('Discount can not be less than total order.');
+                    return false;
+                }
+
                 discountAmount = discountPrice;
                 $("#discountAmount").text(discountPrice);
             }
@@ -523,6 +535,13 @@
             {
                 orderDiscountAmount = amountDiscount;
                 totalItemsPrice = totalItemsPrice - amountDiscount;
+
+                if (totalItemsPrice < 0)
+                {
+                    alert('Discount can not be less than total order.');
+                    return false;
+                }
+
                 $("#discountAmount").text(amountDiscount);
             }
             
@@ -549,7 +568,45 @@
         $("#grandTotal").text(roundOff);
 
         calculateOrderTotal();
+        showDiscountApplied();
     });
+
+    var showDiscountApplied = function()
+    {
+        if (isDiscountApplied)
+        {
+            $("#discountBox").hide();
+
+            let discountAppliedHtml = '<span>Discount Applied: </span><span id="removeDiscount" style="cursor:pointer;text-decoration:underline;color:blue;">Remove Discount</span>';
+
+            $("#discountAppliedMessage").html(discountAppliedHtml);
+
+            $("#removeDiscount").click(function() {
+                
+                $("#discountBox").show();
+                
+                resetDiscountData();
+                calculateOrderTotal();
+            });
+        }
+    }
+
+    var resetDiscountData = function()
+    {
+        $('input:radio[name=discount]').each(function () { $(this).prop('checked', false); });
+        $("#amountDiscount").val('');
+        $("#percentDiscount").val('');
+        $("#discountAmount").text('');
+        $("#discountAppliedMessage").html('');
+        $("#amountDiscountDiv, #percentDiscountDiv, #addDiscount").hide();
+        $("#discountBox").show();
+
+        orderDiscountPercentage = 0;
+        orderDiscountAmount = 0;
+        orderDiscountDetail = {};
+        isDiscountApplied = false;
+        discountAmount = 0;
+    }
 
     $('input:radio[name="paymentType"]').change(function(){
         $("#TransictionIdField").hide();
@@ -669,6 +726,8 @@
         $("#item").val('');
         $("#specialNote").val('');
         $("#customerReturn").text('');
+
+        resetDiscountData();
 
         selectedMenuItems = {};
     };
