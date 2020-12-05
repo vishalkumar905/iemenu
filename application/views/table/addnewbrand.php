@@ -86,7 +86,7 @@
                                     <button type="button" class="btn btn-rose btn-fill" id="addBtn">Branch (+)</button>
                                 </div>
                             </div>
-                            <div id="addFields" class="row">
+                            <div id="addFields">
                             </div>
                         </div>
                     </form>
@@ -99,16 +99,22 @@
 
 <script>
     let x = 1;
-    let fieldHtml = '<div class="col-md-4"><div class="form-group label-floating">';
+    let fieldHtml = '<div class="row"><div class="col-md-4"><div class="form-group label-floating">';
     fieldHtml  += '<label class="control-label">Branch Name</label><input type="text" class="form-control" value="" name="branchName[]"></div></div>';
     fieldHtml += '<div class="col-md-4"><div class="form-group label-floating">';
     fieldHtml += '<label class="control-label">Branch address</label><input type="text" class="form-control" value="" name="branchAddress[]"></div></div>';
-    fieldHtml += '<div class="col-md-4"><div class="form-group label-floating">';
-    fieldHtml += '<label class="control-label">Branch state</label><input type="text" class="form-control" value="" name="branchState[]"></div></div>';
+    fieldHtml += '<div class="col-md-3"><div class="form-group label-floating">';
+    fieldHtml += '<label class="control-label">Branch state</label><input type="text" class="form-control" value="" name="branchState[]"></div></div> <button class="btn btn-simple btn-danger btn-icon remove" id="removeField"><i class="material-icons">close</i></button></div>';
                         
     $("#addBtn").click(function() {
         x++;
         $("#addFields").append(fieldHtml);
+    });
+
+    $("#addFields").on('click', "#removeField", function(e) {
+        e.preventDefault();
+        $(this).parent('div').remove();
+        x--;
     });
 
 
