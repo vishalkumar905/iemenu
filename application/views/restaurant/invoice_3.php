@@ -149,7 +149,7 @@
 				<?php */ ?>
 				    <br>
 					<div style="padding-bottom:10px; text-align:center; font-size: 10px;">
-            	    <b>Customer Care Number : 1800 120 5877</b>
+            	    <b>Customer Care Number : <?= ($order->res_id) ? ($ci->getRestaurantDetail($order->res_id)) ? $ci->getRestaurantDetail($order->res_id)[0]->customer_care_number : '-' : '-'; ?></b>
             	</div>
             </div>
         </div>

@@ -13,6 +13,7 @@ class dashboardModel extends CI_Model
 		$Tagline = $this->input->post('tagline');
 		$Tax_name = $this->input->post('tax_name');
 		$Registered_no = $this->input->post('rest_reg_no');
+		$Customer_care_no = $this->input->post('customer_care_number');
 		
 // 		$Email = $this->input->post('uemail');
 // 		$Phone = $this->input->post('mobile');
@@ -48,7 +49,8 @@ class dashboardModel extends CI_Model
 								'tagline' => $Tagline,
 								'tax_name' => $Tax_name,
 								'rest_reg_no' => $Registered_no,
-								'userimg' => $img_url
+								'userimg' => $img_url,
+								'customer_care_number' => $Customer_care_no
 							);
             }else{
 				$data = array();
@@ -61,6 +63,7 @@ class dashboardModel extends CI_Model
 								'tagline' => $Tagline,
 								'tax_name' => $Tax_name,
 								'rest_reg_no' => $Registered_no,
+								'customer_care_number' => $Customer_care_no
 							);
 			}
 		$this->db->where('rest_id', $id);
