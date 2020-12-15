@@ -294,8 +294,10 @@
             selectedMenuItems[id].itemTax = itemTaxTotal;
             selectedMenuItems[id].itemTotalAmount = itemTotalAmount;
         }
-
-        $("#item").val(itemName);
+        
+        // mj input text value
+        //  $("#item").val(itemName);
+        $("#item").val('');
         $("#suggestion").hide();
         
         let selectBox = '';
