@@ -302,13 +302,6 @@
 			// console.log(response);
         })
     }
-
-    function getOrder(orderId=0)
-    {
-        $.ajax({
-            url: "<?= base_url('Restaurant/getOrder')?>"
-        })
-    }
     
      // 13-10-2020
     function getNckBill(orderID=0)
