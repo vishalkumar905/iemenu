@@ -494,6 +494,7 @@ class Restaurant extends Main
             } 	else if ($order->order_status=='1') {
 				
 				$sub_array[] = '<div class="text-right">
+				<a href="javascript:editOrder('. $order->order_id .')" title="Edit" class="btn btn-xs btn-success"> Edit</a>
 				<a href="javascript:getOrderView('. $order->order_id .')" title="View" class="btn btn-xs btn-success"> View</a>
 				<a href="javascript:void(0)" data-id="'. $order->id.'" class="btn btn-xs btn-default" '.$onclick.' >Close</a>
 				<div id="nckBillBtn-'. $order->order_id .'" title="NCK Bill" class="btn btn-xs btn-danger"> NCK Bill </div>
@@ -1003,6 +1004,11 @@ class Restaurant extends Main
 		$rid = $this->session->userid;
 		$data['percentOff'] = $this->restaurantModel->getOnlyDiscountList($rid);
         $this->load->view('restaurant/orderPopup', $data);
+	}
+
+	public function editOrder($postdata=array())
+	{
+		print_r($postdata);
 	}
 
 	//11-10-2020
