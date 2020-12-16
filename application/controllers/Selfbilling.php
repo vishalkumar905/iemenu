@@ -14,7 +14,8 @@ class Selfbilling extends CI_Controller
         }
 		$this->load->model('login/DashboardModel','dashboardModel');
 		$this->load->model('UserModel','usermodel');
-		$this->load->model('SelfbillingModel','Selfbilling');
+        $this->load->model('SelfbillingModel','Selfbilling');
+		$this->load->model('restaurant/RestaurantModel','restaurantModel');
 	}
 
     public function index()
@@ -119,6 +120,7 @@ class Selfbilling extends CI_Controller
             "order_status" => 1,
             "txn_id" => $postData['transictionId'],
             "total" => $postData['grandTotal'],
+            "orderTotal" => $postData['orderTotal'],
             "payment_status" => 1,
             "payment_mode" => $postData['paymentType'],
             "created_at" => date('Y-m-d H:i:s'),
@@ -153,6 +155,96 @@ class Selfbilling extends CI_Controller
         }
 
         echo json_encode($response);
+    }
+
+    public function updateSelfBilling()
+    {   
+        header('Access-Control-Allow-Origin: *');  
+		header("Content-Type: application/json", true);
+        $postData = $this->input->post();
+
+        foreach($postData['selectedItem'] as &$items) 
+        {
+            $totalPrice = floatval($items['itemPrice']) + floatval($items['itemTax']); 
+            $itemType = isset($items['itemType']) ? $items['itemType']: "";
+
+            $items = [
+                $itemType => [
+                    "itemName" => $items['itemName'],
+                    "itemNote" => $items['specialNote'] ?? '',
+                    "itemPrice"=> $totalPrice,
+                    "itemImage"=> "",
+                    "itemType"=> $itemType,
+                    "itemOldPrice"=> floatval($items['itemPrice']),
+                    "itemFoodType"=> "",
+                    "itemCount"=> $items['itemQty'],
+                    "itemTaxes"=> $items['itemTaxDetails']
+                ]
+            ];
+        }
+
+        $userId = $this->session->userid;
+        $orderId = $postData['id'];
+        $items = json_encode($postData['selectedItem']);
+        
+        $data = [
+            "order_id" => $orderId,
+            "res_id" => $userId,
+            "buyer_name" => $postData['customerName'],
+            "buyer_address" => $postData['address'],
+            "buyer_phone_number" => $postData['mobile'],
+            "order_type" => $postData['orderType'],
+            "item_details" => $items,
+            "item_temp_details" => $items,
+            "order_status" => 1,
+            "txn_id" => $postData['transictionId'],
+            "total" => $postData['grandTotal'],
+            "orderTotal" => $postData['orderTotal'],
+            "payment_status" => 1,
+            "payment_mode" => $postData['paymentType'],
+            "created_at" => date('Y-m-d H:i:s'),
+            "container_charge" => $this->input->post('containerCharge'),
+            "delivery_charge" => $this->input->post('deliveryCharge'),
+            "customer_paid" => floatval($this->input->post('customerPaid')),
+        ];
+
+        if (isset($postData['isDiscountApplied']))
+        {
+            if ($postData['orderDiscountAmount'] > 0)
+            {
+                $data['flat_amount_discount'] = $postData['orderDiscountAmount'];
+            }
+            else if ($postData['orderDiscountPercentage'] > 0)
+            {
+                $data['discount_coupon_percent'] = $postData['orderDiscountPercentage'];
+            }
+        }
+
+        $response = [
+            'status' => "false",
+            'msg' => "Something went wrong"
+        ];
+
+        if ($this->db->insert('sub_orders', $data))
+        {
+            $response = [
+                'status' => "success",
+                'msg' => "Order created successfully"
+            ];
+        }
+
+        echo json_encode($response);
+    }
+
+    public function getOrderId()
+    {
+        header('Access-Control-Allow-Origin: *');  
+        header("Content-Type: application/json", true);
+        $id = $this->input->get('id');
+        
+        $condition = array('id'=>$id);
+		$data = $this->restaurantModel->getOrderList($condition);
+        echo json_encode($data);
     }
 }
 

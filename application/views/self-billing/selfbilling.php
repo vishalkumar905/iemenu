@@ -4,7 +4,8 @@
         <div class="card " style="margin-top: 0px;">
             <form class="form-horizontal">
                 <div class="card-header">
-                    <h4 class="card-title">Self Billing</h4>
+                    
+                    <h4 class="card-title"><?= intval($this->input->get('id')) > 0 ? 'Add Items To Order' : 'Self Billing'?></h4>
                 </div>
                 <div class="card-content">
                     <div class="row">
@@ -197,7 +198,18 @@
                         </div>
                         <div class="col-md-6">
                             <div class="form-group label-floating">
-                                <button type="button" id="selfbilling" name="selfbilling" class="btn btn-rose pull-right">Confirm Order</button>
+                                <?php
+                                    if(isset($_GET['id']))
+                                    {
+                                        echo '<button type="button" id="cancelBilling" name="cancelBilling" class="btn btn-warning pull-right">Cancel</button>';
+                                        echo '<button type="button" id="updateBilling" name="updateBilling" class="btn btn-rose pull-right">Update Order</button>';
+
+                                    }
+                                    else
+                                    {
+                                        echo '<button type="button" id="selfbilling" name="selfbilling" class="btn btn-rose pull-right">Confirm Order</button>';
+                                    }                
+                                ?>
                             </div>
                         </div>
                     </div>
@@ -216,6 +228,7 @@
     var orderDiscountDetail = {};
     var isDiscountApplied = false;
     var discountAmount = 0;
+    var orderTotal = 0;
 
     let getMenuItems = function(searchText) {
         $.ajax({
@@ -440,6 +453,9 @@
         }
 
         let totalOrderAmount = (totalItemsPrice + deliveryCharge + containerCharge) - discountAmount;
+
+        orderTotal = totalOrderAmount;
+        
         let roundOff = Math.round(totalOrderAmount);
 
         if(customerPaid != "")
@@ -676,6 +692,7 @@
             orderType: orderType,
             paymentType: paymentType,
             grandTotal: grandTotal,
+            orderTotal: orderTotal,
             transictionId: transictionId,
             selectedItem: selectedMenuItems,
             deliveryCharge,
@@ -710,6 +727,95 @@
         })
     });
 
+    $("#updateBilling").click(function() {
+        let queryString = window.location.search;
+        let urlParams = new URLSearchParams(queryString);
+        let id = urlParams.get('id');
+        let customerName = $("#customerName").val();
+        let address = $("#address").val();
+        let mobieNumber = $("#mobieNumber").val();
+        let orderType = $("input[name='orderType']:checked").val();
+        let paymentType = $("input[name='paymentType']:checked").val();
+        let transictionId = $("#transictionId").val();
+        let grandTotal = $("#grandTotal").text();
+        let deliveryCharge = $("#deliveryCharge").val();
+        let containerCharge = $("#containerCharge").val();
+        let customerPaid = $("#customerPaid").val();
+        
+        $("#nameError").hide();
+        $("#addressErr").hide();
+        $("#mobileErr").hide();
+        $("#itemErr").hide();
+        $("#paymentError").hide();
+
+        if(customerName == "")
+        {
+            $("#nameError").show();
+            return;
+        }
+
+        if(mobieNumber == "")
+        {
+            $("#mobileErr").show();
+            return;
+        }
+
+        if(jQuery.isEmptyObject(selectedMenuItems))
+        {
+            $("#itemErr").show();
+            return;
+        }
+        
+        if(paymentType == "4" && transictionId == "")
+        {
+            $("#paymentError").show();
+            return;
+        }
+
+        let data = {
+            id: id,
+            customerName: customerName,
+            address: address,
+            mobile: mobieNumber,
+            orderType: orderType,
+            paymentType: paymentType,
+            grandTotal: grandTotal,
+            orderTotal: orderTotal,
+            transictionId: transictionId,
+            selectedItem: selectedMenuItems,
+            deliveryCharge,
+            containerCharge,
+            customerPaid,
+            orderDiscountPercentage,
+            orderDiscountAmount,
+            orderDiscountDetail,
+            isDiscountApplied
+        };
+
+        $(this).attr('disabled', 'true');
+        $.ajax({
+            url: baseUrl + 'Selfbilling/updateSelfBilling',
+            type: "POST",
+            data: data,
+            cache: false,
+            success: function(response) {
+                $("#updateBilling").attr('disabled', false);
+
+                if(response.status == "success")
+                {
+                    swal(response.msg, {
+					    icon: "success",
+					}).then((value) => {
+                        resetFormData();
+                    });
+                    
+                    $('#datatables').DataTable().ajax.reload();
+                    window.location.href = baseUrl + 'Restaurant/orderlist';
+                }
+            }
+        })
+    });
+    
     var resetFormData = function() 
     {
         $("#customerName").val('');
@@ -739,4 +845,30 @@
         return Number(num % 1 != 0 ? num.toFixed(2) : num);
     }
     
+    let queryParams = 'id';
+    let url = window.location.href;
+    if(url.indexOf('?' + queryParams + '=') != -1)
+    {
+        const queryString = window.location.search;
+        const urlParams = new URLSearchParams(queryString);
+        const id = urlParams.get('id');
+        
+        $.ajax({
+            url: "<?= base_url('Selfbilling/getOrderId/')?>" + id,
+            type: 'GET',
+            data: {'id':id},
+            dataType: 'json',
+            success: function(data) {
+                $("#customerName").val(data[0].buyer_name);
+                $("#mobieNumber").val(data[0].buyer_phone_number);
+                $("#address").val(data[0].buyer_address);
+                $('input[name="orderType"][value="' + data[0].order_type + '"]').prop('checked', true);
+            }     
+        })
+        
+    }
+
+    $("#cancelBilling").click(function() {
+        window.location = "<?= base_url('Restaurant/orderlist')?>"
+    });
 </script>

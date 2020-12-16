@@ -492,8 +492,8 @@ class Restaurant extends Main
 				</div>';
 				
             } 	else if ($order->order_status=='1') {
-				
 				$sub_array[] = '<div class="text-right">
+				<a href="'.base_url("Restaurant/orderlist?id=".$order->id).'" title="Edit" class="btn btn-xs btn-success" name="addMoreItems"> Add more items</a>
 				<a href="javascript:getOrderView('. $order->order_id .')" title="View" class="btn btn-xs btn-success"> View</a>
 				<a href="javascript:void(0)" data-id="'. $order->id.'" class="btn btn-xs btn-default" '.$onclick.' >Close</a>
 				<div id="nckBillBtn-'. $order->order_id .'" title="NCK Bill" class="btn btn-xs btn-danger"> NCK Bill </div>
@@ -853,6 +853,21 @@ class Restaurant extends Main
 	    $data=array();
         $condition = array('order_id'=>$orderid, 'res_id' => $this->session->userid);
 		$data['order'] = $this->restaurantModel->getOrderList($condition)[0];
+
+		$subOrderId = $this->input->get('id');
+		
+		if (intval($subOrderId) > 0)
+		{
+			$subOrder = $this->getSubOrders(0, $subOrderId);
+			if (!empty($subOrder))
+			{
+				$data['order'] = (object) $subOrder[0];
+
+				$data['order']->order_id = $orderid;
+			}
+		}
+
+
 		$data['showTaxColumn'] = $this->checkIfTaxIsAvaliable($data['order']);
 		$data['paymentMethodName'] = $this->paymentMethod($data['order']->payment_mode);
 
@@ -874,11 +889,11 @@ class Restaurant extends Main
         $mpdf->Output();
 	}
 	
-	public function printInvoice3($orderid=0)
+	public function printInvoice3($orderId=0)
 	{
-	    $data=array();
-        $condition = array('order_id'=>$orderid, 'res_id' => $this->session->userid);
-        $data['order'] = $this->restaurantModel->getOrderList($condition)[0];
+		$data=array();
+		
+        $data['order'] = $this->combineOrders($orderId);
 		$data['showTaxColumn'] = $this->checkIfTaxIsAvaliable($data['order']);
 		$data['allCombinedTaxes'] = $this->calculateAllCombinedTaxes($data['order']);
 		$data['paymentMethodName'] = $this->paymentMethod($data['order']->payment_mode);
@@ -899,6 +914,103 @@ class Restaurant extends Main
         $mpdf->WriteHTML($stylesheet,1);
         $mpdf->WriteHTML($html,2);
         $mpdf->Output();
+	}
+
+	public function combineOrders($orderId)
+	{
+		$order = $this->restaurantModel->getOrderList([
+			'order_id'=>$orderId, 
+			'res_id' => $this->session->userid
+		])[0];
+
+		$orderItemDetails = json_decode($order->item_details, true);
+
+		if (!empty($order))
+		{
+			$subOrders = $this->getSubOrders($order->id);
+
+			if (!empty($subOrders))
+			{
+				foreach ($subOrders as $subOrder)
+				{
+					$subOrderItemDetails = json_decode($subOrder['item_details'], true);
+					
+					foreach($subOrderItemDetails as $subOrderProductId => $subOrderItemDetail)
+					{
+						$subOrderProductType = key($subOrderItemDetail);
+
+						if (isset($orderItemDetails[$subOrderProductId]))
+						{
+							if (isset($orderItemDetails[$subOrderProductId][$subOrderProductType]))
+							{
+
+								$subOrderItemCount = $subOrderItemDetail[$subOrderProductType]['itemCount'];
+								$orderItemCount = $orderItemDetails[$subOrderProductId][$subOrderProductType]['itemCount'];
+								$orderItemOldPrice = $orderItemDetails[$subOrderProductId][$subOrderProductType]['itemOldPrice'];
+								$orderItemTaxes = $orderItemDetails[$subOrderProductId][$subOrderProductType]['itemTaxes'];
+
+								$totalItemCount = $orderItemCount + $subOrderItemCount;
+								
+								$totalTaxPercentage = 0;
+								foreach($orderItemTaxes as $orderItemTax)
+								{
+									$totalTaxPercentage += $orderItemTax['taxPercentage'];
+								}
+
+								$calculateItemPrice = (($orderItemOldPrice * $totalItemCount) * $totalTaxPercentage) / 100;
+
+								$orderItemDetails[$subOrderProductId][$subOrderProductType]['itemPrice'] = $orderItemOldPrice + $calculateItemPrice;
+								$orderItemDetails[$subOrderProductId][$subOrderProductType]['itemCount'] = $totalItemCount;
+							}
+							else
+							{
+								$orderItemDetails[$subOrderProductId][$subOrderProductType] = $subOrderItemDetail[$subOrderProductType];
+							}
+						}
+						else
+						{
+							$orderItemDetails[$subOrderProductId] = $subOrderItemDetail;
+						}
+					}
+
+					$order->delivery_charge = floatval($order->delivery_charge) + floatval($subOrder['delivery_charge']);
+					$order->container_charge = floatval($order->container_charge) + floatval($subOrder['container_charge']);
+
+					if (floatval($order->orderTotal) > 0)
+					{
+						$order->total = floatval($order->orderTotal) + floatval($subOrder['orderTotal']);
+					}
+					else
+					{
+						$order->total = floatval($order->total) + floatval($subOrder['total']);
+					}
+
+				}
+			}
+
+			$order->item_details = json_encode($orderItemDetails);
+		}
+
+		return $order; 
+	}
+
+	private function getSubOrders($orderId, $id = 0)
+	{
+		if ($id > 0)
+		{
+			$condition = [
+				'id' => $id
+			];
+		}
+		else
+		{
+			$condition = [
+				'order_id' => $orderId,
+				'res_id' => $this->session->userid
+			];
+		}
+
+		return $this->db->select('*')->from('sub_orders')->where($condition)->get()->result_array();
 	}
 
 	public function checkIfTaxIsAvaliable($data)
@@ -996,13 +1108,31 @@ class Restaurant extends Main
 	    }
 		
         $condition = array('order_id'=>$postdata['orderID'], 'res_id' => $this->session->userid);
-        $data['order'] = $this->restaurantModel->getOrderList($condition)[0];
+		$data['order'] = $this->restaurantModel->getOrderList($condition)[0];
+		$data['kotPrintBtns'] = $this->kotPrintBtns($this->getSubOrders($data['order']->id), $postdata['orderID']);
 		$data['paymentMethodName'] = $this->paymentMethod($data['order']->payment_mode);
 		
 		// 26-10-2020
 		$rid = $this->session->userid;
 		$data['percentOff'] = $this->restaurantModel->getOnlyDiscountList($rid);
         $this->load->view('restaurant/orderPopup', $data);
+	}
+
+	private function kotPrintBtns($subOrders, $orderId)
+	{
+		$btn = '';
+		if (!empty($subOrders))
+		{
+			$kotPrintUrl = base_url("Restaurant/printInvoice2/". $orderId);
+
+			foreach($subOrders as $key => $subOrder)
+			{	
+				$printKey = $key + 2;
+				$btn .= sprintf('<button type="button" class="btn btn-primary btn-round" onclick="window.open(\'%s?id=%s\', \'_blank\')">KOT Print %s</button>', $kotPrintUrl, $subOrder['id'], $printKey);
+			}
+		}
+
+		return $btn;
 	}
 
 	//11-10-2020
