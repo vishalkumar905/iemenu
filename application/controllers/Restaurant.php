@@ -986,6 +986,8 @@ class Restaurant extends Main
 					}
 
 				}
+
+				$order->total = round($order->total);
 			}
 
 			$order->item_details = json_encode($orderItemDetails);
