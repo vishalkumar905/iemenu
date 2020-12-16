@@ -4,7 +4,8 @@
         <div class="card " style="margin-top: 0px;">
             <form class="form-horizontal">
                 <div class="card-header">
-                    <h4 class="card-title">Self Billing</h4>
+                    
+                    <h4 class="card-title"><?= intval($this->input->get('id')) > 0 ? 'Add Items To Order' : 'Self Billing'?></h4>
                 </div>
                 <div class="card-content">
                     <div class="row">
@@ -200,7 +201,9 @@
                                 <?php
                                     if(isset($_GET['id']))
                                     {
+                                        echo '<button type="button" id="cancelBilling" name="cancelBilling" class="btn btn-warning pull-right">Cancel</button>';
                                         echo '<button type="button" id="updateBilling" name="updateBilling" class="btn btn-rose pull-right">Update Order</button>';
+
                                     }
                                     else
                                     {
@@ -225,6 +228,7 @@
     var orderDiscountDetail = {};
     var isDiscountApplied = false;
     var discountAmount = 0;
+    var orderTotal = 0;
 
     let getMenuItems = function(searchText) {
         $.ajax({
@@ -449,6 +453,9 @@
         }
 
         let totalOrderAmount = (totalItemsPrice + deliveryCharge + containerCharge) - discountAmount;
+
+        orderTotal = totalOrderAmount;
+        
         let roundOff = Math.round(totalOrderAmount);
 
         if(customerPaid != "")
@@ -685,6 +692,7 @@
             orderType: orderType,
             paymentType: paymentType,
             grandTotal: grandTotal,
+            orderTotal: orderTotal,
             transictionId: transictionId,
             selectedItem: selectedMenuItems,
             deliveryCharge,
@@ -772,6 +780,7 @@
             orderType: orderType,
             paymentType: paymentType,
             grandTotal: grandTotal,
+            orderTotal: orderTotal,
             transictionId: transictionId,
             selectedItem: selectedMenuItems,
             deliveryCharge,
@@ -858,4 +867,8 @@
         })
         
     }
+
+    $("#cancelBilling").click(function() {
+        window.location = "<?= base_url('Restaurant/orderlist')?>"
+    });
 </script>

@@ -165,7 +165,8 @@
 	<?php //} elseif($order->order_status == 2) { $path=base_url("Restaurant/printInvoice/").$order->order_id; ?>
 	<?php } elseif($order->order_status == 1) { $path=base_url("Restaurant/printInvoice2/").$order->order_id; $path2=base_url("Restaurant/printInvoice3/").$order->order_id; ?>
 	    <button type="button" class="btn btn-primary btn-round" onclick="window.open('<?= $path2 ?>','_blank')">Customer Copy</button>
-	    <button type="button" class="btn btn-primary btn-round" onclick="window.open('<?= $path ?>','_blank')">KOT Print</button>
+	    <button type="button" class="btn btn-primary btn-round" onclick="window.open('<?= $path ?>','_blank')">KOT Print <?= !empty($kotPrintBtns) ? 1 : '' ?></button>
+		<?= !empty($kotPrintBtns) ? $kotPrintBtns : '' ?>
 	<?php } ?>
 		<button type="button" class="btn btn-default btn-round" data-dismiss="modal">Cancel</button>
 	</div>
