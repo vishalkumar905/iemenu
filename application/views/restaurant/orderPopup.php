@@ -165,8 +165,12 @@
 	<?php //} elseif($order->order_status == 2) { $path=base_url("Restaurant/printInvoice/").$order->order_id; ?>
 	<?php } elseif($order->order_status == 1) { $path=base_url("Restaurant/printInvoice2/").$order->order_id; $path2=base_url("Restaurant/printInvoice3/").$order->order_id; ?>
 	    <button type="button" class="btn btn-primary btn-round" onclick="window.open('<?= $path2 ?>','_blank')">Customer Copy</button>
-	    <button type="button" class="btn btn-primary btn-round" onclick="window.open('<?= $path ?>','_blank')">KOT Print <?= !empty($kotPrintBtns) ? 1 : '' ?></button>
-		<?= !empty($kotPrintBtns) ? $kotPrintBtns : '' ?>
+
+		<?php if (empty($kotPrintBtns)) { ?>
+		    <button type="button" class="btn btn-primary btn-round" onclick="window.open('<?= $path ?>','_blank')">KOT Print</button>
+		<?php } else { ?>		
+		    <button type="button" class="btn btn-primary btn-round kotPrintBtn">KOT Print</button>
+		<?php } ?>
 	<?php } ?>
 		<button type="button" class="btn btn-default btn-round" data-dismiss="modal">Cancel</button>
 	</div>
@@ -181,68 +185,74 @@ $(document).ready(function(){
         $(".box").not(targetBox).hide();
         $(targetBox).show();
     });
-});
 
-// offer discount coupon
-$(document).ready(function() {
-		$("#discPercent").change(function(e) {
-		
+	// offer discount coupon
+	$("#discPercent").change(function(e) {
 		var discPercentValue = $("#discPercent").val();
-		
-			$('#DiscMsg').hide();
-			if (discPercentValue == null || discPercentValue == "") {
-				$('#DiscMsg').show();
-				$("#DiscMsg").html("Please select offer coupon").css("color", "red");
-			} else {
-			
+	
+		$('#DiscMsg').hide();
+		if (discPercentValue == null || discPercentValue == "") {
+			$('#DiscMsg').show();
+			$("#DiscMsg").html("Please select offer coupon").css("color", "red");
+		} else {
 			// alert(discPercentValue);
-				$.ajax({			
-					type: "POST",
-					url: "<?php echo base_url('restaurant/check_offer_coupon_and_apply/');?>", 
-					data: $('#discPercent').serialize(),
-					dataType: "html",
-					cache: false,
-					success: function(msg) {
-						$('#DiscMsg').show();
-						$("#DiscMsg").html(msg);
-					},
-					error: function(jqXHR, textStatus, errorThrown) {
-						$('#DiscMsg').show();
-						$("#DiscMsg").html(textStatus + " " + errorThrown);
-					}
-				});
-			}
-		});
+			$.ajax({			
+				type: "POST",
+				url: "<?php echo base_url('restaurant/check_offer_coupon_and_apply/');?>", 
+				data: $('#discPercent').serialize(),
+				dataType: "html",
+				cache: false,
+				success: function(msg) {
+					$('#DiscMsg').show();
+					$("#DiscMsg").html(msg);
+				},
+				error: function(jqXHR, textStatus, errorThrown) {
+					$('#DiscMsg').show();
+					$("#DiscMsg").html(textStatus + " " + errorThrown);
+				}
+			});
+		}
 	});
 
 
-// offer flat rupees off
-$(document).ready(function() {
-		$("#add_discount").on("click", function(e) {		
+	// offer flat rupees off
+	$("#add_discount").on("click", function(e) {		
 		let amountOff = $('#amountOff').val();
-			$('#AmountOffMsg').hide();
-			if (amountOff == null || amountOff == "") {
-				$('#AmountOffMsg').show();
-				$("#AmountOffMsg").html("Please add amount").css("color", "red");
-			} else {
-				$.ajax({
-					type: "POST",
-					url: "<?php echo base_url('restaurant/apply_flat_amount_off/');?>", 
-					data: $('#amountOff').serialize(),
-					dataType: "html",
-					cache: false,
-					success: function(msgs) {
-						$('#AmountOffMsg').show();
-						$("#AmountOffMsg").html(msgs);
-					},
-					error: function(jqXHR, textStatus, errorThrown) {
-						$('#AmountOffMsg').show();
-						$("#AmountOffMsg").html(textStatus + " " + errorThrown);
-					}
-				});
-			}
-		});
+		$('#AmountOffMsg').hide();
+		if (amountOff == null || amountOff == "") {
+			$('#AmountOffMsg').show();
+			$("#AmountOffMsg").html("Please add amount").css("color", "red");
+		} else {
+			$.ajax({
+				type: "POST",
+				url: "<?php echo base_url('restaurant/apply_flat_amount_off/');?>", 
+				data: $('#amountOff').serialize(),
+				dataType: "html",
+				cache: false,
+				success: function(msgs) {
+					$('#AmountOffMsg').show();
+					$("#AmountOffMsg").html(msgs);
+				},
+				error: function(jqXHR, textStatus, errorThrown) {
+					$('#AmountOffMsg').show();
+					$("#AmountOffMsg").html(textStatus + " " + errorThrown);
+				}
+			});
+		}
 	});
+
+	$(".kotPrintBtn").click(function() {
+		let url = "<?=base_url('Restaurant/getKotBtns/')?>" + "<?=$order->order_id?>";
+		$.get(url, function(resp) {
+			if (resp.kotPrintBtns)
+			{
+				$("#noticeModal").modal('hide');
+				$("#kotPrintModalBody").html(resp.kotPrintBtns);
+				$("#kotPrintModal").modal('show');
+			}
+		}, 'json');
+	});
+});
 	
 // diable radio button on select
 // document.getElementById('amount').onclick = function() {

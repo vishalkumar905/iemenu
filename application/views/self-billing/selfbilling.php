@@ -448,7 +448,8 @@
 
             $("span[id='item[tax]["+ menuItem.itemId +"]']").text(menuItemTax);
             $("span[id='item[totalPrice]["+ menuItem.itemId +"]']").text(menuItemTotalPrice);
-            selectedMenuItems[menuItem.itemId].itemTax = menuItemTax;
+
+            selectedMenuItems[menuItem.itemId].itemTax = calculateItemTax(menuItem.itemTaxDetails, Number(menuItem.itemPrice));
             selectedMenuItems[menuItem.itemId].itemTotalAmount = menuItemTotalPrice;
         }
 

@@ -931,6 +931,8 @@ class Restaurant extends Main
 
 			if (!empty($subOrders))
 			{
+				$totalSubOrder = floatval($order->orderTotal);
+
 				foreach ($subOrders as $subOrder)
 				{
 					$subOrderItemDetails = json_decode($subOrder['item_details'], true);
@@ -957,9 +959,9 @@ class Restaurant extends Main
 									$totalTaxPercentage += $orderItemTax['taxPercentage'];
 								}
 
-								$calculateItemPrice = (($orderItemOldPrice * $totalItemCount) * $totalTaxPercentage) / 100;
+								$calculateItemPrice = round(($orderItemOldPrice * $totalTaxPercentage) / 100, 2);
 
-								$orderItemDetails[$subOrderProductId][$subOrderProductType]['itemPrice'] = $orderItemOldPrice + $calculateItemPrice;
+								$orderItemDetails[$subOrderProductId][$subOrderProductType]['itemPrice'] = round($orderItemOldPrice + $calculateItemPrice, 2);
 								$orderItemDetails[$subOrderProductId][$subOrderProductType]['itemCount'] = $totalItemCount;
 							}
 							else
@@ -976,18 +978,13 @@ class Restaurant extends Main
 					$order->delivery_charge = floatval($order->delivery_charge) + floatval($subOrder['delivery_charge']);
 					$order->container_charge = floatval($order->container_charge) + floatval($subOrder['container_charge']);
 
-					if (floatval($order->orderTotal) > 0)
-					{
-						$order->total = floatval($order->orderTotal) + floatval($subOrder['orderTotal']);
-					}
-					else
-					{
-						$order->total = floatval($order->total) + floatval($subOrder['total']);
-					}
-
+					$totalSubOrder += floatval($subOrder['orderTotal']);
 				}
 
-				$order->total = round($order->total);
+				if ($totalSubOrder > 0)
+				{
+					$order->total = round($totalSubOrder);
+				}
 			}
 
 			$order->item_details = json_encode($orderItemDetails);
@@ -1109,9 +1106,19 @@ class Restaurant extends Main
             $postdata = $_POST;
 	    }
 		
-        $condition = array('order_id'=>$postdata['orderID'], 'res_id' => $this->session->userid);
-		$data['order'] = $this->restaurantModel->getOrderList($condition)[0];
-		$data['kotPrintBtns'] = $this->kotPrintBtns($this->getSubOrders($data['order']->id), $postdata['orderID']);
+		$data['order'] = $this->combineOrders($postdata['orderID']);
+
+		$subOrders = $this->getSubOrders($data['order']->id);
+
+		if (!empty($subOrders))
+		{
+			$data['kotPrintBtns'] = $this->kotPrintBtns($subOrders, $postdata['orderID']);
+		}
+		else
+		{
+			$data['kotPrintBtns'] = '';
+		}
+
 		$data['paymentMethodName'] = $this->paymentMethod($data['order']->payment_mode);
 		
 		// 26-10-2020
@@ -1120,17 +1127,27 @@ class Restaurant extends Main
         $this->load->view('restaurant/orderPopup', $data);
 	}
 
+
+	public function getKotBtns($orderId)
+	{
+		$data['order'] = $this->combineOrders($orderId);
+		$data['kotPrintBtns'] = $this->kotPrintBtns($this->getSubOrders($data['order']->id), $orderId);
+
+		echo  json_encode([
+			'kotPrintBtns' => $data['kotPrintBtns']
+		]);
+	}
+
 	private function kotPrintBtns($subOrders, $orderId)
 	{
-		$btn = '';
+		$kotPrintUrl = base_url("Restaurant/printInvoice2/". $orderId);
+		$btn = sprintf('<button type="button" class="btn btn-primary mr-10"  onclick="window.open(\'%s\', \'_blank\')">KOT Print %s</button>', $kotPrintUrl, 1);
 		if (!empty($subOrders))
 		{
-			$kotPrintUrl = base_url("Restaurant/printInvoice2/". $orderId);
-
 			foreach($subOrders as $key => $subOrder)
 			{	
 				$printKey = $key + 2;
-				$btn .= sprintf('<button type="button" class="btn btn-primary btn-round" onclick="window.open(\'%s?id=%s\', \'_blank\')">KOT Print %s</button>', $kotPrintUrl, $subOrder['id'], $printKey);
+				$btn .= sprintf('<button type="button" class="btn btn-primary mr-10"  onclick="window.open(\'%s?id=%s\', \'_blank\')">KOT Print %s</button>', $kotPrintUrl, $subOrder['id'], $printKey);
 			}
 		}
 

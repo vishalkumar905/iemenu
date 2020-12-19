@@ -3,8 +3,6 @@
         <div class="main-panel">
             <?php $this->load->view('comman/headNav'); ?>
             <div class="content">
-                
-                
                 <div class="container-fluid">
                     <?php $this->load->view('self-billing/selfbilling'); ?>
 
@@ -204,10 +202,34 @@
             .table.table-shopping thead {
                 background: #dddddd;
             }
+            .mr-10 {
+                margin-right: 10px;
+            }
+
             </style>
             
             <div id="audios" style="display:none;">We are audios!</div>
-            
+
+
+
+<div class="modal fade" id="kotPrintModal" tabindex="-1" role="dialog" aria-labelledby="kotPrintModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="kotPrintModalLabel">KOT Print</h5>
+        </button>
+      </div>
+      <div class="modal-body" id="kotPrintModalBody">
+        
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
 <?php $this->load->view('comman/footer'); ?>
 
 <script>
