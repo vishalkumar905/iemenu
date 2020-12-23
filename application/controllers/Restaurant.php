@@ -16,6 +16,7 @@ class Restaurant extends Main
 		parent::__construct();
 		$this->load->model('restaurant/RestaurantModel','restaurantModel');
 		$this->load->model('UserModel','usermodel');
+		$this->load->model('OrderModel','ordermodel');
 	}
 	
 	public function index()
@@ -155,10 +156,82 @@ class Restaurant extends Main
 	public function orderlist()
 	{
 		$data['discountCoupons'] = $this->getDiscountCoupons($this->session->userid);
+		$data['discountAdded'] = $this->checkIfDiscountAdded();
+		$data['updateId'] = intval($this->input->get('id'));
 
 	    $this->load->view('restaurant/orderlist', $data);
 	}
 	
+	private function checkIfDiscountAdded()
+	{
+		$id = intval($this->input->get('id'));
+		$discount = [
+			'isApplied' => false
+		];
+
+		if ($id > 0)
+		{
+			$order = $this->getOrder($id);
+			if (!empty($order))
+			{
+				if (intval($order['discount_coupon_percent']) > 0)
+				{
+					$discount['discountPercentage'] = $order['discount_coupon_percent'];
+					$discount['isApplied'] = true;
+				}
+				
+				if (intval($order['flat_amount_discount']) > 0)
+				{
+					$discount['flatDiscount'] = $order['flat_amount_discount'];
+					$discount['isApplied'] = true;
+				}
+			}
+
+			if ($discount['isApplied'] == false)
+			{
+				$subOrders = $this->ordermodel->getSubOrders($id);
+				if (!empty($subOrders))
+				{
+					foreach($subOrders as $subOrder)
+					{
+						if (intval($subOrder['discount_coupon_percent']) > 0)
+						{
+							$discount['discountPercentage'] = $subOrder['discount_coupon_percent'];
+							$discount['isApplied'] = true;
+						}
+						
+						if (intval($subOrder['flat_amount_discount']) > 0)
+						{
+							$discount['flatDiscount'] = $subOrder['flat_amount_discount'];
+							$discount['isApplied'] = true;
+						}
+
+						if ($discount['isApplied'] == true)
+						{
+							break;
+						}
+					}
+				}
+			}
+		}
+
+		return $discount;
+	}
+
+	private function getOrder($id)
+	{
+		if ($id > 0)
+		{
+			$order = $this->db->select('*')->from('orders')->where([
+				'id' => $id
+			])->get()->row_array();
+
+			return $order;
+		}
+
+		return [];
+	}
+
 	private function getDiscountCoupons($rid)
     {
 		$this->db->select('*');
@@ -448,7 +521,7 @@ class Restaurant extends Main
             $sub_array[] = $i;
             $sub_array[] = $order_status;
             $sub_array[] = $order->order_id;
-            $sub_array[] = ($order->table_id) ? ($this->getTableDetail($order->table_id)) ? $this->getTableDetail($order->table_id)->table_name : '-' : '-';
+            $sub_array[] = ($order->table_id) ? (($this->getTableDetail($order->table_id)) ? $this->getTableDetail($order->table_id)->table_name : '-') : '-';
             $sub_array[] = $order->buyer_name;
             $sub_array[] = $order->buyer_phone_number;
             $sub_array[] = $order->order_type;
@@ -556,12 +629,15 @@ class Restaurant extends Main
 
 		$data[] = ['Order Status','Order Id','Table Id','Customer Name','Phone Number','Order Type','Payment Mode', 
 		'Sub Total', 'Total Tax', 'Roundoff', 'Total Amount',   'Discount Percentage (%)' , 
-		'Discount Amount', 'Bill Amount', 'Tax Amount', 'Roundoff 2', 'Total Billed','Created Date'];
+		'Discount Amount', 'Bill Amount', 'Tax Amount', 'Roundoff 2', 'Container Charge', 'Delivery Charge', 'Total Billed','Created Date'];
 		
 		$grandTotalTaxes = $grandSubTotal = $grandTotalAmount = $grandRoundOff = $grandTotalBilledAmount = $grandBillAmount = $grandTaxAmount = $grandDiscountAmount = $grandRoundOff2 = 0;
+		$containerCharge = $deliveryCharge = $grandTotalContainerCharge = $grandTotalDeliveryCharge = 0 ;
 
 		foreach ( $orders as $order )
         {
+			$order = $this->combineOrders($order->order_id);
+
             if($order->order_status=='0'){ $order_status='OPEN'; }elseif($order->order_status=='1'){ $order_status='CONFIRM'; }else{ $order_status='CLOSE'; }
 			$CartLists=json_decode($order->item_details, true);
 			
@@ -581,9 +657,6 @@ class Restaurant extends Main
 			$totalBilledAmount = $this->cartTotal($CartLists,'no',$rid);
 			$roundOff = number_format($totalBilledAmount - $totalAmount1, 2, '.', '');
 			
-			
-			
-			
 			$discountPercent = $order->discount_coupon_percent;
 			$finalDisc = $discountPercent / 100;
     		$billAmount = $subTotal - ($subTotal * $finalDisc);
@@ -592,13 +665,16 @@ class Restaurant extends Main
     		$totalValue = round($billAmount + $taxAmount);
     		$totalValue1 = $billAmount + $taxAmount;
     		$roundOff2 = number_format($totalValue - $totalValue1, 2, '.', '');
-    		
+			
+			$containerCharge = floatval($order->container_charge);
+			$deliveryCharge = floatval($order->delivery_charge);
+			
     		$discountAmount = $totalAmount * $finalDisc;
 
             $sub_array   = array();
             $sub_array[] = $order_status;
             $sub_array[] = $order->order_id;
-            $sub_array[] = ($order->table_id) ? ($this->getTableDetail($order->table_id)) ? $this->getTableDetail($order->table_id)->table_name : '-' : '-';
+            $sub_array[] = ($order->table_id) ? (($this->getTableDetail($order->table_id)) ? $this->getTableDetail($order->table_id)->table_name : '-') : '-';
             $sub_array[] = $order->buyer_name;
             $sub_array[] = $order->buyer_phone_number;
             $sub_array[] = $order->order_type;
@@ -621,6 +697,8 @@ class Restaurant extends Main
             $sub_array[] = $taxAmount; 
             
             $sub_array[] = $roundOff2; 
+            $sub_array[] = $containerCharge; 
+            $sub_array[] = $deliveryCharge; 
             
            
             // $sub_array[] = $totalBilledAmount;
@@ -636,6 +714,9 @@ class Restaurant extends Main
 			$grandTaxAmount += $taxAmount; 
 			$grandDiscountAmount += $discountAmount;
 			$grandRoundOff2 += $roundOff2;
+
+			$grandTotalDeliveryCharge += $deliveryCharge; 
+			$grandTotalContainerCharge += $containerCharge; 
 			
 // 			$grandTotalBilledAmount += $totalBilledAmount;
             $grandTotalBilledAmount +=  $order->total; 
@@ -664,6 +745,8 @@ class Restaurant extends Main
             $sub_array[] = $grandBillAmount;
             $sub_array[] = $grandTaxAmount;
             $sub_array[] = $grandRoundOff2;
+            $sub_array[] = $grandTotalContainerCharge;
+            $sub_array[] = $grandTotalDeliveryCharge;
             $sub_array[] = $grandTotalBilledAmount; 
 			$sub_array[] = '';
 			
@@ -858,7 +941,7 @@ class Restaurant extends Main
 		
 		if (intval($subOrderId) > 0)
 		{
-			$subOrder = $this->getSubOrders(0, $subOrderId);
+			$subOrder = $this->ordermodel->getSubOrders(0, $subOrderId);
 			if (!empty($subOrder))
 			{
 				$data['order'] = (object) $subOrder[0];
@@ -927,7 +1010,7 @@ class Restaurant extends Main
 
 		if (!empty($order))
 		{
-			$subOrders = $this->getSubOrders($order->id);
+			$subOrders = $this->ordermodel->getSubOrders($order->id);
 
 			if (!empty($subOrders))
 			{
@@ -954,9 +1037,12 @@ class Restaurant extends Main
 								$totalItemCount = $orderItemCount + $subOrderItemCount;
 								
 								$totalTaxPercentage = 0;
-								foreach($orderItemTaxes as $orderItemTax)
+								if (!empty($orderItemTaxes))
 								{
-									$totalTaxPercentage += $orderItemTax['taxPercentage'];
+									foreach($orderItemTaxes as $orderItemTax)
+									{
+										$totalTaxPercentage += $orderItemTax['taxPercentage'];
+									}
 								}
 
 								$calculateItemPrice = round(($orderItemOldPrice * $totalTaxPercentage) / 100, 2);
@@ -991,25 +1077,6 @@ class Restaurant extends Main
 		}
 
 		return $order; 
-	}
-
-	private function getSubOrders($orderId, $id = 0)
-	{
-		if ($id > 0)
-		{
-			$condition = [
-				'id' => $id
-			];
-		}
-		else
-		{
-			$condition = [
-				'order_id' => $orderId,
-				'res_id' => $this->session->userid
-			];
-		}
-
-		return $this->db->select('*')->from('sub_orders')->where($condition)->get()->result_array();
 	}
 
 	public function checkIfTaxIsAvaliable($data)
@@ -1108,7 +1175,7 @@ class Restaurant extends Main
 		
 		$data['order'] = $this->combineOrders($postdata['orderID']);
 
-		$subOrders = $this->getSubOrders($data['order']->id);
+		$subOrders = $this->ordermodel->getSubOrders($data['order']->id);
 
 		if (!empty($subOrders))
 		{
@@ -1131,7 +1198,7 @@ class Restaurant extends Main
 	public function getKotBtns($orderId)
 	{
 		$data['order'] = $this->combineOrders($orderId);
-		$data['kotPrintBtns'] = $this->kotPrintBtns($this->getSubOrders($data['order']->id), $orderId);
+		$data['kotPrintBtns'] = $this->kotPrintBtns($this->ordermodel->getSubOrders($data['order']->id), $orderId);
 
 		echo  json_encode([
 			'kotPrintBtns' => $data['kotPrintBtns']

@@ -14,6 +14,8 @@ class Selfbilling extends CI_Controller
         }
 		$this->load->model('login/DashboardModel','dashboardModel');
 		$this->load->model('UserModel','usermodel');
+		$this->load->model('OrderModel','ordermodel');
+		$this->load->model('SuborderModel','subordermodel');
         $this->load->model('SelfbillingModel','Selfbilling');
 		$this->load->model('restaurant/RestaurantModel','restaurantModel');
 	}
@@ -129,15 +131,15 @@ class Selfbilling extends CI_Controller
             "customer_paid" => floatval($this->input->post('customerPaid')),
         ];
 
-        if (isset($postData['isDiscountApplied']))
+        if (isset($postData['isDiscountApplied']) && $postData['isDiscountApplied'] == true)
         {
-            if ($postData['orderDiscountAmount'] > 0)
+            if (isset($postData['discountAppliedType']) && $postData['discountAppliedType'] == 'flat')
             {
-                $data['flat_amount_discount'] = $postData['orderDiscountAmount'];
+                $data['flat_amount_discount'] = $postData['discountAppliedAmount'];
             }
-            else if ($postData['orderDiscountPercentage'] > 0)
+            else if (isset($postData['discountAppliedType']) && $postData['discountAppliedType'] == 'percent')
             {
-                $data['discount_coupon_percent'] = $postData['orderDiscountPercentage'];
+                $data['discount_coupon_percent'] = $postData['discountAppliedAmount'];
             }
         }
 
@@ -208,16 +210,21 @@ class Selfbilling extends CI_Controller
             "customer_paid" => floatval($this->input->post('customerPaid')),
         ];
 
-        if (isset($postData['isDiscountApplied']))
+        if (isset($postData['isDiscountApplied']) && $postData['isDiscountApplied'] == true)
         {
-            if ($postData['orderDiscountAmount'] > 0)
+            $discountType = isset($postData['discountAppliedType']) ? $postData['discountAppliedType'] : '';
+            $discountAmount = isset($postData['discountAppliedAmount']) ? $postData['discountAppliedAmount'] : 0;
+
+            if (isset($postData['discountAppliedType']) && $postData['discountAppliedType'] == 'flat')
             {
-                $data['flat_amount_discount'] = $postData['orderDiscountAmount'];
+                $data['flat_amount_discount'] = $postData['discountAppliedAmount'];
             }
-            else if ($postData['orderDiscountPercentage'] > 0)
+            else if (isset($postData['discountAppliedType']) && $postData['discountAppliedType'] == 'percent')
             {
-                $data['discount_coupon_percent'] = $postData['orderDiscountPercentage'];
+                $data['discount_coupon_percent'] = $postData['discountAppliedAmount'];
             }
+
+            $this->addDiscountToAllPreviousOrders($orderId, $discountAmount, $discountType);
         }
 
         $response = [
@@ -245,6 +252,92 @@ class Selfbilling extends CI_Controller
         $condition = array('id'=>$id);
 		$data = $this->restaurantModel->getOrderList($condition);
         echo json_encode($data);
+    }
+
+    private function addDiscountToAllPreviousOrders($orderId, $discountAmount, $discountType)
+    {
+        if ($orderId > 0)
+        {
+            $orderCondition['id'] = $orderId;
+
+            if ($discountType == 'percent')
+            {
+                $condition['discount_coupon_percent IS NULL'] = NULL;
+                $orderCondition['discount_coupon_percent IS NULL'] = NULL;
+            }
+            else if ($discountType == 'flat')
+            {
+                $condition['flat_amount_discount IS NULL'] = NULL;
+                $orderCondition['flat_amount_discount IS NULL'] = NULL;
+            }
+            
+            $order = $this->ordermodel->getWhereCustom('*', $orderCondition)->row_array();
+
+            if (!empty($order))
+            {
+                $updateOrderData = [];
+
+                if ($discountType == 'percent')
+                {
+                    $updateOrderData['discount_coupon_percent'] = $discountAmount;
+
+                    $orderTotal = round($order['orderTotal'] - ($order['orderTotal'] * $discountAmount) / 100, 2);
+                    
+                    $updateOrderData['orderTotal'] = $orderTotal;
+                    $updateOrderData['total'] = round($orderTotal);
+
+                }
+                else if ($discountType == 'flat')
+                {
+                    $condition['flat_amount_discount IS NULL'] = NULL;                
+                    $updateOrderData['flat_amount_discount'] = $discountAmount;
+
+                    $orderTotal = round(($order['orderTotal'] - $discountAmount), 2);
+
+                    $updateOrderData['orderTotal'] = $orderTotal;
+                    $updateOrderData['total'] = round($orderTotal);
+                }
+
+                if (!empty($discountAmount > 0) && !empty($updateOrderData))
+                {
+                    $this->ordermodel->update($order['id'], $updateOrderData);
+                }
+            }
+    
+            // Update previous sub orders which has no discount
+            $subOrders = $this->subordermodel->getWhereCustom('*', $condition)->result_array();
+            if (!empty($subOrders) && $discountAmount > 0 && !empty($discountType))
+            {
+                foreach($subOrders as $subOrder)
+                {
+                    $updateData = [];
+                    $updateId = $subOrder['id'];
+    
+                    if ($discountType == 'percent')
+                    {
+                        
+                        $orderTotal = round($subOrder['orderTotal'] - ($subOrder['orderTotal'] * $discountAmount) / 100, 2);
+                        
+                        $updateData['orderTotal'] = $orderTotal;
+                        $updateData['total'] = round($orderTotal);
+                        $updateData['discount_coupon_percent'] = $discountAmount;
+                    }
+                    else if ($discountType == 'flat')
+                    {
+                        $orderTotal = round(($subOrder['orderTotal'] - $discountAmount), 2);
+                        
+                        $updateData['orderTotal'] = $orderTotal;
+                        $updateData['total'] = round($orderTotal);
+                        $updateData['flat_amount_discount'] = $discountAmount;
+                    }
+
+                    if (!empty($discountAmount > 0) && !empty($updateData))
+                    {
+                        $this->subordermodel->update($updateId, $updateData);
+                    }
+                }
+            }
+        }
     }
 }
 

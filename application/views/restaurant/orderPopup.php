@@ -54,9 +54,22 @@
     				<?php if(!empty($order->flat_amount_discount)){?>
     				    <p><strong>Flat Amount Off : </strong>₹ <?= $order->flat_amount_discount; ?></p>
     				<?php } ?>
+
+					<?php 
+						if (floatval($order->delivery_charge) > 0) {
+							echo "<p><strong>Delivery Charge : </strong>₹ " . $order->delivery_charge . "</p>";
+						}
+
+						if (floatval($order->container_charge) > 0) {
+							echo "<p><strong>Container Charge : </strong>₹ " . $order->container_charge . "</p>";
+						}
+					?>
+
                     <p><strong>Amount Paid : </strong>₹ <?= $order->total; ?></p>
 				<?php } ?>
 				
+			
+
 				<!-- total_amount -->
 				
 				<?php if($order->order_status == 0) { ?>

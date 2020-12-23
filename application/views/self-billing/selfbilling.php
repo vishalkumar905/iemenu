@@ -105,7 +105,7 @@
                                             <div>
                                                 <label class='pr-10 pl-5 radio-label' style="color:#3C4858">Add Discount: </label>
                                                 <label class='pr-10 pl-5 radio-label'><input type="radio" name="discount" value="percent" />Percent Off </label>
-                                                <!--<label class='pr-10 pl-5 radio-label'><input type="radio" name="discount" value="amount" />Amount </label>-->
+                                                <!--<label class='pr-10 pl-5 radio-label'><input type="radio" name="discount" value="flat" />Amount </label>-->
                                             </div>
     
                                             <div class='displaynone' id="amountDiscountDiv">
@@ -224,11 +224,14 @@
     var selectedMenuItems = {};
     var baseUrl = "<?= base_url()?>";
     var orderDiscountPercentage = 0;
-    var orderDiscountAmount = 0;
+    var orderFlatDiscount = 0;
     var orderDiscountDetail = {};
     var isDiscountApplied = false;
+    var discountAppliedType = '', discountAppliedAmount = 0;
     var discountAmount = 0;
     var orderTotal = 0;
+    var alreadyAppliedDiscount = <?=json_encode($discountAdded)?>;
+    var updateId = <?=$updateId?>;
 
     let getMenuItems = function(searchText) {
         $.ajax({
@@ -453,10 +456,27 @@
             selectedMenuItems[menuItem.itemId].itemTotalAmount = menuItemTotalPrice;
         }
 
-        let totalOrderAmount = (totalItemsPrice + deliveryCharge + containerCharge) - discountAmount;
+        let subTotal = totalItemsPrice;
+        let totalOrder = totalItemsPrice;
+        let totalOrderAmount = (totalItemsPrice + deliveryCharge + containerCharge);
+
+        if (isDiscountApplied)
+        {
+            let totalDiscount = convertToDecimalIfNotAWholeNumber(calculateDiscount(discountAppliedType, discountAppliedAmount));
+
+            if (totalDiscount > 0)
+            {
+                showDiscountApplied();
+
+                $("#discountAmount").text(totalDiscount);
+            }
+
+            totalOrder = convertToDecimalIfNotAWholeNumber(totalOrder - totalDiscount);
+            totalOrderAmount = totalOrderAmount - totalDiscount;
+        }
 
         orderTotal = totalOrderAmount;
-        
+
         let roundOff = Math.round(totalOrderAmount);
 
         if(customerPaid != "")
@@ -470,8 +490,8 @@
         }
 
 
-        $("#subTotal").text(totalItemsPrice);
-        $("#total").text(totalItemsPrice - discountAmount);
+        $("#subTotal").text(subTotal);
+        $("#total").text(totalOrder);
         $("#totalQty").text(totalQty);
         $("#roundOff").text(roundOff);
         $("#grandTotal").text(roundOff);
@@ -500,95 +520,61 @@
         $("#addDiscount").show();
     });
 
+
+    var setDiscountOnUpdate = function() {
+        if (updateId > 0 && alreadyAppliedDiscount.isApplied)
+        {
+            isDiscountApplied = true;
+
+            if (alreadyAppliedDiscount.discountPercentage > 0)
+            {
+                discountAppliedType = 'percent';
+                discountAppliedAmount = parseFloat(alreadyAppliedDiscount.discountPercentage);   
+            }
+            else if (alreadyAppliedDiscount.flatDiscount > 0)
+            {
+                discountAppliedType = 'flat';
+                discountAppliedAmount = parseFloat(alreadyAppliedDiscount.flatDiscount); 
+            }
+        }
+    };
+
+    setDiscountOnUpdate();
+
     $("#addDiscount").click(function() {
-        
-        let deliveryCharge = Number($("#deliveryCharge").val());
-        let containerCharge = Number($("#containerCharge").val());
-        let customerPaid = Number($("#customerPaid").val());
-        let discountType = $('input:radio[name="discount"]:checked').val();
+        let selectedDiscountType = $('input:radio[name="discount"]:checked').val();
+        let discountPercentage = parseFloat($("#percentDiscount option:selected").attr('discount'));
+        let flatDiscount = parseFloat($("#amountDiscount").val()); 
+
+        discountAppliedType = selectedDiscountType;
+        discountAppliedAmount = (selectedDiscountType == 'percent') ? discountPercentage : flatDiscount;
+        isDiscountApplied = true;
+
+        calculateOrderTotal();
+    });
+
+    var calculateDiscount = function(discountType, discountAmount) {
         let totalItemsPrice = getTotalItemPrice();
 
         if (isNaN(totalItemsPrice) || totalItemsPrice == 0)
         {
-            return;
+            return 0;
         }
 
-        if (discountType == 'percent')
+        if (!isNaN(discountAmount) && discountAmount > 0)
         {
-            isDiscountApplied = true;
-            
-            let percentDiscount = parseFloat($("#percentDiscount option:selected").attr('discount'));
-            let percentDiscountId = $("#percentDiscount").val();
-
-            if (!isNaN(percentDiscount) && percentDiscount > 0)
+            if (discountType == 'percent')
             {
-                let discountPrice = (totalItemsPrice * percentDiscount) / 100;
-
-                orderDiscountAmount = 0;
-                orderDiscountPercentage = percentDiscount;
-                totalItemsPrice = totalItemsPrice - discountPrice;
-
-                orderDiscountDetail = {
-                    percentDiscount,
-                    percentDiscountId
-                };
-
-                if (totalItemsPrice < 0)
-                {
-                    alert('Discount can not be less than total order.');
-                    return false;
-                }
-
-                discountAmount = discountPrice;
-                $("#discountAmount").text(discountPrice);
+                return (totalItemsPrice * discountAmount) / 100;
+            }
+            else if (discountType == 'flat')
+            {
+                return discountAmount;
             }
         }
-        
-        
-        if (discountType == 'amount')
-        {
-            isDiscountApplied = true;
-            
-            let amountDiscount = parseFloat($("#amountDiscount").val()); 
-            if (amountDiscount > 0)
-            {
-                orderDiscountAmount = amountDiscount;
-                totalItemsPrice = totalItemsPrice - amountDiscount;
 
-                if (totalItemsPrice < 0)
-                {
-                    alert('Discount can not be less than total order.');
-                    return false;
-                }
-
-                $("#discountAmount").text(amountDiscount);
-            }
-            
-            orderDiscountDetail = {};
-            orderDiscountPercentage = 0;
-            discountAmount = amountDiscount;
-        }
-
-        let totalOrderAmount = totalItemsPrice + deliveryCharge + containerCharge;
-        let roundOff = Math.round(totalOrderAmount);
-
-        if(customerPaid != "")
-        {
-            let returnToCustomer = customerPaid - roundOff;
-            $("#customerReturn").text(returnToCustomer);
-        }
-        else 
-        {
-            $("#customerReturn").text("");
-        }
-
-        $("#total").text(totalItemsPrice);
-        $("#roundOff").text(roundOff);
-        $("#grandTotal").text(roundOff);
-
-        calculateOrderTotal();
-        showDiscountApplied();
-    });
+        return 0;
+    }
 
     var showDiscountApplied = function()
     {
@@ -601,11 +587,14 @@
             $("#discountAppliedMessage").html(discountAppliedHtml);
 
             $("#removeDiscount").click(function() {
-                
-                $("#discountBox").show();
-                
-                resetDiscountData();
-                calculateOrderTotal();
+                // While updating items to order : Remove discount is not allowed.
+                if (updateId == 0)
+                {
+                    $("#discountBox").show();
+                    
+                    resetDiscountData();
+                    calculateOrderTotal();
+                }
             });
         }
     }
@@ -620,8 +609,8 @@
         $("#amountDiscountDiv, #percentDiscountDiv, #addDiscount").hide();
         $("#discountBox").show();
 
-        orderDiscountPercentage = 0;
-        orderDiscountAmount = 0;
+        discountAppliedType = '',
+        discountAppliedAmount = 0,
         orderDiscountDetail = {};
         isDiscountApplied = false;
         discountAmount = 0;
@@ -699,8 +688,8 @@
             deliveryCharge,
             containerCharge,
             customerPaid,
-            orderDiscountPercentage,
-            orderDiscountAmount,
+            discountAppliedType,
+            discountAppliedAmount,
             orderDiscountDetail,
             isDiscountApplied
         };
@@ -787,8 +776,8 @@
             deliveryCharge,
             containerCharge,
             customerPaid,
-            orderDiscountPercentage,
-            orderDiscountAmount,
+            discountAppliedType,
+            discountAppliedAmount,
             orderDiscountDetail,
             isDiscountApplied
         };
