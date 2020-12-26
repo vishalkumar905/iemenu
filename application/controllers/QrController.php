@@ -10,7 +10,7 @@ class QrController extends CI_Controller {
 		$this->load->database();
 		$this->load->library('ci_qr_code');
 		$this->load->library('M_pdf'); 
-		$this->load->library('encrypt');
+		// $this->load->library('encrypt');
 		$this->config->load('qr_code');
 		$this->load->model('login/DashboardModel','dashboardModel');
 		$this->load->model('qrCode/QrModel','qrModel');
@@ -114,8 +114,8 @@ class QrController extends CI_Controller {
 		
 		
 		// create user content
-		$enc_tableid = $this->encrypt->encode($tableid);
-        $enc_rest_id = $this->encrypt->encode($rest_id);
+		// $enc_tableid = $this->encrypt->encode($tableid);
+        // $enc_rest_id = $this->encrypt->encode($rest_id);
         //$codeContents = base_url().'UserMenu/menuPage/'.$tableid.'/'.$rest_id.'/'.$table_details->token;
         $codeContents = base_url().'UserMenu/menuPage/'.$table_details->token;
 		/*$codeContents = "Name:";
@@ -156,7 +156,7 @@ class QrController extends CI_Controller {
 	public function multiQrGen(){
 
 		$rest_id = $this->session->userid;
-		$tableid = $_POST['tableid'];
+		// $tableid = $_POST['tableid'];
 		$ids = $_POST['multiDel'];
 		foreach($ids as $id => $val){
 			$generated = $this->generateQr($val);
