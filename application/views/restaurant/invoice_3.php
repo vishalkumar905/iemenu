@@ -3,8 +3,16 @@
 
 <head>
     <meta charset="utf-8" />
+
 </head>
 <body>
+	
+	<?php if ($order->order_status == 2) { ?>
+		<div class="center rotate">
+			<span>VOID BILL</span>
+		</div>
+	<?php } ?>
+
     <div class="wrapper">
         <?php $ci=get_instance(); ?>
         <div class="">

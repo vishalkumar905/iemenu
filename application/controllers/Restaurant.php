@@ -981,7 +981,23 @@ class Restaurant extends Main
 		$data['allCombinedTaxes'] = $this->calculateAllCombinedTaxes($data['order']);
 		$data['paymentMethodName'] = $this->paymentMethod($data['order']->payment_mode);
 
-		$stylesheet = file_get_contents('/home/yd93k4ea02s3/public_html/MDB/assets/css/print2.css');
+		// $stylesheet = file_get_contents('/home/yd93k4ea02s3/public_html/MDB/assets/css/print2.css');
+		$stylesheet = ".center {
+			position: absolute;
+			-webkit-text-fill-color: transparent;
+			-webkit-background-clip: text;
+			font-size: 32px;
+			color: red;
+			font-weight: bold;
+			margin: auto;
+			left: 11%;
+			width: 70%;
+			border: 5px solid red;
+			border-radius: 3%;
+			padding: 10px;
+			text-align: center;
+		}";
+
         $html = $this->load->view( 'restaurant/invoice_3', $data, true );
         
         $mpdf = new \Mpdf\Mpdf();
