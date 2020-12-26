@@ -1188,10 +1188,10 @@ class Restaurant extends Main
 
 		$data['paymentMethodName'] = $this->paymentMethod($data['order']->payment_mode);
 		
-		// 26-10-2020
 		$rid = $this->session->userid;
 		$data['percentOff'] = $this->restaurantModel->getOnlyDiscountList($rid);
-        $this->load->view('restaurant/orderPopup', $data);
+
+		$this->load->view('restaurant/orderPopup', $data);
 	}
 
 

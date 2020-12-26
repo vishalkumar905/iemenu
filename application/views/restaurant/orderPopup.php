@@ -176,7 +176,7 @@
 	<?php if($order->order_status == 0) { ?>
 		<button type="button" class="btn btn-primary btn-round" onclick="updateOrder('<?= $order->order_id ?>','1')">Confirm Order</button>
 	<?php //} elseif($order->order_status == 2) { $path=base_url("Restaurant/printInvoice/").$order->order_id; ?>
-	<?php } elseif($order->order_status == 1) { $path=base_url("Restaurant/printInvoice2/").$order->order_id; $path2=base_url("Restaurant/printInvoice3/").$order->order_id; ?>
+	<?php } elseif($order->order_status == 1 || $order->order_status == 3) { $path=base_url("Restaurant/printInvoice2/").$order->order_id; $path2=base_url("Restaurant/printInvoice3/").$order->order_id; ?>
 	    <button type="button" class="btn btn-primary btn-round" onclick="window.open('<?= $path2 ?>','_blank')">Customer Copy</button>
 
 		<?php if (empty($kotPrintBtns)) { ?>
