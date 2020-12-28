@@ -103,7 +103,8 @@ $base .= '://'.$_SERVER['HTTP_HOST'].DS . FOLERNAME;
 
 define('SITEURL',rtrim($base, "/"));
 
-
-
-
-// define('URL_MENU_ITEMS', SITEURL."/menu-items");
+define('ORDER_STATUS_OPEN', 0);
+define('ORDER_STATUS_CONFIRM', 1);
+define('ORDER_STATUS_CLOSE', 2);
+define('ORDER_STATUS_VOID_BILL', 3);
+define('ORDER_STATUS_COMPLEMENTARY_BILL', 4);

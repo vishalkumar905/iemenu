@@ -7,7 +7,7 @@
 </head>
 <body>
 	
-	<?php if ($order->order_status == 2) { ?>
+	<?php if ($order->order_status == ORDER_STATUS_VOID_BILL) { ?>
 		<div class="center rotate">
 			<span>VOID BILL</span>
 		</div>
@@ -18,7 +18,7 @@
         <div class="">
             <div class="">
                 <div style="text-align:center; font-size: 13px;">
-            	    <strong><?= ($order->res_id) ? ($ci->getRestaurantDetail($order->res_id)) ? $ci->getRestaurantDetail($order->res_id)[0]->name : '-' : '-'; ?></strong>
+            	    <strong><?= ($order->res_id) ? (($ci->getRestaurantDetail($order->res_id)) ? $ci->getRestaurantDetail($order->res_id)[0]->name : '-') : '-'; ?></strong>
             	</div>
             	<div style="padding-bottom:10px; text-align:center; font-size: 10px;">
             	    <b><?= ($order->res_id) ? ($ci->getRestaurantDetail($order->res_id)) ? $ci->getRestaurantDetail($order->res_id)[0]->tagline : '-' : '-'; ?></b>
