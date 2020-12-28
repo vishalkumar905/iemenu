@@ -6,12 +6,6 @@
 
 </head>
 <body>
-	
-	<?php if ($order->order_status == ORDER_STATUS_VOID_BILL) { ?>
-		<div class="center rotate">
-			<span>VOID BILL</span>
-		</div>
-	<?php } ?>
 
     <div class="wrapper">
         <?php $ci=get_instance(); ?>
@@ -25,7 +19,8 @@
             	</div>
             	
                 <div>
-                    <b>Order #<?= $order->order_id ?></b>&nbsp;(<?= ($order->table_id) ? ($ci->getTableDetail($order->table_id)) ? $ci->getTableDetail($order->table_id)->table_name : '-' : '-'; ?>) <br/>
+                    <b>Order #<?= $order->order_id ?></b>&nbsp;(<?= ($order->table_id) ? ($ci->getTableDetail($order->table_id)) ? $ci->getTableDetail($order->table_id)->table_name : '-' : '-'; ?>) <?php if ($order->order_status == ORDER_STATUS_VOID_BILL) { ?>
+						<b>VOID BILL</b> <?php } ?> <br/>
                     <b>Date : </b><?= date('d-m-Y h:i:s a'); ?> <br/>
 				    <strong>Payment Method : </strong><?= $paymentMethodName ?> <br/>
 				    <strong><?= ($order->res_id) ? ($ci->getRestaurantDetail($order->res_id)) ? $ci->getRestaurantDetail($order->res_id)[0]->tax_name : '-' : '-'; ?> : 
