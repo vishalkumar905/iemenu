@@ -753,7 +753,35 @@ class Restaurant extends Main
 			$data[] = $sub_array;
 		}
 
-        
+		$totalDataCount = count($data);
+
+		if ($totalDataCount > 1)
+		{
+			
+			$orderStatsByPaymentModes = $this->ordermodel->getOrderRevenuByPaymentModes($rid, ORDER_STATUS_CLOSE, $from, $to);
+
+			if (!empty($orderStatsByPaymentModes))
+			{
+				$paymentRow[] = 'Total Payment By Cash';
+				$paymentRow[] = 'Total Payment By Online';
+				$paymentRow[] = 'Total Payment By UPI';
+				$paymentRow[] = 'Total Payment By Card';
+				$paymentRow[] = 'Total Payment By BTC';
+
+				$data[] = $paymentRow;
+
+				unset($paymentRow);
+				
+				$paymentRow[] = $orderStatsByPaymentModes['totalPaymentByCash'] ?? 0;
+				$paymentRow[] = $orderStatsByPaymentModes['totalPaymentByOnline'] ?? 0; 
+				$paymentRow[] = $orderStatsByPaymentModes['totalPaymentByUpi'] ?? 0;
+				$paymentRow[] = $orderStatsByPaymentModes['totalPaymentByCard'] ?? 0;
+				$paymentRow[] = $orderStatsByPaymentModes['totalPaymentByBtc'] ?? 0;
+
+				$data[] = $paymentRow;
+			}
+		}
+		
         if('excel'==strtolower($type)) {
             $this->getExcel($data);
         }

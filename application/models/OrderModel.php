@@ -218,6 +218,34 @@ class OrderModel extends CI_Model
 
 		return $this->db->select('*')->from('sub_orders')->where($condition)->get()->result_array();
 	}
+
+	public function getOrderRevenuByPaymentModes($restaurantId, $orderStatus, $startDate = NULL, $endDate = NULL)
+	{
+		$columns = [
+			sprintf("SUM(CASE WHEN payment_mode = %s THEN total ELSE 0 END) as totalPaymentByCash", PAYEMENT_MODE_CASH),
+			sprintf("SUM(CASE WHEN payment_mode = %s THEN total ELSE 0 END) as totalPaymentByOnline", PAYEMENT_MODE_ONLINE),
+			sprintf("SUM(CASE WHEN payment_mode = %s THEN total ELSE 0 END) as totalPaymentByUpi", PAYEMENT_MODE_UPI),
+			sprintf("SUM(CASE WHEN payment_mode = %s THEN total ELSE 0 END) as totalPaymentByCard", PAYEMENT_MODE_CARD),
+			sprintf("SUM(CASE WHEN payment_mode = %s THEN total ELSE 0 END) as totalPaymentByBtc", PAYEMENT_MODE_BTC),
+		];
+
+		$condition = [
+			'res_id' => $restaurantId,
+			'order_status' => $orderStatus
+		];
+		
+		if (!empty($startDate) && $startDate != 'NaN')
+		{
+			$condition[sprintf('DATE(created_at) >= "%s"', $startDate)] = NULL;
+		}
+
+		if (!empty($endDate) && $endDate != 'NaN')
+		{
+			$condition[sprintf('DATE(created_at) <= "%s"', $endDate)] = NULL;
+		}
+
+		return $this->getWhereCustom($columns, $condition)->row_array();
+	}
 }
 
 ?>
