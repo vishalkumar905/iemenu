@@ -95,11 +95,18 @@ $db['default'] = array(
 	'save_queries' => TRUE
 );
 
-
-if (ENVIRONMENT == 'production')
+if (isset($_SERVER['SERVER_NAME']) && $_SERVER['SERVER_NAME'] == 'localhost')
 {
 	$db['default']['hostname'] = 'localhost';
 	$db['default']['username'] = 'root';
 	$db['default']['password'] = '123456';
 	$db['default']['database'] = 'inventory';
+}
+
+if (isset($_SERVER['SERVER_NAME']) && $_SERVER['SERVER_NAME'] == 'iemenu.beginweb.in')
+{
+	$db['default']['hostname'] = 'localhost';
+	$db['default']['username'] = 'u159299809_iemenu';
+	$db['default']['password'] = 'Shiva@1937';
+	$db['default']['database'] = 'u159299809_iemenu';
 }
