@@ -66,6 +66,86 @@
                                 </div>
                             </div>
                         </div>
+                        <div class="col-lg-3 col-md-6 col-sm-6">
+                            <div class="card card-stats">
+                                <div class="card-header" data-background-color="white">
+                                    <i class="material-icons">store</i>
+                                </div>
+                                <div class="card-content">
+                                    <p class="category">Revenue By Cash</p>
+                                    <h3 class="card-title">₹<?= $totalPaymentByCash; ?></h3>
+                                </div>
+                                <div class="card-footer">
+                                    <div class="stats">
+                                        <i class="material-icons">date_range</i> Last 24 Hours
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-3 col-md-6 col-sm-6">
+                            <div class="card card-stats">
+                                <div class="card-header" data-background-color="red">
+                                    <i class="material-icons">store</i>
+                                </div>
+                                <div class="card-content">
+                                    <p class="category">Revenue By Online</p>
+                                    <h3 class="card-title">₹<?= $totalPaymentByOnline; ?></h3>
+                                </div>
+                                <div class="card-footer">
+                                    <div class="stats">
+                                        <i class="material-icons">date_range</i> Last 24 Hours
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-3 col-md-6 col-sm-6">
+                            <div class="card card-stats">
+                                <div class="card-header" data-background-color="blue">
+                                    <i class="material-icons">store</i>
+                                </div>
+                                <div class="card-content">
+                                    <p class="category">Revenue By UPI</p>
+                                    <h3 class="card-title">₹<?= $totalPaymentByUpi; ?></h3>
+                                </div>
+                                <div class="card-footer">
+                                    <div class="stats">
+                                        <i class="material-icons">date_range</i> Last 24 Hours
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-3 col-md-6 col-sm-6">
+                            <div class="card card-stats">
+                                <div class="card-header" data-background-color="red">
+                                    <i class="material-icons">store</i>
+                                </div>
+                                <div class="card-content">
+                                    <p class="category">Revenue By Card</p>
+                                    <h3 class="card-title">₹<?= $totalPaymentByCard; ?></h3>
+                                </div>
+                                <div class="card-footer">
+                                    <div class="stats">
+                                        <i class="material-icons">date_range</i> Last 24 Hours
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-3 col-md-6 col-sm-6">
+                            <div class="card card-stats">
+                                <div class="card-header" data-background-color="purple">
+                                    <i class="material-icons">store</i>
+                                </div>
+                                <div class="card-content">
+                                    <p class="category">Revenue By BTC</p>
+                                    <h3 class="card-title">₹<?= $totalPaymentByBtc; ?></h3>
+                                </div>
+                                <div class="card-footer">
+                                    <div class="stats">
+                                        <i class="material-icons">date_range</i> Last 24 Hours
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                         <!--<div class="col-lg-3 col-md-6 col-sm-6">
                             <div class="card card-stats">
                                 <div class="card-header" data-background-color="blue">

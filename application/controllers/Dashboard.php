@@ -12,13 +12,24 @@ class Dashboard extends CI_Controller {
         }
 		$this->load->model('login/DashboardModel','dashboardModel');
 		$this->load->model('UserModel','usermodel');
+		$this->load->model('OrderModel','ordermodel');
 		$this->load->model('table/TableModel','tableModel');
 		
 	}
 	
 	public function index()
 	{
-	    $data['tab'] = $this->getDashOrderDetails();
+		$getOrderRevenuByPaymentModes = $this->ordermodel->getOrderRevenuByPaymentModes($this->session->userid, ORDER_STATUS_CLOSE, null, null, 1);
+
+		$data['totalPaymentByCash'] = $getOrderRevenuByPaymentModes['totalPaymentByCash'] ?? 0;
+		$data['totalPaymentByOnline'] = $getOrderRevenuByPaymentModes['totalPaymentByOnline'] ?? 0;
+		$data['totalPaymentByUpi'] = $getOrderRevenuByPaymentModes['totalPaymentByUpi'] ?? 0;
+		$data['totalPaymentByCard'] = $getOrderRevenuByPaymentModes['totalPaymentByCard'] ?? 0;
+		$data['totalPaymentByBtc'] = $getOrderRevenuByPaymentModes['totalPaymentByBtc'] ?? 0;
+
+
+		$data['tab'] = $this->getDashOrderDetails();
+
 		$this->load->view('dashboard',$data);
 	}
 	public function viewProfile(){
