@@ -244,7 +244,7 @@
         getconfirmorderlist();
         getcloseorderlist();
         
-        setInterval(function(){ getorderlist(); getconfirmorderlist(); getcloseorderlist(); }, 15000);
+        setInterval(function(){ getorderlist(); getconfirmorderlist(); getcloseorderlist(); }, 60000 * 5);
     });
     
     function getorderlist() {

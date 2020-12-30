@@ -286,7 +286,7 @@
 
         $('.card .material-datatables label').addClass('form-group');
         
-        setInterval(function(){ $('#datatables').DataTable().ajax.reload();  }, 15000);
+        setInterval(function(){ $('#datatables').DataTable().ajax.reload();  }, 60000 * 2);
         
         
         
