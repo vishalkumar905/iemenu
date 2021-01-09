@@ -245,7 +245,7 @@
 
                 for(i=0; i < items.length; i++)
                 {
-                    data.push('<li class="list-group-item" id="items-'+ items[i].item_id +'" data-price="'+ items[i].price +'" data-menuid="'+ items[i].menu_id +'" data-itemType="'+ items[i].price_desc +'" data-tax='+ JSON.stringify(items[i].taxes) +' data-name="'+ items[i].name +'" >'+ items[i].name +'</li>');
+                    data.push('<li class="list-group-item" id="items-'+ items[i].item_id +'" data-price="'+ items[i].price +'" data-menuid="'+ items[i].menu_id +'" data-itemType="'+ items[i].price_desc +'" data-tax=\''+ JSON.stringify(items[i].taxes) + '\' data-name="'+ items[i].name +'" >'+ items[i].name +'</li>');
                 }
                 $("#suggestion").html(data).show();
 
