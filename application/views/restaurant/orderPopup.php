@@ -125,6 +125,7 @@
 								<th class="text-center"></th>
 								<th><b>Item</b></th>
 								<th><b>Quantity</b></th>
+								<th><b>Discount</b></th>
 								<th><b>Price</b></th>
 								<th><b>Sent</b></th>
 								<th class="text-right"><b>Actions</b></th>
@@ -149,6 +150,9 @@
 								</td>
 								<td>
 									<?= $itemDataArray['itemCount'] ?>
+								</td>
+								<td>
+									₹ <?= $itemDataArray['itemDiscountAmount'] ?? 0 ?>
 								</td>
 								<td>
 									₹ <?= $itemDataArray['itemCount'] * $itemDataArray['itemPrice'] ?>

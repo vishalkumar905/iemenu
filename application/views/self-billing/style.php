@@ -90,4 +90,23 @@
         display: none;
         
     }
+
+    .td-underline  {
+        text-decoration:underline;
+        cursor:pointer;
+        color:blue;
+    }
+
+    .width30 {
+        width: 30% !important;
+    }
+
+    .pt-3 { padding-top: 3px !important;} 
+    .pb-3 { padding-bottom: 3px !important;}
+    @media (min-width: 768px)
+    {        
+        .modal-sm {
+            width: 300px !important;
+        }
+    }
 </style>
