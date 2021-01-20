@@ -98,7 +98,7 @@ class Selfbilling extends CI_Controller
                 "itemPrice"=> $totalPrice,
                 "itemImage"=> "",
                 "itemType"=> $itemType,
-                "itemOldPrice"=> floatval($items['itemPrice']),
+                "itemOldPrice"=> floatval($items['itemPrice']) - $itemDiscountAmount, 
                 "itemFoodType"=> "",
                 "itemCount"=> $items['itemQty'],
                 "itemTaxes"=> $items['itemTaxDetails'],
@@ -178,21 +178,32 @@ class Selfbilling extends CI_Controller
 
         foreach($postData['selectedItem'] as &$items) 
         {
-            $totalPrice = floatval($items['itemPrice']) + floatval($items['itemTax']); 
+            $itemDiscountAmount = floatval($items['itemDiscountAmount'] ?? 0);
+            $totalPrice = (floatval($items['itemPrice']) + floatval($items['itemTax'])) - $itemDiscountAmount; 
             $itemType = isset($items['itemType']) ? $items['itemType']: "";
 
+            $itemInfo = [
+                "itemName" => $items['itemName'],
+                "itemNote" => $items['specialNote'] ?? '',
+                "itemPrice"=> $totalPrice,
+                "itemImage"=> "",
+                "itemType"=> $itemType,
+                "itemOldPrice"=> floatval($items['itemPrice']) - $itemDiscountAmount, 
+                "itemFoodType"=> "",
+                "itemCount"=> $items['itemQty'],
+                "itemTaxes"=> $items['itemTaxDetails'],
+                "itemDiscountAmount" => $itemDiscountAmount,
+            ];
+
+            if ($itemDiscountAmount > 0)
+            {
+                $itemInfo['itemDiscountType'] = $items['itemDiscountType'] ?? '';
+                $itemInfo['itemDiscountValue'] = $items['itemDiscountValue'] ?? '';
+                $itemInfo['itemTotalAmountWithoutDiscount'] = $items['itemTotalAmountWithoutDiscount'] ?? '';
+            }
+
             $items = [
-                $itemType => [
-                    "itemName" => $items['itemName'],
-                    "itemNote" => $items['specialNote'] ?? '',
-                    "itemPrice"=> $totalPrice,
-                    "itemImage"=> "",
-                    "itemType"=> $itemType,
-                    "itemOldPrice"=> floatval($items['itemPrice']),
-                    "itemFoodType"=> "",
-                    "itemCount"=> $items['itemQty'],
-                    "itemTaxes"=> $items['itemTaxDetails']
-                ]
+                $itemType => $itemInfo
             ];
         }
 
