@@ -408,8 +408,9 @@
 		if (itemId > 0)
 		{
 			let itemDiscountType = $("select[name='item[itemDiscountType]["+itemId+"]']").val();
-			let itemDiscountValue = parseFloat($("input[name='item[itemDiscountValue]["+itemId+"]']").val());
-			let itemTotalAmount = selectedMenuItems[itemId].itemTotalAmount;
+			let itemDiscountValue = parseFloat($("input[name='item[itemDiscountValue]["+itemId+"]']").val()) || 0;
+			let itemDiscountApplied = selectedMenuItems[itemId].itemDiscountApplied || false;
+			let itemTotalAmount = itemDiscountApplied ? selectedMenuItems[itemId].itemTotalAmountWithoutDiscount : selectedMenuItems[itemId].itemTotalAmount;
 			let itemDiscountAmount = 0;
 
 			if (itemDiscountValue > 0)
@@ -427,6 +428,13 @@
 					return false;
 				}
 	
+				if (itemDiscountAmount > itemTotalAmount)
+				{
+					alert('Item price can not be in negative.');
+					return false;
+				}
+
+				selectedMenuItems[itemId].itemDiscountApplied = true;
 				selectedMenuItems[itemId].itemDiscountType = itemDiscountType;
 				selectedMenuItems[itemId].itemDiscountValue = itemDiscountValue;
 				selectedMenuItems[itemId].itemDiscountAmount = itemDiscountAmount;
@@ -434,6 +442,19 @@
 				selectedMenuItems[itemId].itemTotalAmount = convertToDecimalIfNotAWholeNumber(itemTotalAmount - itemDiscountAmount);
 	
 				$("span[id='item[itemDiscountAmount]["+itemId+"]']").html(itemDiscountAmount);
+				$("span[id='item[totalPrice]["+itemId+"]']").html(selectedMenuItems[itemId].itemTotalAmount);
+
+				calculateOrderTotal();
+			}
+			else if (itemDiscountApplied && itemDiscountValue == 0)
+			{
+				delete selectedMenuItems[itemId].itemDiscountType;
+				delete selectedMenuItems[itemId].itemDiscountValue;
+				
+				selectedMenuItems[itemId].itemDiscountAmount = 0;
+				selectedMenuItems[itemId].itemTotalAmount = itemTotalAmount;
+	
+				$("span[id='item[itemDiscountAmount]["+itemId+"]']").html(0);
 				$("span[id='item[totalPrice]["+itemId+"]']").html(selectedMenuItems[itemId].itemTotalAmount);
 
 				calculateOrderTotal();
