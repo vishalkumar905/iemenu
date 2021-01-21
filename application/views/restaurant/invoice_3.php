@@ -50,7 +50,10 @@
 									}
 								}
 
-								$subTotalAmount += $itemDataArray['itemCount'] * $itemDataArray['itemOldPrice'];
+								$itemDiscountAmount = $itemDataArray['itemDiscountAmount'] ?? 0;
+
+
+								$subTotalAmount += ($itemDataArray['itemCount'] * $itemDataArray['itemOldPrice']) - $itemDiscountAmount;
 								$totalQuantity += $itemDataArray['itemCount'];
 						?>
     				        <div style="width:60%; float:left;">
@@ -66,7 +69,7 @@
 								<?= $itemDataArray['itemCount'] ?>
 							</div>
 							<div style="width:25%; float:left; text-align:right;">
-								₹ <?= $itemDataArray['itemCount'] * $itemDataArray['itemOldPrice'] ?>
+								₹ <?= ($itemDataArray['itemCount'] * $itemDataArray['itemOldPrice']) - $itemDiscountAmount ?>
 							</div>
 						<?php  endforeach;
 					    endforeach; ?>

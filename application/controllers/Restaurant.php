@@ -1345,7 +1345,12 @@ class Restaurant extends Main
 	            else { 
 	                $itemNetPrice=$itemNetPrice + ( $itemData['itemPrice'] * $itemData['itemCount'] ); 
 	               
-	            }
+				}
+				
+				if (isset($itemData['itemDiscountAmount']))
+				{
+					$itemNetPrice = $itemNetPrice - $itemData['itemDiscountAmount'];
+				}
 	        endforeach;
 	    }
 	    $tempArr['itemName']=$itemName;

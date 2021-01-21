@@ -80,6 +80,23 @@ class Selfbilling extends CI_Controller
         return $O_ID;
     }
 
+    private function calculateTaxOnPrice($itemPrice, $taxes)
+    {
+        $totalTax = 0;
+        if (!empty($taxes))
+        {
+            foreach($taxes as $tax)
+            {
+                $itemTax = ($itemPrice * $tax['taxPercentage']) / 100;
+                $totalTax += $itemTax; 
+            }
+
+            $totalTax = number_format($totalTax, 2, '.', '');
+        }
+
+        return $totalTax;
+    }
+
     public function saveSelfBilling()
     {   
         header('Access-Control-Allow-Origin: *');  
@@ -88,27 +105,42 @@ class Selfbilling extends CI_Controller
         
         foreach($postData['selectedItem'] as &$items) 
         {
-            $itemDiscountAmount = floatval($items['itemDiscountAmount'] ?? 0);
-            $totalPrice = (floatval($items['itemPrice']) + floatval($items['itemTax'])) - $itemDiscountAmount; 
-            $itemType = isset($items['itemType']) ? $items['itemType']: "";
+            $itemDiscountAmount = $itemDiscountAmountOriginal = floatval($items['itemDiscountAmount'] ?? 0);
 
+            $itemPrice = $items['itemPrice'];
+            $itemDiscountType = $items['itemDiscountType'] ?? '';
+            $itemDiscountValue = $items['itemDiscountValue'] ?? 0;
+
+            if ($itemDiscountType == 'flat')
+            {
+                $itemDiscountAmountTax = $this->calculateTaxOnPrice(($itemDiscountValue / $items['itemQty']), $items['itemTaxDetails']);
+                $itemDiscountAmount = $itemDiscountAmount - $itemDiscountAmountTax;
+                $itemPrice = $itemPrice - $itemDiscountAmountTax;
+            }
+
+            $itemTax = $this->calculateTaxOnPrice($itemPrice, $items['itemTaxDetails']);
+
+            $totalPrice = (floatval($itemPrice) + floatval($itemTax)); 
+            $itemType = isset($items['itemType']) ? $items['itemType']: "";
+            
             $itemInfo = [
                 "itemName" => $items['itemName'],
                 "itemNote" => $items['specialNote'] ?? '',
                 "itemPrice"=> $totalPrice,
                 "itemImage"=> "",
                 "itemType"=> $itemType,
-                "itemOldPrice"=> floatval($items['itemPrice']) - $itemDiscountAmount, 
+                "itemOldPrice"=> floatval($itemPrice), 
                 "itemFoodType"=> "",
                 "itemCount"=> $items['itemQty'],
                 "itemTaxes"=> $items['itemTaxDetails'],
                 "itemDiscountAmount" => $itemDiscountAmount,
+                "itemDiscountAmountOriginal" => $itemDiscountAmountOriginal
             ];
 
             if ($itemDiscountAmount > 0)
             {
-                $itemInfo['itemDiscountType'] = $items['itemDiscountType'] ?? '';
-                $itemInfo['itemDiscountValue'] = $items['itemDiscountValue'] ?? '';
+                $itemInfo['itemDiscountType'] = $itemDiscountType;
+                $itemInfo['itemDiscountValue'] = $itemDiscountValue;
                 $itemInfo['itemTotalAmountWithoutDiscount'] = $items['itemTotalAmountWithoutDiscount'] ?? '';
             }
 
@@ -178,27 +210,42 @@ class Selfbilling extends CI_Controller
 
         foreach($postData['selectedItem'] as &$items) 
         {
-            $itemDiscountAmount = floatval($items['itemDiscountAmount'] ?? 0);
-            $totalPrice = (floatval($items['itemPrice']) + floatval($items['itemTax'])) - $itemDiscountAmount; 
-            $itemType = isset($items['itemType']) ? $items['itemType']: "";
+            $itemDiscountAmount = $itemDiscountAmountOriginal = floatval($items['itemDiscountAmount'] ?? 0);
 
+            $itemPrice = $items['itemPrice'];
+            $itemDiscountType = $items['itemDiscountType'] ?? '';
+            $itemDiscountValue = $items['itemDiscountValue'] ?? 0;
+
+            if ($itemDiscountType == 'flat')
+            {
+                $itemDiscountAmountTax = $this->calculateTaxOnPrice(($itemDiscountValue / $items['itemQty']), $items['itemTaxDetails']);
+                $itemDiscountAmount = $itemDiscountAmount - $itemDiscountAmountTax;
+                $itemPrice = $itemPrice - $itemDiscountAmountTax;
+            }
+
+            $itemTax = $this->calculateTaxOnPrice($itemPrice, $items['itemTaxDetails']);
+
+            $totalPrice = (floatval($itemPrice) + floatval($itemTax)); 
+            $itemType = isset($items['itemType']) ? $items['itemType']: "";
+            
             $itemInfo = [
                 "itemName" => $items['itemName'],
                 "itemNote" => $items['specialNote'] ?? '',
                 "itemPrice"=> $totalPrice,
                 "itemImage"=> "",
                 "itemType"=> $itemType,
-                "itemOldPrice"=> floatval($items['itemPrice']) - $itemDiscountAmount, 
+                "itemOldPrice"=> floatval($itemPrice), 
                 "itemFoodType"=> "",
                 "itemCount"=> $items['itemQty'],
                 "itemTaxes"=> $items['itemTaxDetails'],
                 "itemDiscountAmount" => $itemDiscountAmount,
+                "itemDiscountAmountOriginal" => $itemDiscountAmountOriginal
             ];
 
             if ($itemDiscountAmount > 0)
             {
-                $itemInfo['itemDiscountType'] = $items['itemDiscountType'] ?? '';
-                $itemInfo['itemDiscountValue'] = $items['itemDiscountValue'] ?? '';
+                $itemInfo['itemDiscountType'] = $itemDiscountType;
+                $itemInfo['itemDiscountValue'] = $itemDiscountValue;
                 $itemInfo['itemTotalAmountWithoutDiscount'] = $items['itemTotalAmountWithoutDiscount'] ?? '';
             }
 
