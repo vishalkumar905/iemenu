@@ -61,18 +61,16 @@
 					
 
 					</br></br>
-					<table class="table" style="border: 1px solid #ccc;">
-						<thead>
-							<tr>
-								<th colspan="7">
-									<input type="text" style="width:100%"  id="item" placeholder="Search Items"/>
-									<ul class= "list-group" id="suggestion"></ul>
-								</th>
-							</tr>
-						</thead>
-					</table>
-					<div class="tableFixHead table-responsive customTableHead">
-						<table class="table table-bordered">
+					<div class="table-container">
+						<table>
+							<thead>
+								<tr>
+									<th colspan="7">
+										<input type="text" style="width:100%"  id="item" placeholder="Search Items"/>
+										<ul class= "list-group" id="suggestion"></ul>
+									</th>
+								</tr>
+							</thead>
 							<thead>
 								<tr>
 									<th style="width: 5% !important;">#</th>
@@ -368,7 +366,6 @@
 			selectedMenuItems[itemId].itemPrice = itemPrice;
 			selectedMenuItems[itemId].itemType = itemType;
 			selectedMenuItems[itemId].itemTotalAmount = totalAmount;
-			calculateItemDiscount(itemId);
 			calculateOrderTotal();
 		});
 
@@ -383,7 +380,6 @@
 
 			selectedMenuItems[itemId].itemQty = qty;
 			selectedMenuItems[itemId].itemTotalAmount = totalAmount;
-			calculateItemDiscount(itemId);
 			calculateOrderTotal();
 		});
 
@@ -406,25 +402,15 @@
 		$("input[name^='item[itemDiscountValue]']").on('keyup change', calculateItemDiscount);
 	};
 
-	var calculateItemDiscount = function(itemId = null) 
+	var calculateItemDiscount = function() 
 	{
-		if (itemId.target)
-		{
-			itemId = Number($(this).attr('itemid'));
-		}
-		else
-		{
-			itemId = Number(itemId);
-		}
-
-		console.log({itemId});
-
+		let itemId = Number($(this).attr('itemid'));
 		if (itemId > 0)
 		{
 			let itemDiscountType = $("select[name='item[itemDiscountType]["+itemId+"]']").val();
 			let itemDiscountValue = parseFloat($("input[name='item[itemDiscountValue]["+itemId+"]']").val()) || 0;
 			let itemDiscountApplied = selectedMenuItems[itemId].itemDiscountApplied || false;
-			let itemTotalAmount = getMenuItemPrice(itemId);
+			let itemTotalAmount = itemDiscountApplied ? selectedMenuItems[itemId].itemTotalAmountWithoutDiscount : selectedMenuItems[itemId].itemTotalAmount;
 			let itemDiscountAmount = 0;
 
 			if (itemDiscountValue > 0)
@@ -454,9 +440,7 @@
 				selectedMenuItems[itemId].itemDiscountAmount = itemDiscountAmount;
 				selectedMenuItems[itemId].itemTotalAmountWithoutDiscount = itemTotalAmount;
 				selectedMenuItems[itemId].itemTotalAmount = convertToDecimalIfNotAWholeNumber(itemTotalAmount - itemDiscountAmount);
-				
-				console.log(selectedMenuItems);
-
+	
 				$("span[id='item[itemDiscountAmount]["+itemId+"]']").html(itemDiscountAmount);
 				$("span[id='item[totalPrice]["+itemId+"]']").html(selectedMenuItems[itemId].itemTotalAmount);
 
@@ -507,63 +491,52 @@
 	var getTotalItemPrice = function() {
 		let totalItemsPrice = 0;
 
-		for(let itemId in selectedMenuItems)
+		for(let item in selectedMenuItems)
 		{
-			totalItemsPrice += (getMenuItemPrice(itemId) - selectedMenuItems[itemId].itemDiscountAmount);
+			let menuItem = selectedMenuItems[item];
+			let menuItemTax = Number(menuItem.itemQty) * calculateItemTax(menuItem.itemTaxDetails, Number(menuItem.itemPrice));
+			let menuItemTotalPrice = menuItemTax + (Number(menuItem.itemQty) * Number(menuItem.itemPrice));
+			
+			menuItemTax = convertToDecimalIfNotAWholeNumber(menuItemTax);
+			menuItemTotalPrice = convertToDecimalIfNotAWholeNumber(menuItemTotalPrice);
+			
+			totalItemsPrice = totalItemsPrice + menuItemTotalPrice;
+			
+			totalItemsPrice = convertToDecimalIfNotAWholeNumber(totalItemsPrice);
 		}
 
-		return convertToDecimalIfNotAWholeNumber(totalItemsPrice);
-	};
-
-	var getMenuItemPrice = function(itemId, itemDetail = false) 
-	{
-		let itemPrice = 0;
-
-		let menuItem = selectedMenuItems[itemId];
-		let menuItemPrice = parseFloat(menuItem.itemPrice);
-		let menuItemQty = Number(menuItem.itemQty);
-		let totalMenuItemPrice = parseFloat(menuItemPrice * menuItemQty);
-		let menuItemTax = convertToDecimalIfNotAWholeNumber(calculateItemTax(menuItem.itemTaxDetails, totalMenuItemPrice));
-		let menuItemTotalPrice = menuItemTax + totalMenuItemPrice;
-
-		if (itemDetail)
-		{
-			return {
-				menuItemPrice,
-				totalMenuItemPrice,
-				menuItemTax,
-				menuItemTotalPrice,
-				menuItemQty
-			}
-		}
-
-		return menuItemTotalPrice;
+		return totalItemsPrice;
 	};
 
 	var calculateOrderTotal = function() {
+		let totalItemsPrice = 0;
 		let totalQty = 0;
 		let totalTax = 0;
 		let deliveryCharge = Number($("#deliveryCharge").val());
 		let containerCharge = Number($("#containerCharge").val());
 		let customerPaid = Number($("#customerPaid").val());
-		
+
 		for(let item in selectedMenuItems)
 		{
 			let menuItem = selectedMenuItems[item];
-			let menuItemPriceData = getMenuItemPrice(item, true);
-			let menuItemTax = menuItemPriceData.menuItemTax;
-			let menuItemTotalPrice = convertToDecimalIfNotAWholeNumber(menuItemPriceData.menuItemTotalPrice - menuItem.itemDiscountAmount);
+			let menuItemTax = Number(menuItem.itemQty) * calculateItemTax(menuItem.itemTaxDetails, Number(menuItem.itemPrice));
+			let menuItemTotalPrice = menuItemTax + (Number(menuItem.itemQty) * Number(menuItem.itemPrice));
 			
-			$("span[id='item[tax]["+ menuItem.itemId +"]']").text(menuItemPriceData.menuItemTax);
-			$("span[id='item[totalPrice]["+ menuItem.itemId +"]']").text(menuItemTotalPrice);
+			menuItemTax = convertToDecimalIfNotAWholeNumber(menuItemTax);
+			menuItemTotalPrice = convertToDecimalIfNotAWholeNumber(menuItemTotalPrice) - menuItem.itemDiscountAmount;
 			
-			selectedMenuItems[menuItem.itemId].itemTax = menuItemTax;
-			selectedMenuItems[menuItem.itemId].itemTotalAmount = menuItemTotalPrice;
-			
+			totalItemsPrice = totalItemsPrice + menuItemTotalPrice;
 			totalQty = totalQty + Number(menuItem.itemQty);
+			
+			totalItemsPrice = convertToDecimalIfNotAWholeNumber(totalItemsPrice);
+
+			$("span[id='item[tax]["+ menuItem.itemId +"]']").text(menuItemTax);
+			$("span[id='item[totalPrice]["+ menuItem.itemId +"]']").text(menuItemTotalPrice);
+
+			selectedMenuItems[menuItem.itemId].itemTax = calculateItemTax(menuItem.itemTaxDetails, Number(menuItem.itemPrice));
+			selectedMenuItems[menuItem.itemId].itemTotalAmount = menuItemTotalPrice;
 		}
-		
-		let totalItemsPrice = getTotalItemPrice();
+
 		let subTotal = totalItemsPrice;
 		let totalOrder = totalItemsPrice;
 		let totalOrderAmount = (totalItemsPrice + deliveryCharge + containerCharge);

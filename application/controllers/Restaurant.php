@@ -1093,6 +1093,18 @@ class Restaurant extends Main
 
 								$orderItemDetails[$subOrderProductId][$subOrderProductType]['itemPrice'] = round($orderItemOldPrice + $calculateItemPrice, 2);
 								$orderItemDetails[$subOrderProductId][$subOrderProductType]['itemCount'] = $totalItemCount;
+							
+								if (!empty($subOrderItemDetail[$subOrderProductType]['itemDiscountAmount']))
+								{
+									$subOrderItemDiscountAmount = $subOrderItemDetail[$subOrderProductType]['itemDiscountAmount'] ?? 0;
+									$subOrderItemDiscountAmountOriginal = $subOrderItemDetail[$subOrderProductType]['itemDiscountAmountOriginal'] ?? 0;
+
+									$orderItemDiscountAmount = $orderItemDetails[$subOrderProductId][$subOrderProductType]['itemDiscountAmount'] ?? 0;
+									$orderItemDiscountAmountOriginal = $orderItemDetails[$subOrderProductId][$subOrderProductType]['itemDiscountAmountOriginal'] ?? 0;
+
+									$orderItemDetails[$subOrderProductId][$subOrderProductType]['itemDiscountAmount'] = round($subOrderItemDiscountAmount + $orderItemDiscountAmount, 2);
+									$orderItemDetails[$subOrderProductId][$subOrderProductType]['itemDiscountAmountOriginal'] = round($subOrderItemDiscountAmountOriginal + $orderItemDiscountAmountOriginal, 2);
+								}
 							}
 							else
 							{
@@ -1155,7 +1167,8 @@ class Restaurant extends Main
 					{
 						foreach ($itemDetail['itemTaxes'] as $itemTax)
 						{
-							$calculatedTax = (($itemDetail['itemOldPrice'] * $itemDetail['itemCount']) * $itemTax['taxPercentage']) / 100;
+							$itemDiscountAmount = $itemDetail['itemDiscountAmount'] ?? 0;
+							$calculatedTax = ((($itemDetail['itemOldPrice'] * $itemDetail['itemCount']) - $itemDiscountAmount) * $itemTax['taxPercentage']) / 100;
 							$calculatedTax = number_format($calculatedTax, 2, '.', '');
 
 							$combineAllTaxes[] = ['taxName' => $itemTax['taxName'], 'taxAmount' => $calculatedTax];
@@ -1311,11 +1324,19 @@ class Restaurant extends Main
 	    $itemTotalPrice='';
 	    if(!empty($cartArray))
 	    {
-	        foreach($cartArray as $itemId => $itemArray) :
-	            $manageCartList = $this->manageCartList($itemArray);
-	            if($itemTotalPrice == '') { $itemTotalPrice = $manageCartList['itemNetPrice']; }
-	            else { $itemTotalPrice = $itemTotalPrice + $manageCartList['itemNetPrice']; }
-	        endforeach;
+			foreach($cartArray as $itemId => $itemArray)
+			{
+				$manageCartList = $this->manageCartList($itemArray);
+				
+				if($itemTotalPrice == '') 
+				{ 
+					$itemTotalPrice = $manageCartList['itemNetPrice']; 
+				}
+				else 
+				{ 
+					$itemTotalPrice = $itemTotalPrice + $manageCartList['itemNetPrice']; 
+				}
+			}
 	        
 	        // if('yes' == $tax && $rest_id != 0) :
 	        //     $taxLists=$this->getTaxList($rest_id); 
@@ -1347,9 +1368,9 @@ class Restaurant extends Main
 	               
 				}
 				
-				if (isset($itemData['itemDiscountAmount']))
+				if (isset($itemData['itemDiscountAmountOriginal']))
 				{
-					$itemNetPrice = $itemNetPrice - $itemData['itemDiscountAmount'];
+					$itemNetPrice = $itemNetPrice - $itemData['itemDiscountAmountOriginal'];
 				}
 	        endforeach;
 	    }

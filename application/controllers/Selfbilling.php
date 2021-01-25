@@ -111,13 +111,12 @@ class Selfbilling extends CI_Controller
             $itemDiscountType = $items['itemDiscountType'] ?? '';
             $itemDiscountValue = $items['itemDiscountValue'] ?? 0;
 
-            if ($itemDiscountType == 'flat')
+            if ($itemDiscountValue > 0)
             {
-                $itemDiscountAmountTax = $this->calculateTaxOnPrice(($itemDiscountValue / $items['itemQty']), $items['itemTaxDetails']);
+                $itemDiscountAmountTax = $this->calculateTaxOnPrice(($itemDiscountAmount), $items['itemTaxDetails']);
                 $itemDiscountAmount = $itemDiscountAmount - $itemDiscountAmountTax;
-                $itemPrice = $itemPrice - $itemDiscountAmountTax;
             }
-
+            
             $itemTax = $this->calculateTaxOnPrice($itemPrice, $items['itemTaxDetails']);
 
             $totalPrice = (floatval($itemPrice) + floatval($itemTax)); 
@@ -136,6 +135,7 @@ class Selfbilling extends CI_Controller
                 "itemDiscountAmount" => $itemDiscountAmount,
                 "itemDiscountAmountOriginal" => $itemDiscountAmountOriginal
             ];
+
 
             if ($itemDiscountAmount > 0)
             {
@@ -216,13 +216,12 @@ class Selfbilling extends CI_Controller
             $itemDiscountType = $items['itemDiscountType'] ?? '';
             $itemDiscountValue = $items['itemDiscountValue'] ?? 0;
 
-            if ($itemDiscountType == 'flat')
+            if ($itemDiscountValue > 0)
             {
-                $itemDiscountAmountTax = $this->calculateTaxOnPrice(($itemDiscountValue / $items['itemQty']), $items['itemTaxDetails']);
+                $itemDiscountAmountTax = $this->calculateTaxOnPrice(($itemDiscountAmount), $items['itemTaxDetails']);
                 $itemDiscountAmount = $itemDiscountAmount - $itemDiscountAmountTax;
-                $itemPrice = $itemPrice - $itemDiscountAmountTax;
             }
-
+            
             $itemTax = $this->calculateTaxOnPrice($itemPrice, $items['itemTaxDetails']);
 
             $totalPrice = (floatval($itemPrice) + floatval($itemTax)); 
@@ -241,6 +240,7 @@ class Selfbilling extends CI_Controller
                 "itemDiscountAmount" => $itemDiscountAmount,
                 "itemDiscountAmountOriginal" => $itemDiscountAmountOriginal
             ];
+
 
             if ($itemDiscountAmount > 0)
             {
@@ -279,7 +279,8 @@ class Selfbilling extends CI_Controller
             "customer_paid" => floatval($this->input->post('customerPaid')),
         ];
 
-        if (isset($postData['isDiscountApplied']) && $postData['isDiscountApplied'] == true)
+        $isDiscountApplied = isset($postData['isDiscountApplied']) ? ($postData['isDiscountApplied'] == 'true' ? true : false) : false;
+        if ($isDiscountApplied)
         {
             $discountType = isset($postData['discountAppliedType']) ? $postData['discountAppliedType'] : '';
             $discountAmount = isset($postData['discountAppliedAmount']) ? $postData['discountAppliedAmount'] : 0;

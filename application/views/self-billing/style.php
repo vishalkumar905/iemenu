@@ -77,6 +77,7 @@
     .customTableHead .table > tbody > tr > td
     {
         padding: 5px 8px !important;
+        font-size: 14px;
     }
 
     .checkbox-inline, .radio-inline
@@ -88,7 +89,7 @@
         color: #fff;
         padding: 10px;
         display: none;
-        
+
     }
 
     .td-underline  {
@@ -101,6 +102,12 @@
         width: 30% !important;
     }
 
+    .tableFixHead { overflow-y: auto; overflow-x: auto; height: 300px;  border: 1px solid #ccc;}
+    .tableFixHead thead th { position: sticky; top: 0; white-space: nowrap; }
+
+    .tableFixHead table { border-collapse: collapse; width: 100%; }
+    .tableFixHead th     { background:#eee; }
+
     .pt-3 { padding-top: 3px !important;} 
     .pb-3 { padding-bottom: 3px !important;}
     @media (min-width: 768px)
@@ -109,4 +116,6 @@
             width: 300px !important;
         }
     }
+
+
 </style>

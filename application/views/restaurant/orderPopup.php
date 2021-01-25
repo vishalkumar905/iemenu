@@ -30,7 +30,7 @@
     <div class="instruction">
 	    <div class="row">
 			<div class="col-md-12">
-			    <h5  class="modal-title"><?= ($order->table_id) ? ($ci->getTableDetail($order->table_id)) ? $ci->getTableDetail($order->table_id)->table_name : '-' : '-'; ?></h5>
+			    <h5  class="modal-title"><?= ($order->table_id) ? (($ci->getTableDetail($order->table_id)) ? $ci->getTableDetail($order->table_id)->table_name : '-') : '-'; ?></h5>
 			</div>
 	    </div>
 	</div>
