@@ -1164,9 +1164,13 @@ class Restaurant extends Main
 			{
 				foreach($itemList as $itemDetail)
 				{
+
 					if (!empty($itemDetail['itemTaxes']))
 					{
-						$orderItemTaxes = $itemDetail['itemTaxes'];
+						foreach($itemDetail['itemTaxes'] as $itemTax)
+						{
+							$orderItemTaxes[$itemTax['taxPercentage']] = $itemTax;
+						}
 					}
 				}
 			}
