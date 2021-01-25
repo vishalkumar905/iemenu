@@ -1006,7 +1006,8 @@ class Restaurant extends Main
 		
         $data['order'] = $this->combineOrders($orderId);
 		$data['showTaxColumn'] = $this->checkIfTaxIsAvaliable($data['order']);
-		$data['allCombinedTaxes'] = $this->calculateAllCombinedTaxes($data['order']);
+		$data['orderTaxes'] = $this->getOrderTaxes($data['order']);
+
 		$data['paymentMethodName'] = $this->paymentMethod($data['order']->payment_mode);
 
 		// $stylesheet = file_get_contents('/home/yd93k4ea02s3/public_html/MDB/assets/css/print2.css');
@@ -1153,6 +1154,27 @@ class Restaurant extends Main
 		return 0;
 	}
 	
+	public function getOrderTaxes($data)
+	{
+		$orderItemTaxes = [];
+		if (!empty($data))
+		{
+			$itemLists = json_decode($data->item_details, true);
+			foreach ($itemLists as $itemList)
+			{
+				foreach($itemList as $itemDetail)
+				{
+					if (!empty($itemDetail['itemTaxes']))
+					{
+						$orderItemTaxes = $itemDetail['itemTaxes'];
+					}
+				}
+			}
+		}
+
+		return $orderItemTaxes;
+	}
+
 	public function calculateAllCombinedTaxes($data)
 	{
 		$combineAllTaxes = [];
@@ -1169,7 +1191,7 @@ class Restaurant extends Main
 						{
 							$itemDiscountAmount = $itemDetail['itemDiscountAmount'] ?? 0;
 							$calculatedTax = ((($itemDetail['itemOldPrice'] * $itemDetail['itemCount']) - $itemDiscountAmount) * $itemTax['taxPercentage']) / 100;
-							$calculatedTax = number_format($calculatedTax, 2, '.', '');
+							$calculatedTax = round($calculatedTax, 2);
 
 							$combineAllTaxes[] = ['taxName' => $itemTax['taxName'], 'taxAmount' => $calculatedTax];
 						}
@@ -1185,7 +1207,7 @@ class Restaurant extends Main
 			{
 				if (!isset($tempArr[$tax['taxName']]))
 				{
-					$tempArr[$tax['taxName']] = number_format($tax['taxAmount'], 2, '.', '');
+					$tempArr[$tax['taxName']] = round($tax['taxAmount'], 2);
 				}
 				else
 				{
@@ -1193,7 +1215,7 @@ class Restaurant extends Main
 					{
 						if ($key === $tax['taxName'])
 						{
-							$tempArr[$tax['taxName']] = number_format($tax['taxAmount'] + $val, 2, '.', '');
+							$tempArr[$tax['taxName']] = round($tax['taxAmount'] + $val, 2);
 						}
 					}
 				}

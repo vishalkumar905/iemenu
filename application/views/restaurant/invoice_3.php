@@ -96,9 +96,12 @@
 				?>
 				<hr class="new">
 				<div style="width:100%;">
-					<?php foreach ($allCombinedTaxes as $taxName => $taxAmount) { $subTotalAmount += $taxAmount; ?>
+					<?php foreach ($orderTaxes as $taxRow) {
+						$taxAmount = round(($subTotalAmount * $taxRow['taxPercentage']) / 100, 2);
+						$subTotalAmount += $taxAmount; 
+					?>
 				    <div>
-				        <div style="width:60%; float:left; text-align:left;"><strong><?=$taxName?>:</strong> <b>5%</b></div>
+				        <div style="width:60%; float:left; text-align:left;"><strong><?=sprintf("%s : %s%%", $taxRow['taxName'], $taxRow['taxPercentage'])?></strong></div>
 				        <div style="width:13%; float:left; text-align:right;">&nbsp;&nbsp;</div>
 				        <div style="width:25%; float:left; text-align:right;">₹ <?= $taxAmount ?></div>
 					</div>
