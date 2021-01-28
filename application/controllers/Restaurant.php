@@ -513,8 +513,12 @@ class Restaurant extends Main
 			{ 
 				$payment_mode='<span class="label label-success">CARD SWIPE</span>';
 			}
+			elseif($order->payment_mode == '5')  
+			{ 
+				$payment_mode='<span class="label label-warning">BTC</span>';
+			}
 			else {
-			    $payment_mode='<span class="label label-default">BTC</span>';
+			    $payment_mode='<span class="label label-default">Swiggy</span>';
 			}
 
             $sub_array   = array();
@@ -767,6 +771,7 @@ class Restaurant extends Main
 				$paymentRow[] = 'Total Payment By UPI';
 				$paymentRow[] = 'Total Payment By Card';
 				$paymentRow[] = 'Total Payment By BTC';
+				$paymentRow[] = 'Total Payment By Swiggy';
 
 				$data[] = $paymentRow;
 
@@ -777,6 +782,7 @@ class Restaurant extends Main
 				$paymentRow[] = $orderStatsByPaymentModes['totalPaymentByUpi'] ?? 0;
 				$paymentRow[] = $orderStatsByPaymentModes['totalPaymentByCard'] ?? 0;
 				$paymentRow[] = $orderStatsByPaymentModes['totalPaymentByBtc'] ?? 0;
+				$paymentRow[] = $orderStatsByPaymentModes['totalPaymentBySwiggy'] ?? 0;
 
 				$data[] = $paymentRow;
 			}
@@ -1324,7 +1330,8 @@ class Restaurant extends Main
 			2 => 'ONLINE',
 			3 => 'UPI QR SCAN',
 			4 => 'CARD SWIPE',
-			5 => 'BTC'
+			5 => 'BTC',
+			6 => 'Swiggy'
 		];
 
 		return isset($paymentModes[$paymentId]) ? $paymentModes[$paymentId] : 'ONLINE';
