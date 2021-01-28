@@ -153,8 +153,8 @@
 
 					<?php if(!empty($order->container_charge)) {?>
 				    <div>
-				        <div style="width:60%; float:left; text-align:right;"><strong>Container Chanrge: </strong></div>
-				        <div style="width:10%; float:left; text-align:right;">&nbsp;&nbsp;</div>
+				        <div style="width:60%; float:left; text-align:right;"><strong>Container Charge: </strong></div>
+				        <div style="width:10%; float:left; text-align:right;">&nbsp;</div>
 				        <div style="width:30%; float:left; text-align:right;"> ₹ <?= $order->container_charge;?> </div>
 				    </div>
 				    <?php } ?>
@@ -162,7 +162,7 @@
 					<?php if(!empty($order->delivery_charge)) {?>
 				    <div>
 				        <div style="width:60%; float:left; text-align:right;"><strong>Delivery Charge: </strong></div>
-				        <div style="width:10%; float:left; text-align:right;">&nbsp;&nbsp;</div>
+				        <div style="width:10%; float:left; text-align:right;">&nbsp;</div>
 				        <div style="width:30%; float:left; text-align:right;"> ₹ <?= $order->delivery_charge;?> </div>
 				    </div>
 				    <?php } ?>
