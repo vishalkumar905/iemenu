@@ -35,8 +35,8 @@
 						<div style="width:25%; float:left; text-align:right;"><b>Price</b></div>
 				    </div>
 				    <hr class="new">
-				    <div style="padding-bottom:10px; font-size: 13px;">
-						<?php $i=0; $subTotalAmount = 0; $totalQuantity = 0;
+				    <div>
+						<?php $i=0; $subTotalAmount = 0; $totalQuantity = 0; $totalItemTaxAmount = 0; $totalItemDiscountAmount = 0;
 						foreach($CartLists as $itemId => $itemArray) : 
 							foreach($itemArray as $itemDataId => $itemDataArray) :
 								$taxName = [];
@@ -58,7 +58,12 @@
 								$itemTaxText = !empty($taxName) ? sprintf('<span style="font-size:9px;">%s ₹%s, </span>', implode(', ', $taxName), $itemDataArray['itemTotalTax']) : '';
 								$itemDiscountText = $itemDiscountAmount > 0 ? sprintf('<span style="font-size:9px;">₹%s Off</span>', $itemDiscountAmount) : '';
 
+
+								$totalItemDiscountAmount += $itemDiscountAmount;
+								$totalItemTaxAmount += $itemDataArray['itemTotalTax'];
+
 								$itemNameWithDetails = sprintf('%s<br>%s%s', $itemDataArray['itemName'], $itemTaxText, $itemDiscountText);
+								$itemNameWithDetails = sprintf('%s', $itemDataArray['itemName']);
 
 						?>
     				        <div style="width:60%; float:left;"><?=$itemNameWithDetails?></div>
@@ -69,16 +74,35 @@
 				    </div>
 				</div>
 				<hr class="new">
-				<div style="width:100%; font-size:13px;">
+				<div style="width:100%;">
 				    <div>
 				        <div style="width:60%; float:left; text-align:left;"><strong>Total Qty: </strong></div>
 				        <div style="width:13%; float:left; text-align:center;"><?= $totalQuantity ?></div>
 				        <div style="width:25%; float:left; text-align:right;">&nbsp;&nbsp;</div>
 				    </div>
 				</div>
-				<div style="width:100%;font-size:13px;">
+				<div style="width:100%;">
 				    <div>
-				        <div style="width:60%; float:left; text-align:left;"><strong>SubTotal: </strong></div>
+				        <div style="width:60%; float:left; text-align:left;"><strong>SubTotal: </strong><br>
+							<?php 
+								$msgTextArray = [];
+								if ($totalItemTaxAmount > 0)
+								{
+									$msgTextArray[] = sprintf('GST ₹%s', round($totalItemTaxAmount, 2));	
+								}
+
+								if ($totalItemDiscountAmount > 0)
+								{
+									$msgTextArray[] = sprintf('₹%s Off',  round($totalItemDiscountAmount, 2));	
+								}
+							
+								if (!empty($msgTextArray))
+								{
+									echo sprintf("<small style='font-size:10px'>(%s)</small>", implode(", ", $msgTextArray));
+								}
+							?>
+						
+						</div>
 				        <div style="width:13%; float:left; text-align:center;">&nbsp;&nbsp;</div>
 				        <div style="width:25%; float:left; text-align:right;">₹ <?= $subTotalAmount ?></div>
 				    </div>
@@ -124,6 +148,22 @@
 				        <div style="width:60%; float:left; text-align:right;"><strong>Special Discount Flat Off: </strong></div>
 				        <div style="width:10%; float:left; text-align:right;">&nbsp;&nbsp;</div>
 				        <div style="width:30%; float:left; text-align:right;"> ₹ <?= $order->flat_amount_discount;?> </div>
+				    </div>
+				    <?php } ?>
+
+					<?php if(!empty($order->container_charge)) {?>
+				    <div>
+				        <div style="width:60%; float:left; text-align:right;"><strong>Container Chanrge: </strong></div>
+				        <div style="width:10%; float:left; text-align:right;">&nbsp;&nbsp;</div>
+				        <div style="width:30%; float:left; text-align:right;"> ₹ <?= $order->container_charge;?> </div>
+				    </div>
+				    <?php } ?>
+
+					<?php if(!empty($order->delivery_charge)) {?>
+				    <div>
+				        <div style="width:60%; float:left; text-align:right;"><strong>Delivery Charge: </strong></div>
+				        <div style="width:10%; float:left; text-align:right;">&nbsp;&nbsp;</div>
+				        <div style="width:30%; float:left; text-align:right;"> ₹ <?= $order->delivery_charge;?> </div>
 				    </div>
 				    <?php } ?>
 				    
