@@ -468,6 +468,7 @@
 				delete selectedMenuItems[itemId].itemDiscountValue;
 				
 				selectedMenuItems[itemId].itemDiscountAmount = 0;
+				selectedMenuItems[itemId].itemDiscountApplied = false;
 				selectedMenuItems[itemId].itemTotalAmount = itemTotalAmount;
 	
 				$("span[id='item[itemDiscountAmount]["+itemId+"]']").html(0);

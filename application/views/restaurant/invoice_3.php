@@ -35,7 +35,7 @@
 						<div style="width:25%; float:left; text-align:right;"><b>Price</b></div>
 				    </div>
 				    <hr class="new">
-				    <div>
+				    <div style="padding-bottom:10px; font-size: 13px;">
 						<?php $i=0; $subTotalAmount = 0; $totalQuantity = 0;
 						foreach($CartLists as $itemId => $itemArray) : 
 							foreach($itemArray as $itemDataId => $itemDataArray) :
@@ -52,38 +52,31 @@
 
 								$itemDiscountAmount = $itemDataArray['itemDiscountAmount'] ?? 0;
 
-
-								$subTotalAmount += ($itemDataArray['itemCount'] * $itemDataArray['itemOldPrice']) - $itemDiscountAmount;
+								$subTotalAmount += $itemDataArray['itemTotalAmount'];
 								$totalQuantity += $itemDataArray['itemCount'];
+								
+								$itemTaxText = !empty($taxName) ? sprintf('<span style="font-size:9px;">%s ₹%s, </span>', implode(', ', $taxName), $itemDataArray['itemTotalTax']) : '';
+								$itemDiscountText = $itemDiscountAmount > 0 ? sprintf('<span style="font-size:9px;">₹%s Off</span>', $itemDiscountAmount) : '';
+
+								$itemNameWithDetails = sprintf('%s<br>%s%s', $itemDataArray['itemName'], $itemTaxText, $itemDiscountText);
+
 						?>
-    				        <div style="width:60%; float:left;">
-								<?= $itemDataArray['itemName'] ?> <?= $itemDataId ?>
-								
-						
-							<!--//mj code of tax will come  here.-->
-								
-								
-								
-							</div>
-							<div style="width:13%; float:left; text-align:center;">
-								<?= $itemDataArray['itemCount'] ?>
-							</div>
-							<div style="width:25%; float:left; text-align:right;">
-								₹ <?= ($itemDataArray['itemCount'] * $itemDataArray['itemOldPrice']) - $itemDiscountAmount ?>
-							</div>
+    				        <div style="width:60%; float:left;"><?=$itemNameWithDetails?></div>
+							<div style="width:13%; float:left; text-align:center;"><?=$itemDataArray['itemCount']?></div>
+							<div style="width:25%; float:left; text-align:right;">₹ <?=$itemDataArray['itemTotalAmount']?></div>
 						<?php  endforeach;
 					    endforeach; ?>
 				    </div>
 				</div>
 				<hr class="new">
-				<div style="width:100%;">
+				<div style="width:100%; font-size:13px;">
 				    <div>
 				        <div style="width:60%; float:left; text-align:left;"><strong>Total Qty: </strong></div>
 				        <div style="width:13%; float:left; text-align:center;"><?= $totalQuantity ?></div>
 				        <div style="width:25%; float:left; text-align:right;">&nbsp;&nbsp;</div>
 				    </div>
 				</div>
-				<div style="width:100%;">
+				<div style="width:100%;font-size:13px;">
 				    <div>
 				        <div style="width:60%; float:left; text-align:left;"><strong>SubTotal: </strong></div>
 				        <div style="width:13%; float:left; text-align:center;">&nbsp;&nbsp;</div>

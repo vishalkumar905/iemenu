@@ -1074,38 +1074,22 @@ class Restaurant extends Main
 							if (isset($orderItemDetails[$subOrderProductId][$subOrderProductType]))
 							{
 
-								$subOrderItemCount = $subOrderItemDetail[$subOrderProductType]['itemCount'];
 								$orderItemCount = $orderItemDetails[$subOrderProductId][$subOrderProductType]['itemCount'];
-								$orderItemOldPrice = $orderItemDetails[$subOrderProductId][$subOrderProductType]['itemOldPrice'];
-								$orderItemTaxes = $orderItemDetails[$subOrderProductId][$subOrderProductType]['itemTaxes'];
+								$orderItemTotalTax = $orderItemDetails[$subOrderProductId][$subOrderProductType]['itemTotalTax'] ?? 0;								
+								$orderItemTotalAmount = $orderItemDetails[$subOrderProductId][$subOrderProductType]['itemTotalAmount'] ?? 0;								
+								$orderItemDiscountAmount = $orderItemDetails[$subOrderProductId][$subOrderProductType]['itemDiscountAmount'] ?? 0;
+								
+								$subOrderItemCount = $subOrderItemDetail[$subOrderProductType]['itemCount'];
+								$subOrderItemTotalTax = $subOrderItemDetail[$subOrderProductType]['itemTotalTax'] ?? 0;
+								$subOrderItemTotalAmount = $subOrderItemDetail[$subOrderProductType]['itemTotalAmount'] ?? 0;
+								$subOrderItemDiscountAmount = $subOrderItemDetail[$subOrderProductType]['itemDiscountAmount'] ?? 0;
 
 								$totalItemCount = $orderItemCount + $subOrderItemCount;
 								
-								$totalTaxPercentage = 0;
-								if (!empty($orderItemTaxes))
-								{
-									foreach($orderItemTaxes as $orderItemTax)
-									{
-										$totalTaxPercentage += $orderItemTax['taxPercentage'];
-									}
-								}
-
-								$calculateItemPrice = round(($orderItemOldPrice * $totalTaxPercentage) / 100, 2);
-
-								$orderItemDetails[$subOrderProductId][$subOrderProductType]['itemPrice'] = round($orderItemOldPrice + $calculateItemPrice, 2);
 								$orderItemDetails[$subOrderProductId][$subOrderProductType]['itemCount'] = $totalItemCount;
-							
-								if (!empty($subOrderItemDetail[$subOrderProductType]['itemDiscountAmount']))
-								{
-									$subOrderItemDiscountAmount = $subOrderItemDetail[$subOrderProductType]['itemDiscountAmount'] ?? 0;
-									$subOrderItemDiscountAmountOriginal = $subOrderItemDetail[$subOrderProductType]['itemDiscountAmountOriginal'] ?? 0;
-
-									$orderItemDiscountAmount = $orderItemDetails[$subOrderProductId][$subOrderProductType]['itemDiscountAmount'] ?? 0;
-									$orderItemDiscountAmountOriginal = $orderItemDetails[$subOrderProductId][$subOrderProductType]['itemDiscountAmountOriginal'] ?? 0;
-
-									$orderItemDetails[$subOrderProductId][$subOrderProductType]['itemDiscountAmount'] = round($subOrderItemDiscountAmount + $orderItemDiscountAmount, 2);
-									$orderItemDetails[$subOrderProductId][$subOrderProductType]['itemDiscountAmountOriginal'] = round($subOrderItemDiscountAmountOriginal + $orderItemDiscountAmountOriginal, 2);
-								}
+								$orderItemDetails[$subOrderProductId][$subOrderProductType]['itemTotalTax'] = $orderItemTotalTax + $subOrderItemTotalTax;
+								$orderItemDetails[$subOrderProductId][$subOrderProductType]['itemDiscountAmount'] = $orderItemDiscountAmount + $subOrderItemDiscountAmount;
+								$orderItemDetails[$subOrderProductId][$subOrderProductType]['itemTotalAmount'] = $orderItemTotalAmount + $subOrderItemTotalAmount;
 							}
 							else
 							{
@@ -1117,13 +1101,13 @@ class Restaurant extends Main
 							$orderItemDetails[$subOrderProductId] = $subOrderItemDetail;
 						}
 					}
-
+					
 					$order->delivery_charge = floatval($order->delivery_charge) + floatval($subOrder['delivery_charge']);
 					$order->container_charge = floatval($order->container_charge) + floatval($subOrder['container_charge']);
-
+					
 					$totalSubOrder += floatval($subOrder['orderTotal']);
 				}
-
+				
 				if ($totalSubOrder > 0)
 				{
 					$order->total = round($totalSubOrder);
@@ -1138,6 +1122,7 @@ class Restaurant extends Main
 
 	public function checkIfTaxIsAvaliable($data)
 	{
+		return false;
 		if (!empty($data))
 		{
 			$itemDetails = json_decode($data->item_details, true);
@@ -1380,31 +1365,28 @@ class Restaurant extends Main
 	}
 	public function manageCartList($cartArray=array())
 	{
-	    $itemName=''; $itemImage=''; $itemNetPrice=''; $tempArr=array();
+	    $itemName=''; $itemImage=''; $itemNetPrice = 0; $tempArr=array();
 	    if(!empty($cartArray))
 	    {
 	        foreach($cartArray as $itemId => $itemData):
 	            if($itemName == '') { $itemName=$itemData['itemName']; }
 	            if($itemImage == '') { $itemImage=$itemData['itemImage']; }
-	            if($itemNetPrice == '') { 
-	                $itemNetPrice=$itemData['itemPrice'] * $itemData['itemCount']; 
-	            } 
-	            else { 
-	                $itemNetPrice=$itemNetPrice + ( $itemData['itemPrice'] * $itemData['itemCount'] ); 
-	               
-				}
-				
-				if (isset($itemData['itemDiscountAmountOriginal']))
+
+				if (isset($itemData['itemTotalAmount']))
 				{
-					$itemNetPrice = $itemNetPrice - $itemData['itemDiscountAmountOriginal'];
+					$itemNetPrice += $itemData['itemTotalAmount'];
+				}
+				else
+				{
+					$itemNetPrice += ($itemData['itemPrice'] * $itemData['itemCount']);
 				}
 	        endforeach;
 	    }
 	    $tempArr['itemName']=$itemName;
 	    $tempArr['itemImage']=$itemImage;
 	    $tempArr['itemNetPrice']=$itemNetPrice;
-	    
-	    return $tempArr;
+
+		return $tempArr;
 	}
 	public function getTaxList($rest_id=0)
 	{
