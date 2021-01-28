@@ -191,6 +191,11 @@
 										<input type="radio" name="paymentType" value="5">BTC
 									</label>
 								</div>
+                                <div class="radio radio-inline">
+                                    <label>
+                                        <input type="radio" name="paymentType" value="6">Swiggy
+                                    </label>
+                                </div>
 								<div class="displaynone" id="TransictionIdField">
 									<p>Transaction Id (If swiped by card)</p>
 									<input type="text" id="transictionId" placeholder="Enter by cashier" class="form-control">
