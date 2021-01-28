@@ -287,20 +287,23 @@ class UserMenu extends CI_Controller
 	
 	public function manageCartList($cartArray=array())
 	{
-	    $itemName=''; $itemImage=''; $itemFoodType=''; $itemNetPrice=''; $tempArr=array();
+	    $itemName=''; $itemImage=''; $itemFoodType=''; $itemNetPrice = 0; $tempArr=array();
 	    if(!empty($cartArray))
 	    {
 	        foreach($cartArray as $itemId => $itemData):
 	            if($itemName == '') { $itemName=$itemData['itemName']; }
 	            if($itemImage == '') { $itemImage=$itemData['itemImage']; }
 	            if($itemFoodType == '') { $itemFoodType=$itemData['itemFoodType']; }
-	            if($itemNetPrice == '') { 
-	                $itemNetPrice=$itemData['itemPrice'] * $itemData['itemCount']; 
-	            } 
-	            else { 
-	                $itemNetPrice=$itemNetPrice + ( $itemData['itemPrice'] * $itemData['itemCount'] ); 
-	               
-	            }
+				
+				if (isset($itemData['itemTotalAmount']))
+				{
+					$itemNetPrice += $itemData['itemTotalAmount'];
+				}
+				else
+				{
+					$itemNetPrice += ($itemData['itemPrice'] * $itemData['itemCount']);
+				}
+
 	        endforeach;
 		}
 
@@ -319,7 +322,7 @@ class UserMenu extends CI_Controller
 	
 	public function cartTotal($cartArray=array(), $tax='yes', $rest_id=0)
 	{
-	    $itemTotalPrice='';
+	    $itemTotalPrice = 0;
 	    if(!empty($cartArray))
 	    {
 	        foreach($cartArray as $itemId => $itemArray) :
@@ -332,6 +335,8 @@ class UserMenu extends CI_Controller
 			{
 				$itemTotalPrice = number_format($itemTotalPrice, 2, '.', '');	
 			}
+
+
 	        // if('yes' == $tax && $rest_id != 0) :
 	        //     $taxLists=$this->getTaxList($rest_id); 
 	        //     if(!empty($taxLists)) :
@@ -403,10 +408,50 @@ class UserMenu extends CI_Controller
 	    return $taxPrice;
 	}
 	
+	private function updateOrderItemData($orderItems)
+	{
+		if (!empty($orderItems))
+		{
+			foreach($orderItems as &$itemTypes)
+			{
+				foreach($itemTypes as &$row)
+				{
+					$row['itemPrice'] = $row['itemOldPrice'];
+	
+					$totalTaxPercentage = 0;
+					if (!empty($row['itemTaxes']))
+					{
+						foreach ($row['itemTaxes'] as $itemTax)
+						{
+							$totalTaxPercentage += $itemTax['taxPercentage'];
+						}
+					}
+	
+					$itemTotalTax = 0;
+					if ($totalTaxPercentage > 0)
+					{
+						$itemTotalTax = round(($row['itemPrice'] * $row['itemCount']) * $totalTaxPercentage / 100, 2);
+					}
+	
+					$itemTotalAmount = ($row['itemPrice'] * $row['itemCount']) + $itemTotalTax;
+					$itemTotalAmountRoundOff = round($itemTotalAmount);
+
+					$row['itemTotalTax'] = $itemTotalTax;
+					$row['itemTotalAmount'] = $itemTotalAmountRoundOff;
+					$row['itemRoundOffAmount'] = number_format($itemTotalAmountRoundOff - $itemTotalAmount, 2, '.', '');
+					$row['itemDiscountAmount'] = 0;
+				}
+			}
+		}
+
+		return $orderItems;
+	}
+
 	public function checkoutPlaceOrder($tableToken=NULL){
 	    if($this->session->userdata('CartList')) {
-	        $items = $this->session->userdata('CartList');
-    		$CartLists = json_decode($this->session->userdata('CartList'), true);
+			$CartLists = $this->updateOrderItemData(json_decode($this->session->userdata('CartList'), true));
+			$items = json_encode($CartLists);
+
     	    $data['res_id'] = $this->input->post('rest_id');
     	    $data['table_id'] = $this->input->post('table_id');
     	    $data['buyer_name'] = $this->input->post('name');

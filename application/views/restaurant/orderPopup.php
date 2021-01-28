@@ -156,7 +156,7 @@
 									₹ <?= $itemDiscountAmount ?>
 								</td>
 								<td>
-									₹ <?= ($itemDataArray['itemTotalAmount'])  ?>
+									₹ <?= isset($itemDataArray['itemTotalAmount']) ? $itemDataArray['itemTotalAmount'] : $itemDataArray['itemCount'] * $itemDataArray['itemPrice']  ?>
 								</td>
 								<td>
 									<?= $order->created_at ?>
