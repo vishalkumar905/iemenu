@@ -631,12 +631,12 @@ class Restaurant extends Main
 		
 // 		'Discount Flat Rupees Off '
 
-		$data[] = ['Order Status','Order Id','Table Id','Customer Name','Phone Number','Order Type','Payment Mode', 
+		$data[] = ['Order Status','Order Id','Table Id','Customer Name','Phone Number','Order Type','Payment Mode',  'Item Discount Amount',
 		'Sub Total', 'Total Tax', 'Roundoff', 'Total Amount',   'Discount Percentage (%)' , 
 		'Discount Amount', 'Bill Amount', 'Tax Amount', 'Roundoff 2', 'Container Charge', 'Delivery Charge', 'Total Billed','Created Date'];
 		
 		$grandTotalTaxes = $grandSubTotal = $grandTotalAmount = $grandRoundOff = $grandTotalBilledAmount = $grandBillAmount = $grandTaxAmount = $grandDiscountAmount = $grandRoundOff2 = 0;
-		$containerCharge = $deliveryCharge = $grandTotalContainerCharge = $grandTotalDeliveryCharge = 0 ;
+		$containerCharge = $deliveryCharge = $grandTotalContainerCharge = $grandTotalDeliveryCharge = $grandItemDiscountAmount = 0 ;
 
 		foreach ( $orders as $order )
         {
@@ -648,13 +648,17 @@ class Restaurant extends Main
 			$totalTaxes = 0;
 			$subTotal = $this->calculateItemsSubtotal($order);
 			$allCombinedTaxes = $this->calculateAllCombinedTaxes($order);
+
+			$orderItemsData = $this->getOrderItemsData($order);
+			$itemDiscountAmount = $orderItemsData['itemDiscountAmount'];
 			
 			foreach($allCombinedTaxes as $taxName => $taxValue)
 			{
 				$totalTaxes += $taxValue;
 			}
 
-			$totalAmount = $subTotal + $totalTaxes;
+			$subTotal -= $itemDiscountAmount; 
+			$totalAmount = ($subTotal + $totalTaxes);
 			$totalAmount1 = number_format($totalAmount, 2, '.', '');
 			$totalAmount = round($totalAmount1);
 			
@@ -685,6 +689,7 @@ class Restaurant extends Main
             $sub_array[] = $this->paymentMethod($order->payment_mode);
           
 // 			$sub_array[] = $order->flat_amount_discount ;
+			$sub_array[] = $itemDiscountAmount; 
             $sub_array[] = $subTotal;
             
             $sub_array[] = $totalTaxes; 
@@ -723,7 +728,8 @@ class Restaurant extends Main
 			$grandTotalContainerCharge += $containerCharge; 
 			
 // 			$grandTotalBilledAmount += $totalBilledAmount;
-            $grandTotalBilledAmount +=  $order->total; 
+			$grandTotalBilledAmount +=  $order->total; 
+			$grandItemDiscountAmount += $itemDiscountAmount;
 
             $data[] = $sub_array;
 		}
@@ -740,6 +746,7 @@ class Restaurant extends Main
             $sub_array[] = '';
             $sub_array[] = '';
             $sub_array[] = '';
+            $sub_array[] = $grandItemDiscountAmount; 
             $sub_array[] = $grandSubTotal;
             $sub_array[] = $grandTotalTaxes; 
             $sub_array[] = $grandRoundOff; 
@@ -1184,8 +1191,7 @@ class Restaurant extends Main
 					{
 						foreach ($itemDetail['itemTaxes'] as $itemTax)
 						{
-							$itemDiscountAmount = $itemDetail['itemDiscountAmount'] ?? 0;
-							$calculatedTax = ((($itemDetail['itemOldPrice'] * $itemDetail['itemCount']) - $itemDiscountAmount) * $itemTax['taxPercentage']) / 100;
+							$calculatedTax = ((($itemDetail['itemOldPrice'] * $itemDetail['itemCount'])) * $itemTax['taxPercentage']) / 100;
 							$calculatedTax = round($calculatedTax, 2);
 
 							$combineAllTaxes[] = ['taxName' => $itemTax['taxName'], 'taxAmount' => $calculatedTax];
@@ -1220,6 +1226,52 @@ class Restaurant extends Main
 		}
 
 		return $combineAllTaxes;
+	}
+
+	private function getOrderItemsData($data)
+	{
+		$totalItemTaxAmount = 0;
+		$totalItemDiscountAmount = 0;
+		if (!empty($data))
+		{
+			$itemLists = json_decode($data->item_details, true);
+			foreach ($itemLists as $itemList)
+			{
+				foreach($itemList as $itemDetail)
+				{
+					if (!empty($itemDetail['itemTaxes']))
+					{
+						if (isset($itemDetail['itemTotalTax']))
+						{
+							$totalItemTaxAmount += $itemDetail['itemTotalTax'];
+						}
+						else
+						{
+							$totalTaxPercentage = 0;
+							if (!empty($itemDetail['itemTaxes']))
+							{
+								foreach ($itemDetail['itemTaxes'] as $itemTax)
+								{
+									$totalTaxPercentage += $itemTax['taxPercentage'];
+								}
+							}
+
+							if ($totalTaxPercentage > 0)
+							{
+								$totalItemTaxAmount += round((($itemDetail['itemOldPrice'] * $itemDetail['itemCount']) * $totalTaxPercentage) / 100, 2);
+							}
+						}
+					}
+
+					$totalItemDiscountAmount += $itemDetail['itemDiscountAmount'] ?? 0;
+				}
+			}
+		}
+
+		return [
+			'itemDiscountAmount' => $totalItemDiscountAmount,
+			'itemTaxAmount' => $totalItemTaxAmount 
+		];
 	}
 
 	public function calculateItemsSubtotal($data)
