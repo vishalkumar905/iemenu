@@ -83,17 +83,20 @@
 				</div>
 				<div style="width:100%;">
 				    <div>
-				        <div style="width:60%; float:left; text-align:left;"><strong>SubTotal: </strong><br>
+				        <div style="width:60%; float:left; text-align:left;"><strong>SubTotal: </strong>
 							<?php 
 								$msgTextArray = [];
-								if ($totalItemTaxAmount > 0)
+								if (isset($taxOnSubTotalAmount))
 								{
-									$msgTextArray[] = sprintf('GST ₹%s', round($totalItemTaxAmount, 2));	
+									if ($totalItemTaxAmount > 0)
+									{
+										$msgTextArray[] = sprintf('GST ₹%s', round($totalItemTaxAmount, 2));	
+									}
 								}
 
 								if ($totalItemDiscountAmount > 0)
 								{
-									$msgTextArray[] = sprintf('₹%s Off',  round($totalItemDiscountAmount, 2));	
+									$msgTextArray[] = sprintf('Disc ₹%s Off',  round($totalItemDiscountAmount, 2));	
 								}
 							
 								if (!empty($msgTextArray))
@@ -168,7 +171,24 @@
 				    <?php } ?>
 				    
 				    <div>
-				        <div style="width:60%; float:left; text-align:right;"><strong>Total Billed : </strong></div>
+				        <div style="width:60%; float:left; text-align:right;"><strong>Total Billed : </strong>
+						<?php
+							if (!empty($orderTaxes))
+							{
+								echo "<br><small>(";
+								$taxAmountOnTotalBilled = 0;
+								foreach ($orderTaxes as $taxRow) 
+								{
+									$taxAmount = round(($order->total * $taxRow['taxPercentage']) / 100, 2);
+									$taxAmountOnTotalBilled += $taxAmount; 
+									echo sprintf("%s: %s%%", $taxRow['taxName'], $taxRow['taxPercentage']);
+								}
+								echo sprintf(" inv ₹%s)</small>", number_format($taxAmountOnTotalBilled, 2, '.', ''));
+							}
+						?>	
+					
+						
+						</div>
 				        <div style="width:10%; float:left; text-align:right;">&nbsp;&nbsp;</div>
 				        <div style="width:30%; float:left; text-align:right;">₹ <?= $order->total ?></div>
 				    </div>
