@@ -68,7 +68,7 @@
 						?>
     				        <div style="width:60%; float:left;"><?=$itemNameWithDetails?></div>
 							<div style="width:13%; float:left; text-align:center;"><?=$itemDataArray['itemCount']?></div>
-							<div style="width:25%; float:left; text-align:right;">₹ <?=$itemDataArray['itemTotalAmount']?></div>
+							<div style="width:25%; float:left; text-align:right;">₹ <?=$itemDataArray['itemPrice']?></div>
 						<?php  endforeach;
 					    endforeach; ?>
 				    </div>

@@ -81,9 +81,9 @@
 									<th>Special Note</th>
 									<th>Qty.</th>
 									<th>Price</th>
-									<th>Tax</th>
 									<th style='width:200px !important;'>Discount</th>
 									<th>Discount Amount</th>
+									<th>Tax</th>
 									<th>Amount</th>
 								</tr>
 							</thead>
@@ -307,7 +307,9 @@
 			itemTaxDetails:null,
 			itemTotalAmount: itemTotalAmount,
 			specialNote: specialNote,
-			itemDiscountAmount
+			itemDiscountAmount,
+			itemTotalDiscountAmount: 0,
+			itemSubTotalAmount: itemTotalAmount
 		}
 
 		if(taxes != ("null" || ""))
@@ -348,15 +350,21 @@
 			itemData += "<td><input itemid='"+ id +"' type='text' style='width:100%'  name='item[note]["+ id +"]' placeholder='Special Note'/></td>";
 			itemData += "<td><input type='number' min='1' value='1' itemid='"+ id +"' class='width60' name='item[qty]["+ id +"]'> </td>";
 			itemData += "<td><span itemid='"+ id +"' id='item[price]["+ id +"]'> "+ priceArray[0] +" </span></td>";
-			itemData += "<td><span itemid='"+ id +"' id='item[tax]["+ id +"]'> "+ taxAmount +" </span></td>";
 			itemData += "<td style='width:200px !important;'>"+  itemDiscountInputFields(id) +"</td>";
 			itemData += "<td><span itemid='"+ id +"' id='item[itemDiscountAmount]["+ id +"]'> "+ itemDiscountAmount +" </span></td>";
+			itemData += "<td><span itemid='"+ id +"' id='item[tax]["+ id +"]'> "+ taxAmount +" </span></td>";
 			itemData += "<td><span itemid='"+ id +"' id='item[totalPrice]["+ id +"]'> "+ itemTotalAmount +" </span></td>";
 			itemData += "</tr>";
 
 		$("#menuItems").append(itemData);
 		
 		calculateOrderTotal();
+
+		if (isDiscountApplied)
+		{
+			calculateInvoiceDiscount();
+			calculateItemDiscount(id);
+		}
 
 		$("select[name^='item[itemType]']").change(function() {
 			
@@ -373,6 +381,7 @@
 			selectedMenuItems[itemId].itemPrice = itemPrice;
 			selectedMenuItems[itemId].itemType = itemType;
 			selectedMenuItems[itemId].itemTotalAmount = totalAmount;
+
 			calculateItemDiscount(itemId);
 			calculateOrderTotal();
 		});
@@ -422,14 +431,14 @@
 			itemId = Number(itemId);
 		}
 
-		console.log({itemId});
-
 		if (itemId > 0)
 		{
 			let itemDiscountType = $("select[name='item[itemDiscountType]["+itemId+"]']").val();
 			let itemDiscountValue = parseFloat($("input[name='item[itemDiscountValue]["+itemId+"]']").val()) || 0;
-			let itemDiscountApplied = selectedMenuItems[itemId].itemDiscountApplied || false;
-			let itemTotalAmount = getMenuItemPrice(itemId);
+			let itemWiseDiscountApplied = selectedMenuItems[itemId].itemWiseDiscountApplied || false;
+			let invoiceDiscount = selectedMenuItems[itemId].invoiceDiscount || false;
+			let menuItemPriceDetail = getMenuItemPrice(itemId, true);
+			let totalMenuItemPrice = menuItemPriceDetail.totalMenuItemPrice;
 			let itemDiscountAmount = 0;
 
 			if (itemDiscountValue > 0)
@@ -440,43 +449,61 @@
 				}
 				else if (itemDiscountType == 'percentage')
 				{
-					itemDiscountAmount = convertToDecimalIfNotAWholeNumber((itemTotalAmount * itemDiscountValue) / 100);
+					itemDiscountAmount = convertToDecimalIfNotAWholeNumber((totalMenuItemPrice * itemDiscountValue) / 100);
 				}
 				else
 				{
 					return false;
 				}
 	
-				if (itemDiscountAmount > itemTotalAmount)
+				if (itemDiscountAmount > totalMenuItemPrice)
 				{
 					alert('Item price can not be in negative.');
 					return false;
 				}
 
-				selectedMenuItems[itemId].itemDiscountApplied = true;
+				let itemTotalDiscountAmount = itemDiscountAmount;
+				if (selectedMenuItems[itemId].invoiceDiscount)
+				{
+					itemTotalDiscountAmount += selectedMenuItems[itemId].invoiceDiscount.invoiceDiscountAmount;
+					itemTotalDiscountAmount = convertToDecimalIfNotAWholeNumber(itemTotalDiscountAmount);
+				}
+
+				selectedMenuItems[itemId].itemWiseDiscountApplied = true;
 				selectedMenuItems[itemId].itemDiscountType = itemDiscountType;
 				selectedMenuItems[itemId].itemDiscountValue = itemDiscountValue;
 				selectedMenuItems[itemId].itemDiscountAmount = itemDiscountAmount;
-				selectedMenuItems[itemId].itemTotalAmountWithoutDiscount = itemTotalAmount;
-				selectedMenuItems[itemId].itemTotalAmount = convertToDecimalIfNotAWholeNumber(itemTotalAmount - itemDiscountAmount);
-				
-				console.log(selectedMenuItems);
+				selectedMenuItems[itemId].itemTotalDiscountAmount = itemTotalDiscountAmount;
+				selectedMenuItems[itemId].itemTotalAmountWithoutDiscount = totalMenuItemPrice;
 
-				$("span[id='item[itemDiscountAmount]["+itemId+"]']").html(itemDiscountAmount);
+				let itemPriceAfterDiscount = totalMenuItemPrice - itemTotalDiscountAmount;
+				let itemTaxAfterDiscount = convertToDecimalIfNotAWholeNumber(calculateItemTax(selectedMenuItems[itemId].itemTaxDetails, itemPriceAfterDiscount));
+
+				selectedMenuItems[itemId].itemTotalAmount = convertToDecimalIfNotAWholeNumber(itemPriceAfterDiscount + itemTaxAfterDiscount);
+
+				$("span[id='item[itemDiscountAmount]["+itemId+"]']").html(itemTotalDiscountAmount);
 				$("span[id='item[totalPrice]["+itemId+"]']").html(selectedMenuItems[itemId].itemTotalAmount);
 
 				calculateOrderTotal();
 			}
-			else if (itemDiscountApplied && itemDiscountValue == 0)
+			else if ((itemWiseDiscountApplied || invoiceDiscount) && itemDiscountValue == 0)
 			{
 				delete selectedMenuItems[itemId].itemDiscountType;
 				delete selectedMenuItems[itemId].itemDiscountValue;
+
+				let itemTotalDiscountAmount = 0;
+				
+				if (invoiceDiscount)
+				{
+					itemTotalDiscountAmount = convertToDecimalIfNotAWholeNumber(invoiceDiscount.invoiceDiscountAmount);
+				}
 				
 				selectedMenuItems[itemId].itemDiscountAmount = 0;
-				selectedMenuItems[itemId].itemDiscountApplied = false;
-				selectedMenuItems[itemId].itemTotalAmount = itemTotalAmount;
+				selectedMenuItems[itemId].itemWiseDiscountApplied = false;
+				selectedMenuItems[itemId].itemTotalDiscountAmount = itemTotalDiscountAmount;
+				selectedMenuItems[itemId].itemTotalAmount = menuItemPriceDetail.itemTotalAmount;
 	
-				$("span[id='item[itemDiscountAmount]["+itemId+"]']").html(0);
+				$("span[id='item[itemDiscountAmount]["+itemId+"]']").html(itemTotalDiscountAmount);
 				$("span[id='item[totalPrice]["+itemId+"]']").html(selectedMenuItems[itemId].itemTotalAmount);
 
 				calculateOrderTotal();
@@ -515,22 +542,56 @@
 
 		for(let itemId in selectedMenuItems)
 		{
-			totalItemsPrice += (getMenuItemPrice(itemId) - selectedMenuItems[itemId].itemDiscountAmount);
+			totalItemsPrice += getMenuItemPrice(itemId);
 		}
 
 		return convertToDecimalIfNotAWholeNumber(totalItemsPrice);
 	};
+	
+	var getAllItemAmountSum = function() {
+
+		let itemSubTotalAmount = 0, totalMenuItemPrice = 0, menuItemTax = 0, menuItemTotalPrice = 0, itemSubTotalAmountAfterItemWiseDiscount = 0;
+
+		for(let itemId in selectedMenuItems)
+		{
+			let menuItemPriceDetail = getMenuItemPrice(itemId, true);
+
+			menuItemTax += menuItemPriceDetail.menuItemTax;
+			itemSubTotalAmount += menuItemPriceDetail.itemSubTotalAmount;
+			totalMenuItemPrice += menuItemPriceDetail.totalMenuItemPrice;
+			menuItemTotalPrice += menuItemPriceDetail.menuItemTotalPrice;
+			itemSubTotalAmountAfterItemWiseDiscount += menuItemPriceDetail.itemSubTotalAmountAfterItemWiseDiscount;
+		}
+
+		return {
+			menuItemTax: convertToDecimalIfNotAWholeNumber(menuItemTax),
+			itemSubTotalAmount: convertToDecimalIfNotAWholeNumber(itemSubTotalAmount),
+			totalMenuItemPrice: convertToDecimalIfNotAWholeNumber(totalMenuItemPrice),
+			menuItemTotalPrice: convertToDecimalIfNotAWholeNumber(menuItemTotalPrice),
+			itemSubTotalAmountAfterItemWiseDiscount: convertToDecimalIfNotAWholeNumber(itemSubTotalAmountAfterItemWiseDiscount),
+		};
+	};
+	
 
 	var getMenuItemPrice = function(itemId, itemDetail = false) 
 	{
 		let itemPrice = 0;
 
 		let menuItem = selectedMenuItems[itemId];
+		if (menuItem.invoiceDiscount && !isDiscountApplied)
+		{
+			delete selectedMenuItems[itemId].invoiceDiscount;
+		}
+
 		let menuItemPrice = parseFloat(menuItem.itemPrice);
 		let menuItemQty = Number(menuItem.itemQty);
 		let totalMenuItemPrice = parseFloat(menuItemPrice * menuItemQty);
-		let menuItemTax = convertToDecimalIfNotAWholeNumber(calculateItemTax(menuItem.itemTaxDetails, totalMenuItemPrice));
-		let menuItemTotalPrice = menuItemTax + totalMenuItemPrice;
+		let itemSubTotalAmountAfterItemWiseDiscount = convertToDecimalIfNotAWholeNumber(totalMenuItemPrice - menuItem.itemDiscountAmount);
+		let menuItemPriceAfterDiscount = convertToDecimalIfNotAWholeNumber(totalMenuItemPrice - menuItem.itemTotalDiscountAmount);
+		let menuItemTax = convertToDecimalIfNotAWholeNumber(calculateItemTax(menuItem.itemTaxDetails, menuItemPriceAfterDiscount));
+		let menuItemTotalPrice = menuItemTax + menuItemPriceAfterDiscount;
+
+		selectedMenuItems[itemId].itemSubTotalAmount = menuItemPriceAfterDiscount;
 
 		if (itemDetail)
 		{
@@ -539,8 +600,10 @@
 				totalMenuItemPrice,
 				menuItemTax,
 				menuItemTotalPrice,
-				menuItemQty
-			}
+				menuItemQty,
+				itemSubTotalAmountAfterItemWiseDiscount,
+				itemSubTotalAmount: menuItemPriceAfterDiscount,
+			};
 		}
 
 		return menuItemTotalPrice;
@@ -558,14 +621,14 @@
 			let menuItem = selectedMenuItems[item];
 			let menuItemPriceData = getMenuItemPrice(item, true);
 			let menuItemTax = menuItemPriceData.menuItemTax;
-			let menuItemTotalPrice = convertToDecimalIfNotAWholeNumber(menuItemPriceData.menuItemTotalPrice - menuItem.itemDiscountAmount);
+			let menuItemTotalPrice = convertToDecimalIfNotAWholeNumber(menuItemPriceData.menuItemTotalPrice);
 			
 			$("span[id='item[tax]["+ menuItem.itemId +"]']").text(menuItemPriceData.menuItemTax);
 			$("span[id='item[totalPrice]["+ menuItem.itemId +"]']").text(menuItemTotalPrice);
 			
 			selectedMenuItems[menuItem.itemId].itemTax = menuItemTax;
 			selectedMenuItems[menuItem.itemId].itemTotalAmount = menuItemTotalPrice;
-			
+
 			totalQty = totalQty + Number(menuItem.itemQty);
 		}
 		
@@ -578,6 +641,7 @@
 		{
 			let totalDiscount = convertToDecimalIfNotAWholeNumber(calculateDiscount(discountAppliedType, discountAppliedAmount));
 
+			console.log({totalDiscount});
 			if (totalDiscount > 0)
 			{
 				showDiscountApplied();
@@ -586,7 +650,7 @@
 			}
 
 			totalOrder = convertToDecimalIfNotAWholeNumber(totalOrder - totalDiscount);
-			totalOrderAmount = totalOrderAmount - totalDiscount;
+			totalOrderAmount = totalOrderAmount - totalDiscount;			
 		}
 
 		orderTotal = totalOrderAmount;
@@ -634,6 +698,47 @@
 		$("#addDiscount").show();
 	});
 
+	var calculateInvoiceDiscount = function()
+	{	
+		if (isDiscountApplied)
+		{
+			let orderTotal = getTotalItemPrice();
+			let orderDiscountPercentage = 0; 
+			let orderDiscountAmount = discountAppliedAmount;
+	
+			if (!isNaN(orderDiscountAmount) && orderDiscountAmount > 0)
+			{
+				orderDiscountPercentage = orderDiscountAmount;
+				if (discountAppliedType == 'flat')
+				{
+					orderDiscountPercentage = convertToDecimalIfNotAWholeNumber((orderDiscountAmount * 100) / orderTotal); 
+				}
+			}
+
+			if (orderDiscountPercentage > 0)
+			{
+				for(let itemId in selectedMenuItems)
+				{
+					let itemSubTotalAmount = selectedMenuItems[itemId].itemSubTotalAmount;
+					let invoiceDiscountAmount = convertToDecimalIfNotAWholeNumber((itemSubTotalAmount * orderDiscountPercentage) / 100);
+					let itemSubTotalAmountAfterInvoiceDiscount = convertToDecimalIfNotAWholeNumber(itemSubTotalAmount - invoiceDiscountAmount);
+					let itemTaxAfterInvoiceDiscount = calculateItemTax(selectedMenuItems[itemId].itemTaxDetails , itemSubTotalAmountAfterInvoiceDiscount);
+	
+					let invoiceDiscount = {
+						invoiceDiscountAmount,
+						invoiceDiscountType: discountAppliedType,
+						invoiceDiscountPercentage: orderDiscountPercentage,
+						itemTaxAfterInvoiceDiscount,
+						itemSubTotalAmountAfterInvoiceDiscount,
+					};
+	
+					selectedMenuItems[itemId].invoiceDiscount = invoiceDiscount;
+				}
+			}
+
+			console.log(selectedMenuItems);
+		}
+	}
 
 	var setDiscountOnUpdate = function() {
 		if (updateId > 0 && alreadyAppliedDiscount.isApplied)
@@ -664,13 +769,22 @@
 		discountAppliedAmount = (selectedDiscountType == 'percent') ? discountPercentage : flatDiscount;
 		isDiscountApplied = true;
 
+		calculateInvoiceDiscount();
+
+		for(let itemId in selectedMenuItems)
+		{
+			calculateItemDiscount(itemId)
+		}
+
 		calculateOrderTotal();
+
+		console.log(selectedMenuItems);
 	});
 
 	var calculateDiscount = function(discountType, discountAmount) {
-		let totalItemsPrice = getTotalItemPrice();
+		let subTotalAmount = getAllItemAmountSum().itemSubTotalAmountAfterItemWiseDiscount;
 
-		if (isNaN(totalItemsPrice) || totalItemsPrice == 0)
+		if (isNaN(subTotalAmount) || subTotalAmount == 0)
 		{
 			return 0;
 		}
@@ -679,7 +793,7 @@
 		{
 			if (discountType == 'percent')
 			{
-				return (totalItemsPrice * discountAmount) / 100;
+				return (subTotalAmount * discountAmount) / 100;
 			}
 			else if (discountType == 'flat')
 			{
