@@ -133,7 +133,9 @@
 				<hr class="new">
 				<div style="width:100%;">
 				    
-				    <?php if(!empty($order->discount_coupon_percent)) {?>
+				    <?php if(!empty($order->discount_coupon_percent)) {
+						$subTotalAmount -= round($subTotalAmount * $order->discount_coupon_percent / 100, 2);
+					?>
 				    <div>
 				        <div style="width:60%; float:left; text-align:right;"><strong>Special Discount: </strong></div>
 				        <div style="width:10%; float:left; text-align:right;">&nbsp;&nbsp;</div>

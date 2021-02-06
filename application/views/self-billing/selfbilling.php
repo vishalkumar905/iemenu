@@ -712,10 +712,15 @@
 	
 			if (!isNaN(orderDiscountAmount) && orderDiscountAmount > 0)
 			{
-				orderDiscountPercentage = orderDiscountAmount;
 				if (discountAppliedType == 'flat')
 				{
 					orderDiscountPercentage = convertToDecimalIfNotAWholeNumber((orderDiscountAmount * 100) / orderTotal); 
+				}
+				else
+				{
+					let totalDiscount = convertToDecimalIfNotAWholeNumber(calculateDiscount(discountAppliedType, discountAppliedAmount));
+
+					orderDiscountPercentage = convertToDecimalIfNotAWholeNumber((totalDiscount * 100) / orderTotal); 
 				}
 			}
 
