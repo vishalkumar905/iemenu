@@ -15,7 +15,7 @@
             	    <strong><?= ($order->res_id) ? (($ci->getRestaurantDetail($order->res_id)) ? $ci->getRestaurantDetail($order->res_id)[0]->name : '-') : '-'; ?></strong>
             	</div>
             	<div style="padding-bottom:10px; text-align:center; font-size: 10px;">
-            	    <b><?= ($order->res_id) ? ($ci->getRestaurantDetail($order->res_id)) ? $ci->getRestaurantDetail($order->res_id)[0]->tagline : '-' : '-'; ?></b>
+            	    <b><?= ($order->res_id) ? (($ci->getRestaurantDetail($order->res_id)) ? $ci->getRestaurantDetail($order->res_id)[0]->tagline : '-') : '-'; ?></b>
             	</div>
             	
                 <div>
@@ -23,8 +23,8 @@
 						<b>VOID BILL</b> <?php } ?> <br/>
                     <b>Date : </b><?= date('d-m-Y h:i:s a'); ?> <br/>
 				    <strong>Payment Method : </strong><?= $paymentMethodName ?> <br/>
-				    <strong><?= ($order->res_id) ? ($ci->getRestaurantDetail($order->res_id)) ? $ci->getRestaurantDetail($order->res_id)[0]->tax_name : '-' : '-'; ?> : 
-				    </strong><?= ($order->res_id) ? ($ci->getRestaurantDetail($order->res_id)) ? $ci->getRestaurantDetail($order->res_id)[0]->rest_reg_no : '-' : '-'; ?>
+				    <strong><?= ($order->res_id) ? (($ci->getRestaurantDetail($order->res_id)) ? $ci->getRestaurantDetail($order->res_id)[0]->tax_name : '-') : '-'; ?> : 
+				    </strong><?= ($order->res_id) ? (($ci->getRestaurantDetail($order->res_id)) ? $ci->getRestaurantDetail($order->res_id)[0]->rest_reg_no : '-') : '-'; ?>
             	</div>
             	<hr class="new">
             	<?php $CartLists=json_decode($order->item_details, true); ?>
@@ -52,12 +52,11 @@
 
 								$itemDiscountAmount = $itemDataArray['itemDiscountAmount'] ?? 0;
 
-								$subTotalAmount += $itemDataArray['itemTotalAmount'];
+								$subTotalAmount += ($itemDataArray['itemPrice'] * $itemDataArray['itemCount']);
 								$totalQuantity += $itemDataArray['itemCount'];
 								
 								$itemTaxText = !empty($taxName) ? sprintf('<span style="font-size:9px;">%s ₹%s, </span>', implode(', ', $taxName), $itemDataArray['itemTotalTax']) : '';
 								$itemDiscountText = $itemDiscountAmount > 0 ? sprintf('<span style="font-size:9px;">₹%s Off</span>', $itemDiscountAmount) : '';
-
 
 								$totalItemDiscountAmount += $itemDiscountAmount;
 								$totalItemTaxAmount += $itemDataArray['itemTotalTax'];
@@ -68,7 +67,7 @@
 						?>
     				        <div style="width:60%; float:left;"><?=$itemNameWithDetails?></div>
 							<div style="width:13%; float:left; text-align:center;"><?=$itemDataArray['itemCount']?></div>
-							<div style="width:25%; float:left; text-align:right;">₹ <?=$itemDataArray['itemPrice']?></div>
+							<div style="width:25%; float:left; text-align:right;">₹<?=$itemDataArray['itemPrice']?></div>
 						<?php  endforeach;
 					    endforeach; ?>
 				    </div>
@@ -96,6 +95,7 @@
 
 								if ($totalItemDiscountAmount > 0)
 								{
+									$subTotalAmount = round($subTotalAmount - $totalItemDiscountAmount, 2);
 									$msgTextArray[] = sprintf('Disc ₹%s Off',  round($totalItemDiscountAmount, 2));	
 								}
 							
@@ -107,7 +107,7 @@
 						
 						</div>
 				        <div style="width:13%; float:left; text-align:center;">&nbsp;&nbsp;</div>
-				        <div style="width:25%; float:left; text-align:right;">₹ <?= $subTotalAmount ?></div>
+				        <div style="width:25%; float:left; text-align:right;">₹<?= $subTotalAmount?></div>
 				    </div>
 				</div>
 				<?php 
@@ -123,7 +123,7 @@
 				    <div>
 				        <div style="width:60%; float:left; text-align:left;"><strong><?=sprintf("%s : %s%%", $taxRow['taxName'], $taxRow['taxPercentage'])?></strong></div>
 				        <div style="width:13%; float:left; text-align:right;">&nbsp;&nbsp;</div>
-				        <div style="width:25%; float:left; text-align:right;">₹ <?= $taxAmount ?></div>
+				        <div style="width:25%; float:left; text-align:right;">₹<?= $taxAmount ?></div>
 					</div>
 					<?php } ?>
 				</div>
@@ -132,46 +132,28 @@
 				?>
 				<hr class="new">
 				<div style="width:100%;">
-				    <div>
-				        <div style="width:60%; float:left; text-align:right;"><strong>Total Amount : </strong></div>
-				        <div style="width:10%; float:left; text-align:right;">&nbsp;&nbsp;</div>
-				        <div style="width:30%; float:left; text-align:right;">₹ <?= number_format($subTotalAmount, 2, '.', '') ?></div>
-				    </div>
 				    
 				    <?php if(!empty($order->discount_coupon_percent)) {?>
 				    <div>
-				        <div style="width:60%; float:left; text-align:right;"><strong>Special Discount : </strong></div>
+				        <div style="width:60%; float:left; text-align:right;"><strong>Special Discount: </strong></div>
 				        <div style="width:10%; float:left; text-align:right;">&nbsp;&nbsp;</div>
 				        <div style="width:30%; float:left; text-align:right;"> <?= $order->discount_coupon_percent;?> % </div>
 				    </div>
 				    <?php } ?>
 				    
-				    <?php if(!empty($order->flat_amount_discount)) {?>
+				    <?php if(!empty($order->flat_amount_discount)) {
+						
+						$subTotalAmount = $subTotalAmount - $order->flat_amount_discount;	
+					?>
 				    <div>
-				        <div style="width:60%; float:left; text-align:right;"><strong>Special Discount Flat Off: </strong></div>
+				        <div style="width:60%; float:left; text-align:right;"><strong>Special Discount <small>Flat Off:</small> </strong></div>
 				        <div style="width:10%; float:left; text-align:right;">&nbsp;&nbsp;</div>
-				        <div style="width:30%; float:left; text-align:right;"> ₹ <?= $order->flat_amount_discount;?> </div>
+				        <div style="width:30%; float:left; text-align:right;">₹<?= $order->flat_amount_discount;?> </div>
 				    </div>
 				    <?php } ?>
 
-					<?php if(!empty($order->container_charge)) {?>
-				    <div>
-				        <div style="width:60%; float:left; text-align:right;"><strong>Container Charge: </strong></div>
-				        <div style="width:10%; float:left; text-align:right;">&nbsp;</div>
-				        <div style="width:30%; float:left; text-align:right;"> ₹ <?= $order->container_charge;?> </div>
-				    </div>
-				    <?php } ?>
-
-					<?php if(!empty($order->delivery_charge)) {?>
-				    <div>
-				        <div style="width:60%; float:left; text-align:right;"><strong>Delivery Charge: </strong></div>
-				        <div style="width:10%; float:left; text-align:right;">&nbsp;</div>
-				        <div style="width:30%; float:left; text-align:right;"> ₹ <?= $order->delivery_charge;?> </div>
-				    </div>
-				    <?php } ?>
-				    
-				    <div>
-				        <div style="width:60%; float:left; text-align:right;"><strong>Total Billed : </strong>
+					<div>
+				        <div style="width:60%; float:left; text-align:right;"><strong>Total Amount : </strong>
 						<?php
 							if (!empty($orderTaxes))
 							{
@@ -183,14 +165,37 @@
 									$taxAmountOnTotalBilled += $taxAmount; 
 									echo sprintf("%s: %s%%", $taxRow['taxName'], $taxRow['taxPercentage']);
 								}
-								echo sprintf(" inv ₹%s)</small>", number_format($taxAmountOnTotalBilled, 2, '.', ''));
+
+								$subTotalAmount += $totalItemTaxAmount; 
+
+								echo sprintf(" inv ₹%s)</small>", number_format($totalItemTaxAmount, 2, '.', ''));
 							}
-						?>	
-					
-						
+						?>
 						</div>
 				        <div style="width:10%; float:left; text-align:right;">&nbsp;&nbsp;</div>
-				        <div style="width:30%; float:left; text-align:right;">₹ <?= $order->total ?></div>
+				        <div style="width:30%; float:left; text-align:right;">₹<?= number_format($subTotalAmount, 2, '.', '') ?></div>
+				    </div>
+
+					<?php if(!empty($order->container_charge)) {?>
+				    <div>
+				        <div style="width:60%; float:left; text-align:right;"><strong>Container Charge: </strong></div>
+				        <div style="width:10%; float:left; text-align:right;">&nbsp;</div>
+				        <div style="width:30%; float:left; text-align:right;">₹<?= $order->container_charge;?> </div>
+				    </div>
+				    <?php } ?>
+
+					<?php if(!empty($order->delivery_charge)) {?>
+				    <div>
+				        <div style="width:60%; float:left; text-align:right;"><strong>Delivery Charge: </strong></div>
+				        <div style="width:10%; float:left; text-align:right;">&nbsp;</div>
+				        <div style="width:30%; float:left; text-align:right;">₹<?= $order->delivery_charge;?> </div>
+				    </div>
+				    <?php } ?>
+				    
+				    <div>
+				        <div style="width:60%; float:left; text-align:right;"><strong>Total Billed : </strong></div>
+				        <div style="width:10%; float:left; text-align:right;">&nbsp;&nbsp;</div>
+				        <div style="width:30%; float:left; text-align:right;">₹<?= $order->total ?></div>
 				    </div>
 				</div>
 				<?php /* ?>

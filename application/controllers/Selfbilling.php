@@ -102,6 +102,8 @@ class Selfbilling extends CI_Controller
         header('Access-Control-Allow-Origin: *');  
 		header("Content-Type: application/json", true);
         $postData = $this->input->post();
+
+        // p($postData);
         
         foreach($postData['selectedItem'] as &$items) 
         {
@@ -125,8 +127,8 @@ class Selfbilling extends CI_Controller
                 "itemTotalTax" => $itemTax,
                 "itemDiscountAmount" => $items['itemDiscountAmount'],
                 "itemTotalAmount" => $items['itemTotalAmount'],
+                "itemSubTotalAmount" => $items['itemSubTotalAmount'],
             ];
-
 
             if ($itemDiscountAmount > 0)
             {
@@ -135,8 +137,20 @@ class Selfbilling extends CI_Controller
                 $itemInfo['itemTotalAmountWithoutDiscount'] = $items['itemTotalAmountWithoutDiscount'] ?? '';
             }
 
+            if (!empty($items['invoiceDiscount']))
+            {
+                $itemInfo['invoiceDiscount'] = $items['invoiceDiscount'];
+            }
+
+            $items['itemImage'] = '';
+            $items['itemFoodType'] = '';
+            $items['itemCount'] = $items['itemQty'];
+            $items['itemTaxes'] = $items['itemTaxDetails'];
+            $items['itemNote'] = $items['specialNote'] ?? '';
+            $items['itemTotalTax'] = $items['itemTax'];
+
             $items = [
-                $itemType => $itemInfo
+                $itemType => $items
             ];
         }
 
@@ -230,8 +244,15 @@ class Selfbilling extends CI_Controller
                 $itemInfo['itemTotalAmountWithoutDiscount'] = $items['itemTotalAmountWithoutDiscount'] ?? '';
             }
 
+            $items['itemImage'] = '';
+            $items['itemFoodType'] = '';
+            $items['itemCount'] = $items['itemQty'];
+            $items['itemTaxes'] = $items['itemTaxDetails'];
+            $items['itemNote'] = $items['specialNote'] ?? '';
+            $items['itemTotalTax'] = $items['itemTax'];
+
             $items = [
-                $itemType => $itemInfo
+                $itemType => $items
             ];
         }
 

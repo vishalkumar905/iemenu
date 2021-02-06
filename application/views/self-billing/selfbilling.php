@@ -109,7 +109,7 @@
 											<div>
 												<label class='pr-10 pl-5 radio-label' style="color:#3C4858">Add Discount: </label>
 												<label class='pr-10 pl-5 radio-label'><input type="radio" name="discount" value="percent" />Percent Off </label>
-												<!--<label class='pr-10 pl-5 radio-label'><input type="radio" name="discount" value="flat" />Amount </label>-->
+												<label class='pr-10 pl-5 radio-label'><input type="radio" name="discount" value="flat" />Amount </label>
 											</div>
 	
 											<div class='displaynone' id="amountDiscountDiv">
@@ -382,6 +382,7 @@
 			selectedMenuItems[itemId].itemType = itemType;
 			selectedMenuItems[itemId].itemTotalAmount = totalAmount;
 
+			calculateInvoiceDiscount();
 			calculateItemDiscount(itemId);
 			calculateOrderTotal();
 		});
@@ -397,6 +398,8 @@
 
 			selectedMenuItems[itemId].itemQty = qty;
 			selectedMenuItems[itemId].itemTotalAmount = totalAmount;
+			
+			calculateInvoiceDiscount();
 			calculateItemDiscount(itemId);
 			calculateOrderTotal();
 		});
@@ -411,6 +414,8 @@
 			if (selectedMenuItems[itemId])
 			{
 				delete selectedMenuItems[itemId];
+				calculateInvoiceDiscount();
+				reCalculateInvoiceDiscountAndUpdateItemTotalDiscount();
 				calculateOrderTotal();
 				$("#itemRow-" + itemId).remove();
 			}
@@ -486,7 +491,7 @@
 
 				calculateOrderTotal();
 			}
-			else if ((itemWiseDiscountApplied || invoiceDiscount) && itemDiscountValue == 0)
+			else if ((itemWiseDiscountApplied || (invoiceDiscount || invoiceDiscount == false)) && itemDiscountValue == 0)
 			{
 				delete selectedMenuItems[itemId].itemDiscountType;
 				delete selectedMenuItems[itemId].itemDiscountValue;
@@ -497,7 +502,7 @@
 				{
 					itemTotalDiscountAmount = convertToDecimalIfNotAWholeNumber(invoiceDiscount.invoiceDiscountAmount);
 				}
-				
+
 				selectedMenuItems[itemId].itemDiscountAmount = 0;
 				selectedMenuItems[itemId].itemWiseDiscountApplied = false;
 				selectedMenuItems[itemId].itemTotalDiscountAmount = itemTotalDiscountAmount;
@@ -641,7 +646,6 @@
 		{
 			let totalDiscount = convertToDecimalIfNotAWholeNumber(calculateDiscount(discountAppliedType, discountAppliedAmount));
 
-			console.log({totalDiscount});
 			if (totalDiscount > 0)
 			{
 				showDiscountApplied();
@@ -649,8 +653,8 @@
 				$("#discountAmount").text(totalDiscount);
 			}
 
-			totalOrder = convertToDecimalIfNotAWholeNumber(totalOrder - totalDiscount);
-			totalOrderAmount = totalOrderAmount - totalDiscount;			
+			// totalOrder = convertToDecimalIfNotAWholeNumber(totalOrder - totalDiscount);
+			// totalOrderAmount = totalOrderAmount - totalDiscount;			
 		}
 
 		orderTotal = totalOrderAmount;
@@ -690,7 +694,7 @@
 			$("#percentDiscountDiv").show();
 		}
 
-		if (discountType == 'amount')
+		if (discountType == 'flat')
 		{
 			$("#amountDiscountDiv").show();
 		}
@@ -702,7 +706,7 @@
 	{	
 		if (isDiscountApplied)
 		{
-			let orderTotal = getTotalItemPrice();
+			let orderTotal = getAllItemAmountSum().itemSubTotalAmount;
 			let orderDiscountPercentage = 0; 
 			let orderDiscountAmount = discountAppliedAmount;
 	
@@ -733,10 +737,10 @@
 					};
 	
 					selectedMenuItems[itemId].invoiceDiscount = invoiceDiscount;
+
+					calculateItemDiscount(itemId);
 				}
 			}
-
-			console.log(selectedMenuItems);
 		}
 	}
 
@@ -770,16 +774,17 @@
 		isDiscountApplied = true;
 
 		calculateInvoiceDiscount();
+		reCalculateInvoiceDiscountAndUpdateItemTotalDiscount();
+		calculateOrderTotal();
+	});
 
+	var reCalculateInvoiceDiscountAndUpdateItemTotalDiscount = function()
+	{
 		for(let itemId in selectedMenuItems)
 		{
-			calculateItemDiscount(itemId)
+			calculateItemDiscount(itemId);
 		}
-
-		calculateOrderTotal();
-
-		console.log(selectedMenuItems);
-	});
+	}
 
 	var calculateDiscount = function(discountType, discountAmount) {
 		let subTotalAmount = getAllItemAmountSum().itemSubTotalAmountAfterItemWiseDiscount;
@@ -821,6 +826,17 @@
 					$("#discountBox").show();
 					
 					resetDiscountData();
+					
+					for(let itemId in selectedMenuItems)
+					{
+						if (selectedMenuItems[itemId].invoiceDiscount)
+						{
+							delete selectedMenuItems[itemId].invoiceDiscount;
+						}
+
+						calculateItemDiscount(itemId);
+					}
+
 					calculateOrderTotal();
 				}
 			});
