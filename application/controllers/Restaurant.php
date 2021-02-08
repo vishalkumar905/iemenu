@@ -628,140 +628,127 @@ class Restaurant extends Main
     	    
 		$query = $this->db->get('orders');
 		$orders = $query->result();
-		
-// 		'Discount Flat Rupees Off '
 
-		$data[] = ['Order Status','Order Id','Table Id','Customer Name','Phone Number','Order Type','Payment Mode',  'Item Discount Amount',
-		'Sub Total', 'Total Tax', 'Roundoff', 'Total Amount',   'Discount Percentage (%)' , 
-		'Discount Amount', 'Bill Amount', 'Tax Amount', 'Roundoff 2', 'Container Charge', 'Delivery Charge', 'Total Billed','Created Date'];
+
+		$data[] = ['Order Status','Order Id','Table Id','Customer Name','Phone Number','Order Type','Payment Mode', 'Sub Total', 'Item Wise Discount', 'Discount %', 'Flat Discount', 'Discount Amount' , 'Total Discount', 'Total Amount After Discount', 'Total Tax', 'Grand Total Amount', 'Roundoff', 'Container Charge', 'Delivery Charge', 'Total Billed','Created Date'];
 		
-		$grandTotalTaxes = $grandSubTotal = $grandTotalAmount = $grandRoundOff = $grandTotalBilledAmount = $grandBillAmount = $grandTaxAmount = $grandDiscountAmount = $grandRoundOff2 = 0;
-		$containerCharge = $deliveryCharge = $grandTotalContainerCharge = $grandTotalDeliveryCharge = $grandItemDiscountAmount = 0 ;
+		$allOrdersSubTotalAmount = $allOrdersItemWiseDiscountAmount = $allOrdersDiscountPercentage = $allOrdersFlatDiscountAmount = $allOrdersDiscountAmount = $allOrdersDiscountTotalAmount = $allOrdersOrderTotalAfterDiscount = $allOrdersOrderItemTotalTaxAmount = $allOrdersGrandTotalAmount = $allOrdersTotalRoundOff = $allOrdersContainerCharge = $allOrdersDeliveryCharge = $allOrdersOrderTotal = 0;
 
 		foreach ( $orders as $order )
         {
 			$order = $this->combineOrders($order->order_id);
 
             if($order->order_status=='0'){ $order_status='OPEN'; }elseif($order->order_status=='1'){ $order_status='CONFIRM'; }else{ $order_status='CLOSE'; }
-			$CartLists=json_decode($order->item_details, true);
-			
-			$totalTaxes = 0;
-			$subTotal = $this->calculateItemsSubtotal($order);
-			$allCombinedTaxes = $this->calculateAllCombinedTaxes($order);
 
 			$orderItemsData = $this->getOrderItemsData($order);
-			$itemDiscountAmount = $orderItemsData['itemDiscountAmount'];
-			
-			foreach($allCombinedTaxes as $taxName => $taxValue)
+			$orderItemWiseDiscountAmount = $orderItemsData['itemDiscountAmount'];
+			$invoiceDiscountAmount = $orderItemsData['invoiceDiscountAmount'];
+			$orderSubTotalAmount = $orderItemsData['orderSubTotalAmount'];
+			$orderItemTotalTaxAmount = $orderItemsData['itemTaxAmount'];
+
+			$orderDiscountAmount = $order->flat_amount_discount;
+			$orderFlatDiscountAmount = $order->flat_amount_discount;
+			$orderDiscountPercentage = floatval($order->discount_coupon_percent);
+
+			// Calculate the discount amount on percentage discount
+			if ($orderDiscountPercentage > 0 && $orderDiscountAmount == 0)
 			{
-				$totalTaxes += $taxValue;
+				// This is an old order so calculate its amount to the old way.
+				if ($invoiceDiscountAmount == 0)
+				{
+
+					$oldOrderTotal = $orderSubTotalAmount + $orderItemTotalTaxAmount; 
+					$oldOrderDiscountAmount = ($oldOrderTotal * $orderDiscountPercentage) / 100;
+					$orderDiscountAmount = $oldOrderDiscountAmount;
+					
+					// Apply discount on tax amount
+					$orderItemTotalTaxAmount = round($orderItemTotalTaxAmount - (($orderItemTotalTaxAmount * $orderDiscountPercentage) / 100), 2);
+				}
+				else
+				{
+					$orderDiscountAmount = $invoiceDiscountAmount;
+				}
 			}
 
-			$subTotal -= $itemDiscountAmount; 
-			$totalAmount = ($subTotal + $totalTaxes);
-			$totalAmount1 = number_format($totalAmount, 2, '.', '');
-			$totalAmount = round($totalAmount1);
-			
-			$totalBilledAmount = $this->cartTotal($CartLists,'no',$rid);
-			$roundOff = number_format($totalBilledAmount - $totalAmount1, 2, '.', '');
-			
-			$discountPercent = $order->discount_coupon_percent;
-			$finalDisc = $discountPercent / 100;
-    		$billAmount = $subTotal - ($subTotal * $finalDisc);
-    		$taxAmount = $totalTaxes - ($totalTaxes * $finalDisc);
-    		
-    		$totalValue = round($billAmount + $taxAmount);
-    		$totalValue1 = $billAmount + $taxAmount;
-    		$roundOff2 = number_format($totalValue - $totalValue1, 2, '.', '');
-			
+			$orderDiscountTotalAmount = $orderDiscountAmount + $orderItemWiseDiscountAmount;
+			$orderTotalAfterDiscount = $orderSubTotalAmount - $orderDiscountTotalAmount;
+            
+			$tableId = ($order->table_id) ? (($this->getTableDetail($order->table_id)) ? $this->getTableDetail($order->table_id)->table_name : '-') : '-';
+			$paymentMethod = $this->paymentMethod($order->payment_mode);
 			$containerCharge = floatval($order->container_charge);
 			$deliveryCharge = floatval($order->delivery_charge);
+			$orderGrandTotalAmount = round($orderTotalAfterDiscount + $orderItemTotalTaxAmount, 2);
 			
-    		$discountAmount = $totalAmount * $finalDisc;
+			$roundOff = number_format(($order->total - $containerCharge - $deliveryCharge) - $orderGrandTotalAmount, 2, '.', '');
 
-            $sub_array   = array();
-            $sub_array[] = $order_status;
-            $sub_array[] = $order->order_id;
-            $sub_array[] = ($order->table_id) ? (($this->getTableDetail($order->table_id)) ? $this->getTableDetail($order->table_id)->table_name : '-') : '-';
-            $sub_array[] = $order->buyer_name;
-            $sub_array[] = $order->buyer_phone_number;
-            $sub_array[] = $order->order_type;
-            $sub_array[] = $this->paymentMethod($order->payment_mode);
-          
-// 			$sub_array[] = $order->flat_amount_discount ;
-			$sub_array[] = $itemDiscountAmount; 
-            $sub_array[] = $subTotal;
-            
-            $sub_array[] = $totalTaxes; 
-            $sub_array[] = $roundOff; 
-            $sub_array[] = $totalAmount; 
-            
-            $sub_array[] = $discountPercent;
-            $sub_array[] = $discountAmount;
-             
-            //29-11-2020
-            
-            $sub_array[] = $billAmount; 
-            
-            $sub_array[] = $taxAmount; 
-            
-            $sub_array[] = $roundOff2; 
-            $sub_array[] = $containerCharge; 
-            $sub_array[] = $deliveryCharge; 
-            
-           
-            // $sub_array[] = $totalBilledAmount;
-            $sub_array[] = $order->total; 
-            $sub_array[] = $order->created_at; 
+			$allOrdersSubTotalAmount += $orderSubTotalAmount;
+			$allOrdersItemWiseDiscountAmount += $orderItemWiseDiscountAmount;
+			$allOrdersDiscountPercentage += $orderDiscountPercentage;
+			$allOrdersFlatDiscountAmount += $orderFlatDiscountAmount;
+			$allOrdersDiscountAmount += $orderDiscountAmount;
+			$allOrdersDiscountTotalAmount += $orderDiscountTotalAmount;
+			$allOrdersOrderTotalAfterDiscount += $orderTotalAfterDiscount;
+			$allOrdersOrderItemTotalTaxAmount += $orderItemTotalTaxAmount;
+			$allOrdersGrandTotalAmount += $orderGrandTotalAmount;
+			$allOrdersTotalRoundOff += $roundOff;
+			$allOrdersContainerCharge += $containerCharge;
+			$allOrdersDeliveryCharge += $deliveryCharge;
+			$allOrdersOrderTotal += $order->total;
 
-			$grandTotalTaxes += $totalTaxes;
-			$grandSubTotal += $subTotal;
-			$grandTotalAmount += $totalAmount;
-			$grandRoundOff += $roundOff;
-			
-			$grandBillAmount += $billAmount;
-			$grandTaxAmount += $taxAmount; 
-			$grandDiscountAmount += $discountAmount;
-			$grandRoundOff2 += $roundOff2;
+			$row = [
+				$order_status,
+				$order->order_id,
+				$tableId,
+				$order->buyer_name,
+				$order->buyer_phone_number,
+				$order->order_type,
+				$paymentMethod,
+				$orderSubTotalAmount,
+				$orderItemWiseDiscountAmount,
+				$orderDiscountPercentage,
+				$orderFlatDiscountAmount,
+				$orderDiscountAmount,
+				$orderDiscountTotalAmount,
+				$orderTotalAfterDiscount,
+				$orderItemTotalTaxAmount,
+				$orderGrandTotalAmount,
+				$roundOff,
+				$containerCharge,
+				$deliveryCharge,
+				$order->total,
+				$order->created_at,	
+			];
 
-			$grandTotalDeliveryCharge += $deliveryCharge; 
-			$grandTotalContainerCharge += $containerCharge; 
-			
-// 			$grandTotalBilledAmount += $totalBilledAmount;
-			$grandTotalBilledAmount +=  $order->total; 
-			$grandItemDiscountAmount += $itemDiscountAmount;
-
-            $data[] = $sub_array;
+            $data[] = $row;
 		}
 		
 		if (count($data) > 1)
 		{
-			$sub_array   = array();
-			$sub_array[] = '';
-            $sub_array[] = '';
-           	// $sub_array[] = '';
-           	// $sub_array[] = '';
-            $sub_array[] = '';
-            $sub_array[] = '';
-            $sub_array[] = '';
-            $sub_array[] = '';
-            $sub_array[] = '';
-            $sub_array[] = $grandItemDiscountAmount; 
-            $sub_array[] = $grandSubTotal;
-            $sub_array[] = $grandTotalTaxes; 
-            $sub_array[] = $grandRoundOff; 
-            $sub_array[] = $grandTotalAmount; 
-            $sub_array[] = '';
-            $sub_array[] = $grandDiscountAmount;
-            $sub_array[] = $grandBillAmount;
-            $sub_array[] = $grandTaxAmount;
-            $sub_array[] = $grandRoundOff2;
-            $sub_array[] = $grandTotalContainerCharge;
-            $sub_array[] = $grandTotalDeliveryCharge;
-            $sub_array[] = $grandTotalBilledAmount; 
-			$sub_array[] = '';
+			$row = [
+				'',
+				'',
+				'',
+				'',
+				'',
+				'',
+				'',
+				$allOrdersSubTotalAmount,
+				$allOrdersItemWiseDiscountAmount,
+				$allOrdersDiscountPercentage,
+				$allOrdersFlatDiscountAmount,
+				$allOrdersDiscountAmount,
+				$allOrdersDiscountTotalAmount,
+				$allOrdersOrderTotalAfterDiscount,
+				$allOrdersOrderItemTotalTaxAmount,
+				$allOrdersGrandTotalAmount,
+				$allOrdersTotalRoundOff,
+				$allOrdersContainerCharge,
+				$allOrdersDeliveryCharge,
+				$allOrdersOrderTotal,
+				''	
+			];
 			
-			$data[] = $sub_array;
+			$data[] = $row;
 		}
 
 		$totalDataCount = count($data);
@@ -1232,6 +1219,9 @@ class Restaurant extends Main
 	{
 		$totalItemTaxAmount = 0;
 		$totalItemDiscountAmount = 0;
+		$totalInvoiceDiscountAmount = 0;
+		$orderSubTotalAmount = 0;
+		
 		if (!empty($data))
 		{
 			$itemLists = json_decode($data->item_details, true);
@@ -1263,6 +1253,9 @@ class Restaurant extends Main
 						}
 					}
 
+					$orderSubTotalAmount += ($itemDetail['itemCount'] * (isset($itemDetail['itemOldPrice']) ? $itemDetail['itemOldPrice'] : $itemDetail['itemPrice']));
+
+					$totalInvoiceDiscountAmount += $itemDetail['invoiceDiscount']['invoiceDiscountAmount'] ?? 0;
 					$totalItemDiscountAmount += $itemDetail['itemDiscountAmount'] ?? 0;
 				}
 			}
@@ -1270,7 +1263,9 @@ class Restaurant extends Main
 
 		return [
 			'itemDiscountAmount' => $totalItemDiscountAmount,
-			'itemTaxAmount' => $totalItemTaxAmount 
+			'itemTaxAmount' => $totalItemTaxAmount,
+			'invoiceDiscountAmount' => $totalInvoiceDiscountAmount,
+			'orderSubTotalAmount' => $orderSubTotalAmount,
 		];
 	}
 

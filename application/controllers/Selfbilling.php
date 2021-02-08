@@ -145,6 +145,7 @@ class Selfbilling extends CI_Controller
             $items['itemImage'] = '';
             $items['itemFoodType'] = '';
             $items['itemCount'] = $items['itemQty'];
+            $items['itemOldPrice'] = $items['itemPrice'];
             $items['itemTaxes'] = $items['itemTaxDetails'];
             $items['itemNote'] = $items['specialNote'] ?? '';
             $items['itemTotalTax'] = $items['itemTax'];
@@ -246,6 +247,7 @@ class Selfbilling extends CI_Controller
 
             $items['itemImage'] = '';
             $items['itemFoodType'] = '';
+            $items['itemOldPrice'] = $items['itemPrice'];
             $items['itemCount'] = $items['itemQty'];
             $items['itemTaxes'] = $items['itemTaxDetails'];
             $items['itemNote'] = $items['specialNote'] ?? '';
