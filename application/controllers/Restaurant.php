@@ -619,6 +619,7 @@ class Restaurant extends Main
 	    $this->db->order_by('id','DESC');
 	    $this->db->where('res_id',$rid);
 	    $this->db->where('order_status',2);
+	    $this->db->where('order_id',10001043);
 	    
         if($from!='' && $to!=''){
 	        if($from!='NaN' && $to!='NaN') { $from=date("Y-m-d",$from); $to=date("Y-m-d",$to); $this->db->where(" DATE(created_at) BETWEEN '$from' AND '$to'"); }
@@ -656,9 +657,11 @@ class Restaurant extends Main
 				// This is an old order so calculate its amount to the old way.
 				if ($invoiceDiscountAmount == 0)
 				{
+					// For older calculation: Do not use this
+					// $oldOrderTotal = $orderSubTotalAmount + $orderItemTotalTaxAmount; 
 
-					$oldOrderTotal = $orderSubTotalAmount + $orderItemTotalTaxAmount; 
-					$oldOrderDiscountAmount = ($oldOrderTotal * $orderDiscountPercentage) / 100;
+					$oldOrderTotal = $orderSubTotalAmount; 
+					$oldOrderDiscountAmount = round(($oldOrderTotal * $orderDiscountPercentage) / 100, 2);
 					$orderDiscountAmount = $oldOrderDiscountAmount;
 					
 					// Apply discount on tax amount
@@ -719,7 +722,7 @@ class Restaurant extends Main
 				$order->created_at,	
 			];
 
-            $data[] = $row;
+			$data[] = $row;
 		}
 		
 		if (count($data) > 1)
@@ -1038,7 +1041,8 @@ class Restaurant extends Main
             'margin-top'    => 1,
             'margin-bottom' => 1,
             'sheet-size'    => 'A7'
-        ] ); 
+        ]); 
+		
         $mpdf->WriteHTML($stylesheet,1);
         $mpdf->WriteHTML($html,2);
         $mpdf->Output();
