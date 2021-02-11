@@ -618,7 +618,6 @@ class Restaurant extends Main
 	    $this->db->order_by('id','DESC');
 	    $this->db->where('res_id',$rid);
 	    $this->db->where('order_status',2);
-	    $this->db->where('order_id',10001043);
 	    
         if($from!='' && $to!=''){
 	        if($from!='NaN' && $to!='NaN') { $from=date("Y-m-d",$from); $to=date("Y-m-d",$to); $this->db->where(" DATE(created_at) BETWEEN '$from' AND '$to'"); }
