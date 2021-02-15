@@ -193,7 +193,7 @@
 	    <button type="button" class="btn btn-primary btn-round" id="customerCopy">Customer Copy</button>
 
 		<?php if (empty($kotPrintBtns)) { ?>
-		    <button type="button" class="btn btn-primary btn-round" onclick="window.open('<?= $path ?>','_blank')">KOT Print</button>
+		    <button type="button" class="btn btn-primary btn-round kotBillPrint" data-print="<?=$path?>" removed="window.open('<?= $path ?>','_blank')">KOT Print</button>
 		<?php } else { ?>		
 		    <button type="button" class="btn btn-primary btn-round kotPrintBtn">KOT Print</button>
 		<?php } ?>
@@ -211,6 +211,16 @@ $(document).ready(function(){
 
 	$("#customerCopy").click(function() {
 		// $("#billSummary").html(`<embed type="application/pdf" style="width: 100%;height: 300px;" id="doc" class="doc" src="${CUSTOMER_INVOICE_PRINT_PATH}"></embed>`);
+		
+		let text = $(this).text();
+		let $this = $(this);
+		
+		$(this).html(text + ' <div class="fa fa-spinner fa-spin"></div>');
+
+		setTimeout(function() {
+			$this.html(text);
+		}, 3000);
+		
 		printJS(CUSTOMER_INVOICE_PRINT_PATH);
 	});
 
@@ -218,11 +228,11 @@ $(document).ready(function(){
 		let printUrl = $(this).attr('data-print');
 		let text = $(this).text();
 		let $this = $(this);
+
 		$(this).html(text + ' <div class="fa fa-spinner fa-spin"></div>');
 
 		setTimeout(function() {
 			$this.html(text);
-			console.log({text});
 		}, 3000);
 		
 		printJS(printUrl);
