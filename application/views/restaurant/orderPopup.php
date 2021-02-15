@@ -177,12 +177,20 @@
 			</div>
 		</div>
 	</div>
+
+	<div id="billSummary">
+	
+	</div>
+
 	<div class="text-right">
+
+					
+
 	<?php if($order->order_status == 0) { ?>
 		<button type="button" class="btn btn-primary btn-round" onclick="updateOrder('<?= $order->order_id ?>','1')">Confirm Order</button>
 	<?php //} elseif($order->order_status == 2) { $path=base_url("Restaurant/printInvoice/").$order->order_id; ?>
 	<?php } elseif($order->order_status == 1 || $order->order_status == 3) { $path=base_url("Restaurant/printInvoice2/").$order->order_id; $path2=base_url("Restaurant/printInvoice3/").$order->order_id; ?>
-	    <button type="button" class="btn btn-primary btn-round" onclick="window.open('<?= $path2 ?>','_blank')">Customer Copy</button>
+	    <button type="button" class="btn btn-primary btn-round" id="customerCopy">Customer Copy</button>
 
 		<?php if (empty($kotPrintBtns)) { ?>
 		    <button type="button" class="btn btn-primary btn-round" onclick="window.open('<?= $path ?>','_blank')">KOT Print</button>
@@ -194,9 +202,18 @@
 	</div>
 </div>
 
-
+<script src="https://cdnjs.cloudflare.com/ajax/libs/print-js/1.5.0/print.min.js" integrity="sha512-lzGE9ZqdrztBEk1wtq4O60N3WbsTlIvvm6ULCxWRt+CwpRD4WUbgC5aatbtourCUC15PJpqcpZk3VLs12vpNoA==" crossorigin="anonymous"></script>
 <script>
+
+var CUSTOMER_INVOICE_PRINT_PATH = "<?=base_url("Restaurant/printInvoice3/").$order->order_id?>";
+
 $(document).ready(function(){
+
+	$("#customerCopy").click(function() {
+		$("#billSummary").html(`<embed type="application/pdf" style="width: 100%;height: 300px;" id="doc" class="doc" src="${CUSTOMER_INVOICE_PRINT_PATH}"></embed>`);
+		printJS(CUSTOMER_INVOICE_PRINT_PATH);
+	});
+	
     $('input[type="radio"]').click(function(){
         var inputValue = $(this).attr("value");
         var targetBox = $("." + inputValue);
