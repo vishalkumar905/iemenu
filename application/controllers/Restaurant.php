@@ -1331,13 +1331,14 @@ class Restaurant extends Main
 	private function kotPrintBtns($subOrders, $orderId)
 	{
 		$kotPrintUrl = base_url("Restaurant/printInvoice2/". $orderId);
-		$btn = sprintf('<button type="button" class="btn btn-primary mr-10"  onclick="window.open(\'%s\', \'_blank\')">KOT Print %s</button>', $kotPrintUrl, 1);
+		$btn = sprintf('<button type="button" class="btn btn-primary mr-10 kotBillPrint" data-print="%s" removed="window.open(\'%s\', \'_blank\')">KOT Print %s</button>', $kotPrintUrl, $kotPrintUrl, 1);
 		if (!empty($subOrders))
 		{
 			foreach($subOrders as $key => $subOrder)
 			{	
 				$printKey = $key + 2;
-				$btn .= sprintf('<button type="button" class="btn btn-primary mr-10"  onclick="window.open(\'%s?id=%s\', \'_blank\')">KOT Print %s</button>', $kotPrintUrl, $subOrder['id'], $printKey);
+				$fullPrintUrl = sprintf("%s?id=%s", $kotPrintUrl, $subOrder['id']);
+				$btn .= sprintf('<button type="button" class="btn btn-primary mr-10 kotBillPrint" data-print="%s"  removed="window.open(\'%s\', \'_blank\')">KOT Print %s</button>', $fullPrintUrl, $fullPrintUrl, $printKey);
 			}
 		}
 

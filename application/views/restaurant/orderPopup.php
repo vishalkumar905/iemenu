@@ -210,9 +210,23 @@ var CUSTOMER_INVOICE_PRINT_PATH = "<?=base_url("Restaurant/printInvoice3/").$ord
 $(document).ready(function(){
 
 	$("#customerCopy").click(function() {
-		$("#billSummary").html(`<embed type="application/pdf" style="width: 100%;height: 300px;" id="doc" class="doc" src="${CUSTOMER_INVOICE_PRINT_PATH}"></embed>`);
+		// $("#billSummary").html(`<embed type="application/pdf" style="width: 100%;height: 300px;" id="doc" class="doc" src="${CUSTOMER_INVOICE_PRINT_PATH}"></embed>`);
 		printJS(CUSTOMER_INVOICE_PRINT_PATH);
 	});
+
+	$(document).on('click', '.kotBillPrint', function() {
+		let printUrl = $(this).attr('data-print');
+		let text = $(this).text();
+		let $this = $(this);
+		$(this).html(text + ' <div class="fa fa-spinner fa-spin"></div>');
+
+		setTimeout(function() {
+			$this.html(text);
+			console.log({text});
+		}, 3000);
+		
+		printJS(printUrl);
+	})
 	
     $('input[type="radio"]').click(function(){
         var inputValue = $(this).attr("value");
