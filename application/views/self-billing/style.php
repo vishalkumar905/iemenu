@@ -117,5 +117,84 @@
         }
     }
 
+    .textunderline { 
+		text-decoration: underline;
+		color: blue !important;
+		cursor: pointer;
+	}
 
+	ul.partialPaymentMethods li {
+		width: 18%;
+		padding: 10px;
+		border: 1px solid #ccc;
+		margin: 4px;
+		background-color: #ccc;
+		color: #000;
+		font-weight: bold;
+		border-radius: 5px;
+		cursor: pointer;
+        display: inline-block;
+	}
+
+    ul.partialPaymentMethods {
+		padding: 0;
+	}
+	#partialPaymentMethodSummary ul li {
+        padding: 10px;
+        border: 1px solid #ccc;
+        margin-bottom: 4px;
+        color: #000;
+        font-weight: bold;
+        border-radius: 5px;
+        cursor: pointer;
+        list-style-type: none;
+        width: 20%;
+        text-align: left;
+        display: inline-block;
+        margin-left: 5px;
+	}
+
+    #partialPaymentMethodSummary {
+        padding-top: 20px;
+    }
+
+	ul.partialPaymentMethods li:hover
+	{
+		box-shadow: 0 0 0 1px rgb(0 0 0 / 20%);
+    	transition: all 200ms ease-out;	
+	}
+
+    .totalOrderPriceView {
+        font-size:  25px;
+        font-weight:  bold;
+    }
+    
+	#partialPaymentMethodsModal .form-control {
+		width: 100%;
+	}
+
+	#partialPaymentMethodsModal input[type=number] {
+		all: revert;
+	}
+
+	.removeSplitPaymentMethod {
+		float: right;
+		width: 20px;
+		text-align: center;
+		background-color: #ccc;
+		border-radius: 10px;
+	}
+	
+    .partialPaymentMethodSummary {
+        text-align: center;
+    }
+
+    .partialPaymentMethodSummary {
+        padding-top: 30px;
+        padding-bottom: 30px;
+    }
+
+    .partialPaymentMethodSummary li {
+        list-style-type: none;
+    }
 </style>
