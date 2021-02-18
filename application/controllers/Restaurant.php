@@ -675,7 +675,7 @@ class Restaurant extends Main
 			$orderTotalAfterDiscount = $orderSubTotalAmount - $orderDiscountTotalAmount;
             
 			$tableId = ($order->table_id) ? (($this->getTableDetail($order->table_id)) ? $this->getTableDetail($order->table_id)->table_name : '-') : '-';
-			$paymentMethod = $this->paymentMethod($order->payment_mode);
+			$paymentMethod = $this->paymentMethod($order->payment_mode, $order);
 			$containerCharge = floatval($order->container_charge);
 			$deliveryCharge = floatval($order->delivery_charge);
 			$orderGrandTotalAmount = round($orderTotalAfterDiscount + $orderItemTotalTaxAmount, 2);
@@ -842,7 +842,7 @@ class Restaurant extends Main
             $sub_array[] = $order->buyer_name;
             $sub_array[] = $order->buyer_phone_number;
             $sub_array[] = $order->order_type;
-            $sub_array[] = $this->paymentMethod($order->payment_mode);
+            $sub_array[] = $this->paymentMethod($order->payment_mode, $data['order']);
             $sub_array[] = $order->reason;
             $sub_array[] = $subTotal;
             $sub_array[] = $totalTaxes; 
@@ -981,7 +981,7 @@ class Restaurant extends Main
 
 
 		$data['showTaxColumn'] = $this->checkIfTaxIsAvaliable($data['order']);
-		$data['paymentMethodName'] = $this->paymentMethod($data['order']->payment_mode);
+		$data['paymentMethodName'] = $this->paymentMethod($data['order']->payment_mode, $data['order']);
 
         $stylesheet = file_get_contents('/home/yd93k4ea02s3/public_html/MDB/assets/css/print2.css');
         $html = $this->load->view( 'restaurant/invoice_2', $data, true );
@@ -1009,7 +1009,7 @@ class Restaurant extends Main
 		$data['showTaxColumn'] = $this->checkIfTaxIsAvaliable($data['order']);
 		$data['orderTaxes'] = $this->getOrderTaxes($data['order']);
 
-		$data['paymentMethodName'] = $this->paymentMethod($data['order']->payment_mode);
+		$data['paymentMethodName'] = $this->paymentMethod($data['order']->payment_mode, $data['order']);
 
 		// $stylesheet = file_get_contents('/home/yd93k4ea02s3/public_html/MDB/assets/css/print2.css');
 		$stylesheet = ".center {
@@ -1309,7 +1309,7 @@ class Restaurant extends Main
 			$data['kotPrintBtns'] = '';
 		}
 
-		$data['paymentMethodName'] = $this->paymentMethod($data['order']->payment_mode);
+		$data['paymentMethodName'] = $this->paymentMethod($data['order']->payment_mode, $data['order']);
 		
 		$rid = $this->session->userid;
 		$data['percentOff'] = $this->restaurantModel->getOnlyDiscountList($rid);
@@ -1355,7 +1355,7 @@ class Restaurant extends Main
 		
         $condition = array('order_id'=>$postdata['orderID'], 'res_id' => $this->session->userid);
         $data['order'] = $this->restaurantModel->getOrderList($condition)[0];
-		$data['paymentMethodName'] = $this->paymentMethod($data['order']->payment_mode);
+		$data['paymentMethodName'] = $this->paymentMethod($data['order']->payment_mode, $data['order']);
         $this->load->view('restaurant/voidBillPopup', $data);
 	}
 	
@@ -1369,11 +1369,11 @@ class Restaurant extends Main
 		
         $condition = array('order_id'=>$postdata['orderID'], 'res_id' => $this->session->userid);
         $data['order'] = $this->restaurantModel->getOrderList($condition)[0];
-		$data['paymentMethodName'] = $this->paymentMethod($data['order']->payment_mode);
+		$data['paymentMethodName'] = $this->paymentMethod($data['order']->payment_mode, $data['order']);
         $this->load->view('restaurant/nckBillPopup', $data);
 	}
 
-	public function paymentMethod($paymentId)
+	public function paymentMethod($paymentId, $order = null)
 	{
 		$paymentModes = [
 			1 => 'CASH',
@@ -1384,7 +1384,28 @@ class Restaurant extends Main
 			6 => 'Swiggy'
 		];
 
-		return isset($paymentModes[$paymentId]) ? $paymentModes[$paymentId] : 'ONLINE';
+		// Check if this order has partial payments
+		if (isset($order->amountPaidByMultiplePaymentMethods) && isset($order->partialPaymentMethodData))
+		{
+			if (!empty($order->amountPaidByMultiplePaymentMethods) && !empty($order->partialPaymentMethodData))
+			{
+				$partialPaymentMethodData = json_decode($order->partialPaymentMethodData, true);
+				$paymentMethodNames = [];
+				foreach($partialPaymentMethodData as $paymentMethod)
+				{
+					if (isset($paymentModes[$paymentMethod['partialPaymentMethodType']]))
+					{
+						$paymentMethodNames[] =  $paymentModes[$paymentMethod['partialPaymentMethodType']];
+					}
+				}
+
+				return !empty($paymentMethodNames) ? implode(', ', $paymentMethodNames) : 'ONLINE';
+			}
+		}
+		else
+		{
+			return isset($paymentModes[$paymentId]) ? $paymentModes[$paymentId] : 'ONLINE';
+		}
 	}
 	
 	public function cartTotal($cartArray=array(), $tax='yes', $rest_id=0)
@@ -1591,7 +1612,7 @@ class Restaurant extends Main
             $sub_array[] = $order->buyer_name;
             $sub_array[] = $order->buyer_phone_number;
             $sub_array[] = $order->order_type;
-            $sub_array[] = $this->paymentMethod($order->payment_mode);
+            $sub_array[] = $this->paymentMethod($order->payment_mode, $order);
             $sub_array[] = $order->reason;
             $sub_array[] = $subTotal;
             $sub_array[] = $totalTaxes; 

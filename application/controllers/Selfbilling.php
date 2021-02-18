@@ -102,8 +102,6 @@ class Selfbilling extends CI_Controller
         header('Access-Control-Allow-Origin: *');  
 		header("Content-Type: application/json", true);
         $postData = $this->input->post();
-
-        // p($postData);
         
         foreach($postData['selectedItem'] as &$items) 
         {
@@ -173,12 +171,48 @@ class Selfbilling extends CI_Controller
             "total" => $postData['grandTotal'],
             "orderTotal" => $postData['orderTotal'],
             "payment_status" => 1,
-            "payment_mode" => $postData['paymentType'],
             "created_at" => date('Y-m-d H:i:s'),
             "container_charge" => $this->input->post('containerCharge'),
             "delivery_charge" => $this->input->post('deliveryCharge'),
             "customer_paid" => floatval($this->input->post('customerPaid')),
         ];
+
+        if (!empty($postData['isPartialPaymentMethodSelected']) && !empty($postData['partialPaymentMethodData']))
+        {
+            foreach($postData['partialPaymentMethodData'] as $paymentMethod)
+            {
+                if ($paymentMethod['partialPaymentMethodType'] == PAYEMENT_MODE_CARD)
+                {
+                    $data['amountPaidByCard'] = $paymentMethod['partialPaymentAmount'];
+                    $data['amountPaidByCardTransactionId'] = $paymentMethod['partialPaymentTransactionId'] ?? '';
+                    $data['txn_id'] = $data['amountPaidByCardTransactionId'];
+                }
+                else if ($paymentMethod['partialPaymentMethodType'] == PAYEMENT_MODE_UPI)
+                {
+                    $data['amountPaidByUpi'] = $paymentMethod['partialPaymentAmount'];   
+                }
+                else if ($paymentMethod['partialPaymentMethodType'] == PAYEMENT_MODE_CASH)
+                {
+                    $data['amountPaidByCash'] = $paymentMethod['partialPaymentAmount'];
+                }
+                else if ($paymentMethod['partialPaymentMethodType'] == PAYEMENT_MODE_BTC)
+                {
+                    $data['amountPaidByBtc'] = $paymentMethod['partialPaymentAmount'];
+                }
+                else if ($paymentMethod['partialPaymentMethodType'] == PAYEMENT_MODE_SWIGGY)
+                {
+                    $data['amountPaidBySwiggy'] = $paymentMethod['partialPaymentAmount'];
+                }
+            }
+
+            $data['amountPaidByMultiplePaymentMethods'] = true;
+            $data['partialPaymentMethodData'] = json_encode($postData['partialPaymentMethodData']);
+        }
+        else
+        {
+            $data["payment_mode"] = $postData['paymentType'];
+        }
+
 
         if (isset($postData['isDiscountApplied']) && $postData['isDiscountApplied'] == true)
         {
@@ -276,12 +310,47 @@ class Selfbilling extends CI_Controller
             "total" => $postData['grandTotal'],
             "orderTotal" => $postData['orderTotal'],
             "payment_status" => 1,
-            "payment_mode" => $postData['paymentType'],
             "created_at" => date('Y-m-d H:i:s'),
             "container_charge" => $this->input->post('containerCharge'),
             "delivery_charge" => $this->input->post('deliveryCharge'),
             "customer_paid" => floatval($this->input->post('customerPaid')),
         ];
+
+        if (!empty($postData['isPartialPaymentMethodSelected']) && !empty($postData['partialPaymentMethodData']))
+        {
+            foreach($postData['partialPaymentMethodData'] as $paymentMethod)
+            {
+                if ($paymentMethod['partialPaymentMethodType'] == PAYEMENT_MODE_CARD)
+                {
+                    $data['amountPaidByCard'] = $paymentMethod['partialPaymentAmount'];
+                    $data['amountPaidByCardTransactionId'] = $paymentMethod['partialPaymentTransactionId'];
+                    $data['txn_id'] = $data['amountPaidByCardTransactionId'];
+                }
+                else if ($paymentMethod['partialPaymentMethodType'] == PAYEMENT_MODE_UPI)
+                {
+                    $data['amountPaidByUpi'] = $paymentMethod['partialPaymentAmount'];   
+                }
+                else if ($paymentMethod['partialPaymentMethodType'] == PAYEMENT_MODE_CASH)
+                {
+                    $data['amountPaidByCash'] = $paymentMethod['partialPaymentAmount'];
+                }
+                else if ($paymentMethod['partialPaymentMethodType'] == PAYEMENT_MODE_BTC)
+                {
+                    $data['amountPaidByBtc'] = $paymentMethod['partialPaymentAmount'];
+                }
+                else if ($paymentMethod['partialPaymentMethodType'] == PAYEMENT_MODE_SWIGGY)
+                {
+                    $data['amountPaidBySwiggy'] = $paymentMethod['partialPaymentAmount'];
+                }
+            }
+
+            $data['amountPaidByMultiplePaymentMethods'] = true;
+            $data['partialPaymentMethodData'] = json_encode($postData['partialPaymentMethodData']);
+        }
+        else
+        {
+            $data["payment_mode"] = $postData['paymentType'];
+        }
 
         $isDiscountApplied = isset($postData['isDiscountApplied']) ? ($postData['isDiscountApplied'] == 'true' ? true : false) : false;
         if ($isDiscountApplied)

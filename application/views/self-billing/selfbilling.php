@@ -198,7 +198,7 @@
 										</label>
 									</div>
 									<div class="radio radio-inline">
-										<label class="textunderline" id="viewPartialPaymentMethods">View Paritial Payment Methods</label>
+										<label class="textunderline" id="viewPartialPaymentMethods">Show Partial Payment Methods</label>
 									</div>
 									<div class="displaynone" id="TransictionIdField">
 										<p>Transaction Id (If swiped by card)</p>
@@ -209,8 +209,8 @@
 									<span aria-hidden="true"></span> Please input transiction id
 								</div>
 							</div>
-							<div id="multiplePaymentMethods" class="displaynone">
-								
+							<div id="partialPaymentMethods" class="displaynone">
+								<span id="showSinglePaymentMethod" class="textunderline">Show Single Payment Method</span>
 								<div class="col-md-12 partialPaymentMethodSummary">
 									<div class="totalOrderPriceView">₹<span class="totalOrderAmount" id="totalOrderAmount">0</span></div>
 									<div id="partialPaymentMethodSummary"></div>
@@ -295,6 +295,8 @@
 	var orderTotal = 0;
 	var alreadyAppliedDiscount = <?=json_encode($discountAdded)?>;
 	var updateId = <?=$updateId?>;
+	var partialPaymentShowing = false;
+	var partialPaymentMethodData = {};
 
 	let getMenuItems = function(searchText) {
 		$.ajax({
@@ -729,7 +731,7 @@
 		$("#total").text(totalOrder);
 		$("#totalQty").text(totalQty);
 		$("#roundOff").text(roundOff);
-		$("#grandTotal, #totalOrderAmount").text(roundOff);
+		$("#grandTotal").text(roundOff);
 	};
 
 	$("#deliveryCharge").on('keyup, change', calculateOrderTotal);
@@ -977,6 +979,19 @@
 			return;
 		}
 
+		let isPartialPaymentMethodSelected = false;
+		if (getSelectedPaymentMethod() == 'partialPaymentMethod')
+		{
+			// Check full payment amount is applied
+			if (getTotalSplitedPaymentMethodAppliedAmount() != grandTotal)
+			{
+				alert('You have selected partial payment method. Please add total collected amount');
+				return false;
+			}
+
+			isPartialPaymentMethodSelected = true;
+		}
+
 		let data = {
 			customerName: customerName,
 			address: address,
@@ -993,7 +1008,9 @@
 			discountAppliedType,
 			discountAppliedAmount,
 			orderDiscountDetail,
-			isDiscountApplied
+			isDiscountApplied,
+			partialPaymentMethodData,
+			isPartialPaymentMethodSelected,
 		};
 
 		$(this).attr('disabled', 'true');
@@ -1118,7 +1135,7 @@
 		$("#roundOff").text('');
 		$("#total").text('');
 		$("#totalQty").text(0);
-		$("#grandTotal, #totalOrderAmount").text(0);
+		$("#grandTotal").text(0);
 		$("#deliveryCharge").val(0);
 		$("#containerCharge").val(0);
 		$("#customerPaid").val('');
@@ -1128,7 +1145,7 @@
 		$("#customerReturn").text('');
 
 		resetDiscountData();
-
+		resetPartialPaymentMethod();
 		selectedMenuItems = {};
 	};
 
@@ -1167,7 +1184,7 @@
 
 	// Partial Payments
 	
-	var orderTotalAmount = parseFloat($("#grandTotal").text()), totalSplitPaymentCollectedAmount = 0, partialPaymentMethodData = {};
+	var orderTotalAmount = parseFloat($("#grandTotal").text()), totalSplitPaymentCollectedAmount = 0;
 	var PAYEMENT_MODE_CASH = "<?=PAYEMENT_MODE_CASH?>";
 	var PAYEMENT_MODE_ONLINE = "<?=PAYEMENT_MODE_ONLINE?>";
 	var PAYEMENT_MODE_UPI = "<?=PAYEMENT_MODE_UPI?>";
@@ -1226,10 +1243,15 @@
 			{
 				partialPaymentMethodObject.partialPaymentTransactionId = partialPaymentTransactionId; 
 			}
+			else
+			{
+				alert('Please enter transaction id.');
+				return false;
+			}
 
 			partialPaymentMethodData[partialPaymentMethodType] = partialPaymentMethodObject;
 
-			$("#partialPaymentTotalCollected").text(getTotalSplitedPaymentMethodAppliedAmount());
+			$("#partialPaymentTotalCollected, #totalOrderAmount").text(getTotalSplitedPaymentMethodAppliedAmount());
 			$("#partialPaymentMethodsModal").modal("hide");
 			$("#partialPaymentMethodSummary").html(getSplitPaymentMethodSummary());
 		}
@@ -1308,34 +1330,39 @@
 			delete partialPaymentMethodData[partialPaymentMethodType];
 		}
 
-		console.log(partialPaymentMethodData, partialPaymentMethodType)
 		showSpitPaymentMethodSummary();
 	});
 
-	$(".checkout-btn").click(function() {
-
-		let totalSplitedPaymentMethodAppliedAmount = getTotalSplitedPaymentMethodAppliedAmount();
-
-		if (totalSplitedPaymentMethodAppliedAmount != orderTotalAmount)
-		{
-			alert('Please select a payment method');
-			return false;
-		}
-		else
-		{
-			if (partialPaymentMethodData)
-			{
-				$("#paymentMethod").val(JSON.stringify(partialPaymentMethodData));
-			}
-		}
-
-		// return false;
-	});
-
-
 	$("#viewPartialPaymentMethods").click(function() {
 		$("#singlePaymentMethods").hide();
-		$("#multiplePaymentMethods").show();
+		$("#partialPaymentMethods").show();
 	});
+
+	$("#showSinglePaymentMethod").click(function() {
+		$("#singlePaymentMethods").show();
+		$("#partialPaymentMethods").hide();
+		partialPaymentMethodData = {};
+		$("#totalOrderAmount").text(0);
+		$("#partialPaymentMethodSummary").html('');
+	});
+
+	var getSelectedPaymentMethod = function() {
+		if (!$("#singlePaymentMethods").is(":hidden"))
+		{
+			return 'singlePaymentMethod';
+		}
+		else if (!$("#partialPaymentMethods").is(":hidden"))
+		{
+			return 'partialPaymentMethod';
+		}
+
+		return '';
+	}
+
+	var resetPartialPaymentMethod = function() {
+		partialPaymentMethodData = {};
+		$("#totalOrderAmount").text(0);
+		$("#partialPaymentMethodSummary").html('');
+	}
 
 </script>

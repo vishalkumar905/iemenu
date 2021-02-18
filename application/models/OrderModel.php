@@ -228,7 +228,6 @@ class OrderModel extends CI_Model
 			sprintf("SUM(CASE WHEN payment_mode = %s THEN total ELSE 0 END) as totalPaymentByCard", PAYEMENT_MODE_CARD),
 			sprintf("SUM(CASE WHEN payment_mode = %s THEN total ELSE 0 END) as totalPaymentByBtc", PAYEMENT_MODE_BTC),
 			sprintf("SUM(CASE WHEN payment_mode = %s THEN total ELSE 0 END) as totalPaymentBySwiggy", PAYEMENT_MODE_SWIGGY),
-			
 		];
 
 		$condition = [
