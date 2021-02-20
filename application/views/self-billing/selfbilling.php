@@ -1127,9 +1127,17 @@
 	
 	var resetFormData = function() 
 	{
-		$("#customerName").val('');
-		$("#address").val('');
-		$("#mobieNumber").val('');
+		let inputFieldElementIds = ["#customerName", "#address", "#mobieNumber"];
+
+		inputFieldElementIds.forEach(function(row) {
+			let element = $(row);
+			if (element.length > 0 && element.parent().hasClass('form-group'))
+			{
+				element.parent().addClass('form-group label-floating is-empty');
+				element.val('');
+			}
+		});
+
 		$("#transictionId").val('');
 		$("#subTotal").text('');
 		$("#roundOff").text('');
@@ -1243,7 +1251,7 @@
 			{
 				partialPaymentMethodObject.partialPaymentTransactionId = partialPaymentTransactionId; 
 			}
-			else
+			else if (partialPaymentMethodType == PAYEMENT_MODE_CARD)
 			{
 				alert('Please enter transaction id.');
 				return false;

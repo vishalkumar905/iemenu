@@ -632,6 +632,11 @@ class Restaurant extends Main
 		$data[] = ['Order Status','Order Id','Table Id','Customer Name','Phone Number','Order Type','Payment Mode', 'Sub Total', 'Item Wise Discount', 'Discount %', 'Flat Discount', 'Discount Amount' , 'Total Discount', 'Total Amount After Discount', 'Total Tax', 'Grand Total Amount', 'Roundoff', 'Container Charge', 'Delivery Charge', 'Total Billed','Created Date'];
 		
 		$allOrdersSubTotalAmount = $allOrdersItemWiseDiscountAmount = $allOrdersDiscountPercentage = $allOrdersFlatDiscountAmount = $allOrdersDiscountAmount = $allOrdersDiscountTotalAmount = $allOrdersOrderTotalAfterDiscount = $allOrdersOrderItemTotalTaxAmount = $allOrdersGrandTotalAmount = $allOrdersTotalRoundOff = $allOrdersContainerCharge = $allOrdersDeliveryCharge = $allOrdersOrderTotal = 0;
+		$allOrdersPaymentByCash = 0;
+		$allOrdersPaymentByUpi = 0;
+		$allOrdersPaymentByCard = 0;
+		$allOrdersPaymentByBtc = 0;
+		$allOrdersPaymentBySwiggy = 0;
 
 		foreach ( $orders as $order )
         {
@@ -695,6 +700,38 @@ class Restaurant extends Main
 			$allOrdersContainerCharge += $containerCharge;
 			$allOrdersDeliveryCharge += $deliveryCharge;
 			$allOrdersOrderTotal += $order->total;
+
+			$orderPaymentByCash = !is_null($order->amountPaidByCash) ? $order->amountPaidByCash : 0;
+			$orderPaymentByUpi = !is_null($order->amountPaidByUpi) ? $order->amountPaidByUpi : 0;
+			$orderPaymentByCard = !is_null($order->amountPaidByCard) ? $order->amountPaidByCard : 0;
+			$orderPaymentByBtc = !is_null($order->amountPaidByBtc) ? $order->amountPaidByBtc : 0;
+			$orderPaymentBySwiggy = !is_null($order->amountPaidBySwiggy) ? $order->amountPaidBySwiggy : 0;
+
+			if (!is_null($order->payment_mode))
+			{
+				if ($order->payment_mode == PAYEMENT_MODE_CASH)
+				{
+					$orderPaymentByCash = is_null($order->amountPaidByCash) ? $order->total : 0;
+				}
+				else if ($order->payment_mode == PAYEMENT_MODE_UPI)
+				{
+					$orderPaymentByUpi = is_null($order->amountPaidByUpi) ? $order->total : 0;
+				}
+				else if ($order->payment_mode == PAYEMENT_MODE_CARD)
+				{
+					$orderPaymentByCard = is_null($order->amountPaidByCard) ? $order->total : 0;
+				}
+				else if ($order->payment_mode == PAYEMENT_MODE_SWIGGY)
+				{
+					$orderPaymentBySwiggy = is_null($order->amountPaidBySwiggy) ? $order->total : 0;
+				}
+			}
+
+			$allOrdersPaymentByCash += $orderPaymentByCash;
+			$allOrdersPaymentByUpi += $orderPaymentByUpi;
+			$allOrdersPaymentByCard += $orderPaymentByCard;
+			$allOrdersPaymentByBtc += $orderPaymentByBtc;
+			$allOrdersPaymentBySwiggy += $orderPaymentBySwiggy;
 
 			$row = [
 				$order_status,

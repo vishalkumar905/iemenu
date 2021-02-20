@@ -222,12 +222,12 @@ class OrderModel extends CI_Model
 	public function getOrderRevenuByPaymentModes($restaurantId, $orderStatus, $startDate = NULL, $endDate = NULL, $today = NULL)
 	{
 		$columns = [
-			sprintf("SUM(CASE WHEN payment_mode = %s THEN total ELSE 0 END) as totalPaymentByCash", PAYEMENT_MODE_CASH),
-			sprintf("SUM(CASE WHEN payment_mode = %s THEN total ELSE 0 END) as totalPaymentByOnline", PAYEMENT_MODE_ONLINE),
-			sprintf("SUM(CASE WHEN payment_mode = %s THEN total ELSE 0 END) as totalPaymentByUpi", PAYEMENT_MODE_UPI),
-			sprintf("SUM(CASE WHEN payment_mode = %s THEN total ELSE 0 END) as totalPaymentByCard", PAYEMENT_MODE_CARD),
-			sprintf("SUM(CASE WHEN payment_mode = %s THEN total ELSE 0 END) as totalPaymentByBtc", PAYEMENT_MODE_BTC),
-			sprintf("SUM(CASE WHEN payment_mode = %s THEN total ELSE 0 END) as totalPaymentBySwiggy", PAYEMENT_MODE_SWIGGY),
+			sprintf("SUM(CASE WHEN payment_mode = %s THEN total ELSE 0 END) + SUM(CASE WHEN amountPaidByCash IS NOT NULL THEN amountPaidByCash ELSE 0 END) as totalPaymentByCash", PAYEMENT_MODE_CASH),
+			sprintf("SUM(CASE WHEN payment_mode = %s THEN total ELSE 0 END) + SUM(CASE WHEN amountPaidByOnline IS NOT NULL THEN amountPaidByOnline ELSE 0 END) as totalPaymentByOnline", PAYEMENT_MODE_ONLINE),
+			sprintf("SUM(CASE WHEN payment_mode = %s THEN total ELSE 0 END) + SUM(CASE WHEN amountPaidByUpi IS NOT NULL THEN amountPaidByUpi ELSE 0 END) as totalPaymentByUpi", PAYEMENT_MODE_UPI),
+			sprintf("SUM(CASE WHEN payment_mode = %s THEN total ELSE 0 END) + SUM(CASE WHEN amountPaidByCard IS NOT NULL THEN amountPaidByCard ELSE 0 END) as totalPaymentByCard", PAYEMENT_MODE_CARD),
+			sprintf("SUM(CASE WHEN payment_mode = %s THEN total ELSE 0 END) + SUM(CASE WHEN amountPaidByBtc IS NOT NULL THEN amountPaidByBtc ELSE 0 END) as totalPaymentByBtc", PAYEMENT_MODE_BTC),
+			sprintf("SUM(CASE WHEN payment_mode = %s THEN total ELSE 0 END) + SUM(CASE WHEN amountPaidBySwiggy IS NOT NULL THEN amountPaidBySwiggy ELSE 0 END) as totalPaymentBySwiggy", PAYEMENT_MODE_SWIGGY),
 		];
 
 		$condition = [
