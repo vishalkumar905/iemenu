@@ -167,7 +167,7 @@ class Selfbilling extends CI_Controller
             "item_details" => $items,
             "item_temp_details" => $items,
             "order_status" => 1,
-            "txn_id" => $postData['transictionId'],
+            "txn_id" => $postData['transactionId'] ?? '',
             "total" => $postData['grandTotal'],
             "orderTotal" => $postData['orderTotal'],
             "payment_status" => 1,
@@ -177,7 +177,7 @@ class Selfbilling extends CI_Controller
             "customer_paid" => floatval($this->input->post('customerPaid')),
         ];
 
-        if (!empty($postData['isPartialPaymentMethodSelected']) && !empty($postData['partialPaymentMethodData']))
+        if (!empty($postData['partialPaymentMethodData']))
         {
             foreach($postData['partialPaymentMethodData'] as $paymentMethod)
             {
@@ -306,7 +306,7 @@ class Selfbilling extends CI_Controller
             "item_details" => $items,
             "item_temp_details" => $items,
             "order_status" => 1,
-            "txn_id" => $postData['transictionId'],
+            "txn_id" => $postData['transactionId'] ?? '',
             "total" => $postData['grandTotal'],
             "orderTotal" => $postData['orderTotal'],
             "payment_status" => 1,
@@ -316,7 +316,7 @@ class Selfbilling extends CI_Controller
             "customer_paid" => floatval($this->input->post('customerPaid')),
         ];
 
-        if (!empty($postData['isPartialPaymentMethodSelected']) && !empty($postData['partialPaymentMethodData']))
+        if (!empty($postData['partialPaymentMethodData']))
         {
             foreach($postData['partialPaymentMethodData'] as $paymentMethod)
             {

@@ -123,17 +123,30 @@
 		cursor: pointer;
 	}
 
-	ul.partialPaymentMethods li {
-		width: 18%;
+    ul.partialPaymentMethods li
+    {
+        width: 18%;
+        margin: 4px;
+        display: inline-block;
+    }
+
+	ul.partialPaymentMethods li .partialPaymentMethodAmount {
+        border: 1px solid #ccc;
+        padding: 4px 8px;
+        display: block;
+        border-radius: 5px;
+        margin-bottom: 10px;
+    }
+
+	ul.partialPaymentMethods li .partialPaymentMethodName {
 		padding: 10px;
 		border: 1px solid #ccc;
-		margin: 4px;
 		background-color: #ccc;
 		color: #000;
 		font-weight: bold;
 		border-radius: 5px;
 		cursor: pointer;
-        display: inline-block;
+        display: block;
 	}
 
     ul.partialPaymentMethods {
@@ -160,8 +173,8 @@
 
 	ul.partialPaymentMethods li:hover
 	{
-		box-shadow: 0 0 0 1px rgb(0 0 0 / 20%);
-    	transition: all 200ms ease-out;	
+		/* box-shadow: 0 0 0 1px rgb(0 0 0 / 20%); */
+    	/* transition: all 200ms ease-out;	 */
 	}
 
     .totalOrderPriceView {
@@ -183,6 +196,7 @@
 		text-align: center;
 		background-color: #ccc;
 		border-radius: 10px;
+        cursor: pointer;
 	}
 	
     .partialPaymentMethodSummary {

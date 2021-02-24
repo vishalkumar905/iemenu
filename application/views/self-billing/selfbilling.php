@@ -169,62 +169,40 @@
 						</table>
 					</div>
 					<div class="row">
-						<div class="col-md-10">
-							<div id="singlePaymentMethods">
-								<div class="form-group">
-									<div class="radio radio-inline">
-										<label>
-											<input type="radio" name="paymentType" value="1" checked="checked">Cash 
-										</label>
-									</div>
-									<div class="radio radio-inline">
-										<label>
-											<input type="radio" name="paymentType" value="3">UPI QR Scan
-										</label>
-									</div>
-									<div class="radio radio-inline">
-										<label>
-											<input type="radio" name="paymentType" value="4">Card Swipe
-										</label>
-									</div>
-									<div class="radio radio-inline">
-										<label>
-											<input type="radio" name="paymentType" value="5">BTC
-										</label>
-									</div>
-									<div class="radio radio-inline">
-										<label>
-											<input type="radio" name="paymentType" value="6">Swiggy
-										</label>
-									</div>
-									<div class="radio radio-inline">
-										<label class="textunderline" id="viewPartialPaymentMethods">Show Partial Payment Methods</label>
-									</div>
-									<div class="displaynone" id="TransictionIdField">
-										<p>Transaction Id (If swiped by card)</p>
-										<input type="text" id="transictionId" placeholder="Enter by cashier" class="form-control">
-									</div>
-								</div>
-								<div id="paymentError" class="text-danger displaynone" role="alert">
-									<span aria-hidden="true"></span> Please input transiction id
-								</div>
-							</div>
-							<div id="partialPaymentMethods" class="displaynone">
-								<span id="showSinglePaymentMethod" class="textunderline">Show Single Payment Method</span>
-								<div class="col-md-12 partialPaymentMethodSummary">
-									<div class="totalOrderPriceView">₹<span class="totalOrderAmount" id="totalOrderAmount">0</span></div>
-									<div id="partialPaymentMethodSummary"></div>
-								</div>
+						<div class="col-md-12">
+							<div id="partialPaymentMethods">
+								</br>
+								<div><b>Payment Pending: ₹<span id="pendingPaymentAmount">0</span></b></div>
+								<div><b>Payment Collected: ₹<span id="collectedPaymentAmount">0</span></b></div>
+								</br></br>
+	
 
 								<ul class="partialPaymentMethods">
-									<li data-value="<?=PAYEMENT_MODE_CASH?>">Cash</li>
-									<li data-value="<?=PAYEMENT_MODE_UPI?>">UPI QR Scan</li>
-									<li data-value="<?=PAYEMENT_MODE_CARD?>">Card Swipe</li>
-									<li data-value="<?=PAYEMENT_MODE_BTC?>">BTC</li>
-									<li data-value="<?=PAYEMENT_MODE_SWIGGY?>">Swiggy</li>
+									<li>
+										<span id="partialPaymentMethodAmount-<?=PAYEMENT_MODE_CASH?>" class="partialPaymentMethodAmount">0</span>
+										<span data-value="<?=PAYEMENT_MODE_CASH?>" class="partialPaymentMethodName">Cash</span>
+									</li>
+									<li>
+										<span id="partialPaymentMethodAmount-<?=PAYEMENT_MODE_UPI?>" class="partialPaymentMethodAmount">0</span>
+										<span data-value="<?=PAYEMENT_MODE_UPI?>" class="partialPaymentMethodName">UPI QR Scan</span>
+									</li>
+									<li>
+										<span id="partialPaymentMethodAmount-<?=PAYEMENT_MODE_CARD?>" class="partialPaymentMethodAmount">0</span>
+										<span data-value="<?=PAYEMENT_MODE_CARD?>" class="partialPaymentMethodName">Card Swipe</span>
+									</li>
+									<li>
+										<span id="partialPaymentMethodAmount-<?=PAYEMENT_MODE_BTC?>" class="partialPaymentMethodAmount">0</span>
+										<span data-value="<?=PAYEMENT_MODE_BTC?>" class="partialPaymentMethodName">BTC</span>
+									</li>
+									<li>
+										<span id="partialPaymentMethodAmount-<?=PAYEMENT_MODE_SWIGGY?>" class="partialPaymentMethodAmount">0</span>
+										<span data-value="<?=PAYEMENT_MODE_SWIGGY?>" class="partialPaymentMethodName">Swiggy</span>
+									</li>
 								</ul>
 							</div>
 						</div>
+
+						<?php /* ?>
 						<div class="col-md-2">
 							<div class="form-group label-floating">
 								<?php
@@ -232,7 +210,6 @@
 									{
 										echo '<button type="button" id="cancelBilling" name="cancelBilling" class="btn btn-warning pull-right">Cancel</button>';
 										echo '<button type="button" id="updateBilling" name="updateBilling" class="btn btn-rose pull-right">Update Order</button>';
-
 									}
 									else
 									{
@@ -241,6 +218,8 @@
 								?>
 							</div>
 						</div>
+						<?php */ ?>
+
 					</div>
 				</div>
 			</form>
@@ -272,7 +251,8 @@
 
 			<div class="row">
 				<div class="col-md-12 mb-10">
-					<button type="button" class="btn btn-success" id="addSplitPaymentBtn">Add</button>
+					<button type="button" class="btn btn-success displaynone" id="addSplitPaymentBtn">Add</button>
+					<button type="button" id="selfbilling" name="selfbilling" class="btn btn-rose">Confirm Order</button>
 					<button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
 				</div>
 			</div>
@@ -297,6 +277,7 @@
 	var updateId = <?=$updateId?>;
 	var partialPaymentShowing = false;
 	var partialPaymentMethodData = {};
+	var collectedPaymentAmount = 0;
 
 	let getMenuItems = function(searchText) {
 		$.ajax({
@@ -731,7 +712,7 @@
 		$("#total").text(totalOrder);
 		$("#totalQty").text(totalQty);
 		$("#roundOff").text(roundOff);
-		$("#grandTotal").text(roundOff);
+		$("#grandTotal, #pendingPaymentAmount").text(roundOff);
 	};
 
 	$("#deliveryCharge").on('keyup, change', calculateOrderTotal);
@@ -937,23 +918,23 @@
 		}
 	});
 
-	$("#selfbilling").click(function() {
+	var placeOrder = function() {
+		let queryString = window.location.search;
+		let urlParams = new URLSearchParams(queryString);
+		let orderId = urlParams.get('id');
+
 		let customerName = $("#customerName").val();
 		let address = $("#address").val();
 		let mobieNumber = $("#mobieNumber").val();
 		let orderType = $("input[name='orderType']:checked").val();
 		let paymentType = $("input[name='paymentType']:checked").val();
-		let transictionId = $("#transictionId").val();
+		let transactionId = $("#transactionId").val();
 		let grandTotal = $("#grandTotal").text();
 		let deliveryCharge = $("#deliveryCharge").val();
 		let containerCharge = $("#containerCharge").val();
 		let customerPaid = $("#customerPaid").val();
 
-		$("#nameError").hide();
-		$("#addressErr").hide();
-		$("#mobileErr").hide();
-		$("#itemErr").hide();
-		$("#paymentError").hide();
+		$("#nameError, #addressErr, #mobileErr, #itemErr, #paymentError").hide();
 
 		if(customerName == "")
 		{
@@ -973,26 +954,21 @@
 			return;
 		}
 		
-		if(paymentType == "4" && transictionId == "")
+		if(paymentType == "4" && transactionId == "")
 		{
 			$("#paymentError").show();
 			return;
 		}
 
-		let isPartialPaymentMethodSelected = false;
-		if (getSelectedPaymentMethod() == 'partialPaymentMethod')
+		// Check full payment amount is applied
+		if (getTotalSplitedPaymentMethodAppliedAmount() != grandTotal)
 		{
-			// Check full payment amount is applied
-			if (getTotalSplitedPaymentMethodAppliedAmount() != grandTotal)
-			{
-				alert('You have selected partial payment method. Please add total collected amount');
-				return false;
-			}
-
-			isPartialPaymentMethodSelected = true;
+			alert('Please add total collected amount');
+			return false;
 		}
 
 		let data = {
+			id: orderId,
 			customerName: customerName,
 			address: address,
 			mobile: mobieNumber,
@@ -1000,7 +976,7 @@
 			paymentType: paymentType,
 			grandTotal: grandTotal,
 			orderTotal: orderTotal,
-			transictionId: transictionId,
+			transactionId: transactionId,
 			selectedItem: selectedMenuItems,
 			deliveryCharge,
 			containerCharge,
@@ -1010,12 +986,15 @@
 			orderDiscountDetail,
 			isDiscountApplied,
 			partialPaymentMethodData,
-			isPartialPaymentMethodSelected,
+			isPartialPaymentMethodSelected: true,
 		};
 
-		$(this).attr('disabled', 'true');
+		$("#selfbilling").attr('disabled', true);
+
+		let apiUrl = baseUrl + (parseInt(orderId) > 0 ? 'Selfbilling/updateSelfBilling' : 'Selfbilling/saveSelfBilling'); 
+
 		$.ajax({
-			url: baseUrl + 'Selfbilling/saveSelfBilling',
+			url: apiUrl,
 			type: "POST",
 			data: data,
 			cache: false,
@@ -1029,101 +1008,13 @@
 					}).then((value) => {
 						resetFormData();
 					});
-					
+
+					$("#partialPaymentMethodsModal").modal("hide");
 					$('#datatables').DataTable().ajax.reload();
 				}
 			}
-		})
-	});
-
-	$("#updateBilling").click(function() {
-		let queryString = window.location.search;
-		let urlParams = new URLSearchParams(queryString);
-		let id = urlParams.get('id');
-		let customerName = $("#customerName").val();
-		let address = $("#address").val();
-		let mobieNumber = $("#mobieNumber").val();
-		let orderType = $("input[name='orderType']:checked").val();
-		let paymentType = $("input[name='paymentType']:checked").val();
-		let transictionId = $("#transictionId").val();
-		let grandTotal = $("#grandTotal").text();
-		let deliveryCharge = $("#deliveryCharge").val();
-		let containerCharge = $("#containerCharge").val();
-		let customerPaid = $("#customerPaid").val();
-		
-		$("#nameError").hide();
-		$("#addressErr").hide();
-		$("#mobileErr").hide();
-		$("#itemErr").hide();
-		$("#paymentError").hide();
-
-		if(customerName == "")
-		{
-			$("#nameError").show();
-			return;
-		}
-
-		if(mobieNumber == "")
-		{
-			$("#mobileErr").show();
-			return;
-		}
-
-		if(jQuery.isEmptyObject(selectedMenuItems))
-		{
-			$("#itemErr").show();
-			return;
-		}
-		
-		if(paymentType == "4" && transictionId == "")
-		{
-			$("#paymentError").show();
-			return;
-		}
-
-		let data = {
-			id: id,
-			customerName: customerName,
-			address: address,
-			mobile: mobieNumber,
-			orderType: orderType,
-			paymentType: paymentType,
-			grandTotal: grandTotal,
-			orderTotal: orderTotal,
-			transictionId: transictionId,
-			selectedItem: selectedMenuItems,
-			deliveryCharge,
-			containerCharge,
-			customerPaid,
-			discountAppliedType,
-			discountAppliedAmount,
-			orderDiscountDetail,
-			isDiscountApplied
-		};
-
-		$(this).attr('disabled', 'true');
-		$.ajax({
-			url: baseUrl + 'Selfbilling/updateSelfBilling',
-			type: "POST",
-			data: data,
-			cache: false,
-			success: function(response) {
-				$("#updateBilling").attr('disabled', false);
-
-				if(response.status == "success")
-				{
-					swal(response.msg, {
-						icon: "success",
-					}).then((value) => {
-						resetFormData();
-					});
-					
-					$('#datatables').DataTable().ajax.reload();
-					window.location.href = baseUrl + 'Restaurant/orderlist';
-				}
-			}
-		})
-	});
+		});
+	};
 	
 	var resetFormData = function() 
 	{
@@ -1138,12 +1029,13 @@
 			}
 		});
 
-		$("#transictionId").val('');
+		$("#transactionId").val('');
 		$("#subTotal").text('');
 		$("#roundOff").text('');
 		$("#total").text('');
 		$("#totalQty").text(0);
 		$("#grandTotal").text(0);
+		$("#pendingPaymentAmount").text(0);
 		$("#deliveryCharge").val(0);
 		$("#containerCharge").val(0);
 		$("#customerPaid").val('');
@@ -1199,12 +1091,32 @@
 	var PAYEMENT_MODE_CARD = "<?=PAYEMENT_MODE_CARD?>";
 	var PAYEMENT_MODE_BTC = "<?=PAYEMENT_MODE_BTC?>";
 
-	$("ul.partialPaymentMethods li").click(function() {
+	var allPaymentMethodList = [
+		PAYEMENT_MODE_CASH,
+		PAYEMENT_MODE_ONLINE,
+		PAYEMENT_MODE_UPI,
+		PAYEMENT_MODE_CARD,
+		PAYEMENT_MODE_BTC,
+	];
+
+	$("ul.partialPaymentMethods li .partialPaymentMethodName").click(function() {
+		orderTotalAmount = parseFloat($("#grandTotal").text());
+
+		if (isNaN(orderTotalAmount))
+		{
+			return false;
+		}
+
 		let selectedMethodValue = parseInt($(this).attr("data-value"));
+		let totalCollectedPaymentAmount = getTotalSplitedPaymentMethodAppliedAmount();
 
 		$("#dynamicHtml").html('');
 		$("#partialPaymentMethodType").val(selectedMethodValue);
-		$("#partialPaymentTotalCollected").text(getTotalSplitedPaymentMethodAppliedAmount());
+		$("#partialPaymentTotalCollected, #collectedPaymentAmount").text(getTotalSplitedPaymentMethodAppliedAmount());
+
+		let pendingPaymentAmount = orderTotalAmount - collectedPaymentAmount;
+
+		$("#partialPaymentAmount").val(pendingPaymentAmount);
 
 		if (selectedMethodValue == PAYEMENT_MODE_CARD)
 		{
@@ -1228,12 +1140,14 @@
 			$("#partialPaymentAmount").val(partialPaymentMethodData[selectedMethodValue].partialPaymentAmount);
 		}
 
+		$("#addSplitPaymentBtn").hide();
+		$("#selfbilling").show();
+
 		$("#partialPaymentMethodsModal #headTitle").text($(this).text());
 		$("#partialPaymentMethodsModal").modal('show');
-		orderTotalAmount = parseFloat($("#grandTotal").text());
 	});
 
-	$("#addSplitPaymentBtn").click(function() {
+	var addPartialPaymentForOrder = function() {
 		let partialPaymentAmount = parseFloat($("#partialPaymentAmount").val());
 		let partialPaymentMethodType = $("#partialPaymentMethodType").val();
 		let partialPaymentMethodTypeName = $("#partialPaymentMethodsModal #headTitle").text();
@@ -1259,16 +1173,20 @@
 
 			partialPaymentMethodData[partialPaymentMethodType] = partialPaymentMethodObject;
 
-			$("#partialPaymentTotalCollected, #totalOrderAmount").text(getTotalSplitedPaymentMethodAppliedAmount());
+			collectedPaymentAmount = getTotalSplitedPaymentMethodAppliedAmount();
+			$("#partialPaymentTotalCollected, #totalOrderAmount, #collectedPaymentAmount").text(getTotalSplitedPaymentMethodAppliedAmount());
 			$("#partialPaymentMethodsModal").modal("hide");
 			$("#partialPaymentMethodSummary").html(getSplitPaymentMethodSummary());
+			showSpitPaymentMethodSummary();
 		}
-	});
+	};
+
+	$("#addSplitPaymentBtn").click(addPartialPaymentForOrder);
 
 	$("#partialPaymentAmount").keyup(function() {
 
 		let partialedPaymentMethodTotalAmount = getTotalSplitedPaymentMethodAppliedAmount();
-		let partialPaymentAmount = parseFloat($(this).val());
+		let partialPaymentAmount = parseFloat($(this).val()) || 0;
 		let partialPaymentAmountMax = orderTotalAmount - partialedPaymentMethodTotalAmount;
 		let partialPaymentMethodType = parseInt($("#partialPaymentMethodType").val());
 
@@ -1277,9 +1195,31 @@
 			partialPaymentAmountMax = partialPaymentAmountMax - partialPaymentMethodData[partialPaymentMethodType].partialPaymentAmount
 		}
 
+		let showConfirmOrderBtn = false;
+
 		if ((partialedPaymentMethodTotalAmount + partialPaymentAmount) > orderTotalAmount)
 		{
 			$("#partialPaymentAmount").val(partialPaymentAmountMax);
+			showConfirmOrderBtn = true;
+		}
+
+		if (showConfirmOrderBtn)
+		{
+			$("#addSplitPaymentBtn").hide();
+			$("#selfbilling").show();
+		}
+		else
+		{
+			if (partialPaymentAmountMax > partialPaymentAmount)
+			{
+				$("#addSplitPaymentBtn").show();
+				$("#selfbilling").hide();
+			}
+			else if (partialPaymentAmountMax == partialPaymentAmount)
+			{
+				$("#addSplitPaymentBtn").hide();
+				$("#selfbilling").show();
+			}
 		}
 	});
 
@@ -1327,18 +1267,35 @@
 	};
 
 	let showSpitPaymentMethodSummary = function() {
-		$("#partialPaymentMethodSummary").html(getSplitPaymentMethodSummary());
+
+		if (partialPaymentMethodData)
+		{
+			for (i in partialPaymentMethodData)
+			{
+				let row = partialPaymentMethodData[i];
+				let partialPaymentMethodAmountHtml = row.partialPaymentAmount > 0 ? `${row.partialPaymentAmount} <span class='removeSplitPaymentMethod' data-partialPaymentMethodType="${i}">X</span>` : 0;
+				
+				$("#partialPaymentMethodAmount-" + row.partialPaymentMethodType).html(partialPaymentMethodAmountHtml);
+			}
+		}
 	};
 
-	$("#partialPaymentMethodSummary").on("click", ".removeSplitPaymentMethod", function() {
+	let updatePaymentCollected = function() {
+		$("#partialPaymentTotalCollected, #collectedPaymentAmount").text(getTotalSplitedPaymentMethodAppliedAmount());
+		collectedPaymentAmount = getTotalSplitedPaymentMethodAppliedAmount();
+	};
+
+	$("ul.partialPaymentMethods").on("click", ".removeSplitPaymentMethod", function() {
 		let partialPaymentMethodType = parseInt($(this).attr('data-partialPaymentMethodType'));
 		
 		if (partialPaymentMethodData[partialPaymentMethodType])
 		{
 			delete partialPaymentMethodData[partialPaymentMethodType];
+			$("#partialPaymentMethodAmount-" + partialPaymentMethodType).text(0);
 		}
 
 		showSpitPaymentMethodSummary();
+		updatePaymentCollected();
 	});
 
 	$("#viewPartialPaymentMethods").click(function() {
@@ -1369,8 +1326,24 @@
 
 	var resetPartialPaymentMethod = function() {
 		partialPaymentMethodData = {};
-		$("#totalOrderAmount").text(0);
+		collectedPaymentAmount = 0;
+		
+		$("#totalOrderAmount, #collectedPaymentAmount").text(0);
 		$("#partialPaymentMethodSummary").html('');
+
+		resetSpitPaymentMethodSummary();
+		showSpitPaymentMethodSummary();
 	}
+
+	var resetSpitPaymentMethodSummary = function() {
+		allPaymentMethodList.forEach(function(partialPaymentMethodType) {
+			$("#partialPaymentMethodAmount-" + partialPaymentMethodType).text(0);
+		});
+	};
+
+	$("#selfbilling").click(function() {
+		addPartialPaymentForOrder();
+		placeOrder();
+	});
 
 </script>
