@@ -1011,6 +1011,11 @@
 
 					$("#partialPaymentMethodsModal").modal("hide");
 					$('#datatables').DataTable().ajax.reload();
+
+					if (parseInt(orderId) > 0) 
+					{
+						window.location.href = baseUrl + 'Restaurant/orderlist';
+					}
 				}
 			}
 		});
@@ -1327,7 +1332,7 @@
 	var resetPartialPaymentMethod = function() {
 		partialPaymentMethodData = {};
 		collectedPaymentAmount = 0;
-		
+
 		$("#totalOrderAmount, #collectedPaymentAmount").text(0);
 		$("#partialPaymentMethodSummary").html('');
 
