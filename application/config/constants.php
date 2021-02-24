@@ -115,6 +115,8 @@ define('PAYEMENT_MODE_UPI', 3);
 define('PAYEMENT_MODE_CARD', 4);
 define('PAYEMENT_MODE_BTC', 5);
 define('PAYEMENT_MODE_SWIGGY', 6);
+define('PAYEMENT_MODE_ZOMATO', 7);
+define('PAYEMENT_MODE_MAGIC_PIN', 8);
 
 
 define('PAYEMENT_STATUS_PAID', 1);

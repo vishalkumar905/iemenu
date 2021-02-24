@@ -228,6 +228,8 @@ class OrderModel extends CI_Model
 			sprintf("SUM(CASE WHEN payment_mode = %s THEN total ELSE 0 END) + SUM(CASE WHEN amountPaidByCard IS NOT NULL THEN amountPaidByCard ELSE 0 END) as totalPaymentByCard", PAYEMENT_MODE_CARD),
 			sprintf("SUM(CASE WHEN payment_mode = %s THEN total ELSE 0 END) + SUM(CASE WHEN amountPaidByBtc IS NOT NULL THEN amountPaidByBtc ELSE 0 END) as totalPaymentByBtc", PAYEMENT_MODE_BTC),
 			sprintf("SUM(CASE WHEN payment_mode = %s THEN total ELSE 0 END) + SUM(CASE WHEN amountPaidBySwiggy IS NOT NULL THEN amountPaidBySwiggy ELSE 0 END) as totalPaymentBySwiggy", PAYEMENT_MODE_SWIGGY),
+			sprintf("SUM(CASE WHEN payment_mode = %s THEN total ELSE 0 END) + SUM(CASE WHEN amountPaidByZomato IS NOT NULL THEN amountPaidByZomato ELSE 0 END) as totalPaymentByZomato", PAYEMENT_MODE_ZOMATO),
+			sprintf("SUM(CASE WHEN payment_mode = %s THEN total ELSE 0 END) + SUM(CASE WHEN amountPaidByMagicPin IS NOT NULL THEN amountPaidByMagicPin ELSE 0 END) as totalPaymentByMagicPin", PAYEMENT_MODE_MAGIC_PIN),
 		];
 
 		$condition = [

@@ -125,7 +125,7 @@
 
     ul.partialPaymentMethods li
     {
-        width: 18%;
+        width: 10%;
         margin: 4px;
         display: inline-block;
     }

@@ -198,28 +198,17 @@
 										<span id="partialPaymentMethodAmount-<?=PAYEMENT_MODE_SWIGGY?>" class="partialPaymentMethodAmount">0</span>
 										<span data-value="<?=PAYEMENT_MODE_SWIGGY?>" class="partialPaymentMethodName">Swiggy</span>
 									</li>
+									<li>
+										<span id="partialPaymentMethodAmount-<?=PAYEMENT_MODE_ZOMATO?>" class="partialPaymentMethodAmount">0</span>
+										<span data-value="<?=PAYEMENT_MODE_ZOMATO?>" class="partialPaymentMethodName">Zomato</span>
+									</li>
+									<li>
+										<span id="partialPaymentMethodAmount-<?=PAYEMENT_MODE_MAGIC_PIN?>" class="partialPaymentMethodAmount">0</span>
+										<span data-value="<?=PAYEMENT_MODE_MAGIC_PIN?>" class="partialPaymentMethodName">Magic Pin</span>
+									</li>
 								</ul>
 							</div>
 						</div>
-
-						<?php /* ?>
-						<div class="col-md-2">
-							<div class="form-group label-floating">
-								<?php
-									if(isset($_GET['id']))
-									{
-										echo '<button type="button" id="cancelBilling" name="cancelBilling" class="btn btn-warning pull-right">Cancel</button>';
-										echo '<button type="button" id="updateBilling" name="updateBilling" class="btn btn-rose pull-right">Update Order</button>';
-									}
-									else
-									{
-										echo '<button type="button" id="selfbilling" name="selfbilling" class="btn btn-rose pull-right">Confirm Order</button>';
-									}                
-								?>
-							</div>
-						</div>
-						<?php */ ?>
-
 					</div>
 				</div>
 			</form>
@@ -1095,6 +1084,9 @@
 	var PAYEMENT_MODE_UPI = "<?=PAYEMENT_MODE_UPI?>";
 	var PAYEMENT_MODE_CARD = "<?=PAYEMENT_MODE_CARD?>";
 	var PAYEMENT_MODE_BTC = "<?=PAYEMENT_MODE_BTC?>";
+	var PAYEMENT_MODE_SWIGGY = "<?=PAYEMENT_MODE_SWIGGY?>";
+	var PAYEMENT_MODE_ZOMATO = "<?=PAYEMENT_MODE_ZOMATO?>";
+	var PAYEMENT_MODE_MAGIC_PIN = "<?=PAYEMENT_MODE_MAGIC_PIN?>";
 
 	var allPaymentMethodList = [
 		PAYEMENT_MODE_CASH,
@@ -1102,6 +1094,9 @@
 		PAYEMENT_MODE_UPI,
 		PAYEMENT_MODE_CARD,
 		PAYEMENT_MODE_BTC,
+		PAYEMENT_MODE_ZOMATO,
+		PAYEMENT_MODE_SWIGGY,
+		PAYEMENT_MODE_MAGIC_PIN,
 	];
 
 	$("ul.partialPaymentMethods li .partialPaymentMethodName").click(function() {

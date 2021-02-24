@@ -27,6 +27,8 @@ class Dashboard extends CI_Controller {
 		$data['totalPaymentByCard'] = $getOrderRevenuByPaymentModes['totalPaymentByCard'] ?? 0;
 		$data['totalPaymentByBtc'] = $getOrderRevenuByPaymentModes['totalPaymentByBtc'] ?? 0;
 		$data['totalPaymentBySwiggy'] = $getOrderRevenuByPaymentModes['totalPaymentBySwiggy'] ?? 0;
+		$data['totalPaymentByZomato'] = $getOrderRevenuByPaymentModes['totalPaymentByZomato'] ?? 0;
+		$data['totalPaymentByMagicPin'] = $getOrderRevenuByPaymentModes['totalPaymentByMagicPin'] ?? 0;
 
 
 		$data['tab'] = $this->getDashOrderDetails();

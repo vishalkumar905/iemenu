@@ -494,30 +494,46 @@ class Restaurant extends Main
 				$order_status='<span class="label label-default">NCK BILL</span>'; 
 			}
 		   
-			$onclick=($order->order_status=='0') ? 'disabled="disabled"' : 'onclick="updateOrder('. $order->order_id .',2)"';
+			$onclick = ($order->order_status=='0') ? 'disabled="disabled"' : 'onclick="updateOrder('. $order->order_id .',2)"';
 			
-			if($order->payment_mode == '1') 
-			{ 
-				$payment_mode ='<span class="label label-primary">CASH</span>';
-			} 
-			elseif($order->payment_mode == '2') 
-			{ 
-				$payment_mode='<span class="label label-info">ONLINE</span>';
-			} 
-			elseif($order->payment_mode == '3') 
-			{ 
-				$payment_mode='<span class="label label-danger">UPI QR SCAN</span>';
-			} 
-			elseif($order->payment_mode == '4')  
-			{ 
-				$payment_mode='<span class="label label-success">CARD SWIPE</span>';
+			if (intval($order->payment_mode))
+			{
+				if($order->payment_mode == '1') 
+				{ 
+					$payment_mode ='<span class="label label-primary">CASH</span>';
+				} 
+				elseif($order->payment_mode == '2') 
+				{ 
+					$payment_mode='<span class="label label-info">ONLINE</span>';
+				} 
+				elseif($order->payment_mode == '3') 
+				{ 
+					$payment_mode='<span class="label label-danger">UPI QR SCAN</span>';
+				} 
+				elseif($order->payment_mode == '4')  
+				{ 
+					$payment_mode='<span class="label label-success">CARD SWIPE</span>';
+				}
+				elseif($order->payment_mode == '5')  
+				{ 
+					$payment_mode='<span class="label label-warning">BTC</span>';
+				}
+				elseif($order->payment_mode == '6')  
+				{ 
+					$payment_mode='<span class="label label-default">Swiggy</span>';
+				}
+				elseif($order->payment_mode == '7')  
+				{ 
+					$payment_mode='<span class="label label-default">Zomato</span>';
+				}
+				else 
+				{
+					$payment_mode='<span class="label label-default">Magic Pin</span>';
+				}
 			}
-			elseif($order->payment_mode == '5')  
-			{ 
-				$payment_mode='<span class="label label-warning">BTC</span>';
-			}
-			else {
-			    $payment_mode='<span class="label label-default">Swiggy</span>';
+			else
+			{
+				$payment_mode = sprintf('<span class="label label-default">%s</span>', $this->paymentMethod($order->payment_mode, $order));
 			}
 
             $sub_array   = array();
@@ -637,6 +653,8 @@ class Restaurant extends Main
 		$allOrdersPaymentByCard = 0;
 		$allOrdersPaymentByBtc = 0;
 		$allOrdersPaymentBySwiggy = 0;
+		$allOrdersPaymentByZomato = 0;
+		$allOrdersPaymentByMagicPin = 0;
 
 		foreach ( $orders as $order )
         {
@@ -706,6 +724,8 @@ class Restaurant extends Main
 			$orderPaymentByCard = !is_null($order->amountPaidByCard) ? $order->amountPaidByCard : 0;
 			$orderPaymentByBtc = !is_null($order->amountPaidByBtc) ? $order->amountPaidByBtc : 0;
 			$orderPaymentBySwiggy = !is_null($order->amountPaidBySwiggy) ? $order->amountPaidBySwiggy : 0;
+			$orderPaymentByZomato = !is_null($order->amountPaidByZomato) ? $order->amountPaidByZomato : 0;
+			$orderPaymentByMagicPin = !is_null($order->amountPaidByMagicPin) ? $order->amountPaidByMagicPin : 0;
 
 			if (!is_null($order->payment_mode))
 			{
@@ -725,6 +745,14 @@ class Restaurant extends Main
 				{
 					$orderPaymentBySwiggy = is_null($order->amountPaidBySwiggy) ? $order->total : 0;
 				}
+				else if ($order->payment_mode == PAYEMENT_MODE_SWIGGY)
+				{
+					$orderPaymentByZomato = is_null($order->amountPaidByZomato) ? $order->total : 0;
+				}
+				else if ($order->payment_mode == PAYEMENT_MODE_SWIGGY)
+				{
+					$orderPaymentByMagicPin = is_null($order->amountPaidByMagicPin) ? $order->total : 0;
+				}
 			}
 
 			$allOrdersPaymentByCash += $orderPaymentByCash;
@@ -732,6 +760,8 @@ class Restaurant extends Main
 			$allOrdersPaymentByCard += $orderPaymentByCard;
 			$allOrdersPaymentByBtc += $orderPaymentByBtc;
 			$allOrdersPaymentBySwiggy += $orderPaymentBySwiggy;
+			$allOrdersPaymentByZomato += $orderPaymentByZomato;
+			$allOrdersPaymentByMagicPin += $orderPaymentByMagicPin;
 
 			$row = [
 				$order_status,
@@ -804,6 +834,8 @@ class Restaurant extends Main
 				$paymentRow[] = 'Total Payment By Card';
 				$paymentRow[] = 'Total Payment By BTC';
 				$paymentRow[] = 'Total Payment By Swiggy';
+				$paymentRow[] = 'Total Payment By Zomato';
+				$paymentRow[] = 'Total Payment By Magic Pin';
 
 				$data[] = $paymentRow;
 
@@ -815,6 +847,8 @@ class Restaurant extends Main
 				$paymentRow[] = $orderStatsByPaymentModes['totalPaymentByCard'] ?? 0;
 				$paymentRow[] = $orderStatsByPaymentModes['totalPaymentByBtc'] ?? 0;
 				$paymentRow[] = $orderStatsByPaymentModes['totalPaymentBySwiggy'] ?? 0;
+				$paymentRow[] = $orderStatsByPaymentModes['totalPaymentByZomato'] ?? 0;
+				$paymentRow[] = $orderStatsByPaymentModes['totalPaymentByMagicPin'] ?? 0;
 
 				$data[] = $paymentRow;
 			}
@@ -1418,7 +1452,9 @@ class Restaurant extends Main
 			3 => 'UPI QR SCAN',
 			4 => 'CARD SWIPE',
 			5 => 'BTC',
-			6 => 'Swiggy'
+			6 => 'Swiggy',
+			7 => 'Zomato',
+			8 => 'Magic Pin'
 		];
 
 		// Check if this order has partial payments

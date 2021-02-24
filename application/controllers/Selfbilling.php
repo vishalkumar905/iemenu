@@ -203,6 +203,14 @@ class Selfbilling extends CI_Controller
                 {
                     $data['amountPaidBySwiggy'] = $paymentMethod['partialPaymentAmount'];
                 }
+                else if ($paymentMethod['partialPaymentMethodType'] == PAYEMENT_MODE_ZOMATO)
+                {
+                    $data['amountPaidByZomato'] = $paymentMethod['partialPaymentAmount'];
+                }
+                else if ($paymentMethod['partialPaymentMethodType'] == PAYEMENT_MODE_MAGIC_PIN)
+                {
+                    $data['amountPaidByMagicPin'] = $paymentMethod['partialPaymentAmount'];
+                }
             }
 
             $data['amountPaidByMultiplePaymentMethods'] = true;
@@ -341,6 +349,14 @@ class Selfbilling extends CI_Controller
                 else if ($paymentMethod['partialPaymentMethodType'] == PAYEMENT_MODE_SWIGGY)
                 {
                     $data['amountPaidBySwiggy'] = $paymentMethod['partialPaymentAmount'];
+                }
+                else if ($paymentMethod['partialPaymentMethodType'] == PAYEMENT_MODE_ZOMATO)
+                {
+                    $data['amountPaidByZomato'] = $paymentMethod['partialPaymentAmount'];
+                }
+                else if ($paymentMethod['partialPaymentMethodType'] == PAYEMENT_MODE_MAGIC_PIN)
+                {
+                    $data['amountPaidByMagicPin'] = $paymentMethod['partialPaymentAmount'];
                 }
             }
 
