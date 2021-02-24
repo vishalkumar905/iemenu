@@ -170,13 +170,6 @@
     #partialPaymentMethodSummary {
         padding-top: 20px;
     }
-
-	ul.partialPaymentMethods li:hover
-	{
-		/* box-shadow: 0 0 0 1px rgb(0 0 0 / 20%); */
-    	/* transition: all 200ms ease-out;	 */
-	}
-
     .totalOrderPriceView {
         font-size:  25px;
         font-weight:  bold;
