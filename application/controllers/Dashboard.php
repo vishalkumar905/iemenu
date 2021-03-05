@@ -14,7 +14,7 @@ class Dashboard extends CI_Controller {
 		$this->load->model('UserModel','usermodel');
 		$this->load->model('OrderModel','ordermodel');
 		$this->load->model('table/TableModel','tableModel');
-		
+		$this->load->model('restaurant/RestaurantModel','restaurantModel');
 	}
 	
 	public function index()
@@ -211,6 +211,7 @@ class Dashboard extends CI_Controller {
 	    if(!empty($orders))
 	    {
 	        foreach($orders as $order) :
+				$order = $this->combineOrders($order->id);
 	            if($itemTotalPrice == '') { $itemTotalPrice = $order->total; }
 	            else { $itemTotalPrice = $itemTotalPrice + $order->total; }
 	        endforeach;
@@ -227,4 +228,81 @@ class Dashboard extends CI_Controller {
         $now->setTimezone(new DateTimeZone('Asia/Kolkata'));    // Another way
         print_r($now); exit;
     }
+
+	public function combineOrders($orderId)
+	{
+		$order = $this->restaurantModel->getOrderList([
+			'id'=>$orderId, 
+			'res_id' => $this->session->userid
+		])[0];
+		
+
+		$orderItemDetails = json_decode($order->item_details, true);
+
+		if (!empty($order))
+		{
+			$subOrders = $this->ordermodel->getSubOrders($order->id);
+
+			if (!empty($subOrders))
+			{
+				$totalSubOrder = floatval($order->orderTotal);
+
+				foreach ($subOrders as $subOrder)
+				{
+					$subOrderItemDetails = json_decode($subOrder['item_details'], true);
+					
+					foreach($subOrderItemDetails as $subOrderProductId => $subOrderItemDetail)
+					{
+						$subOrderProductType = key($subOrderItemDetail);
+
+						if (isset($orderItemDetails[$subOrderProductId]))
+						{
+							if (isset($orderItemDetails[$subOrderProductId][$subOrderProductType]))
+							{
+
+								$orderItemCount = $orderItemDetails[$subOrderProductId][$subOrderProductType]['itemCount'];
+								$orderItemTotalTax = $orderItemDetails[$subOrderProductId][$subOrderProductType]['itemTotalTax'] ?? 0;								
+								$orderItemTotalAmount = $orderItemDetails[$subOrderProductId][$subOrderProductType]['itemTotalAmount'] ?? 0;								
+								$orderItemDiscountAmount = $orderItemDetails[$subOrderProductId][$subOrderProductType]['itemDiscountAmount'] ?? 0;
+								
+								$subOrderItemCount = $subOrderItemDetail[$subOrderProductType]['itemCount'];
+								$subOrderItemTotalTax = $subOrderItemDetail[$subOrderProductType]['itemTotalTax'] ?? 0;
+								$subOrderItemTotalAmount = $subOrderItemDetail[$subOrderProductType]['itemTotalAmount'] ?? 0;
+								$subOrderItemDiscountAmount = $subOrderItemDetail[$subOrderProductType]['itemDiscountAmount'] ?? 0;
+
+								$totalItemCount = $orderItemCount + $subOrderItemCount;
+								
+								$orderItemDetails[$subOrderProductId][$subOrderProductType]['itemCount'] = $totalItemCount;
+								$orderItemDetails[$subOrderProductId][$subOrderProductType]['itemTotalTax'] = $orderItemTotalTax + $subOrderItemTotalTax;
+								$orderItemDetails[$subOrderProductId][$subOrderProductType]['itemDiscountAmount'] = $orderItemDiscountAmount + $subOrderItemDiscountAmount;
+								$orderItemDetails[$subOrderProductId][$subOrderProductType]['itemTotalAmount'] = $orderItemTotalAmount + $subOrderItemTotalAmount;
+							}
+							else
+							{
+								$orderItemDetails[$subOrderProductId][$subOrderProductType] = $subOrderItemDetail[$subOrderProductType];
+							}
+						}
+						else
+						{
+							$orderItemDetails[$subOrderProductId] = $subOrderItemDetail;
+						}
+					}
+					
+					$order->delivery_charge = floatval($order->delivery_charge) + floatval($subOrder['delivery_charge']);
+					$order->container_charge = floatval($order->container_charge) + floatval($subOrder['container_charge']);
+					
+					$totalSubOrder += floatval($subOrder['orderTotal']);
+				}
+				
+				if ($totalSubOrder > 0)
+				{
+					$order->total = round($totalSubOrder);
+				}
+			}
+
+			$order->item_details = json_encode($orderItemDetails);
+		}
+
+		return $order; 
+	}
 }
