@@ -889,6 +889,8 @@ class Restaurant extends Main
 
 		foreach ( $orders as $order )
         {
+			$order = $this->combineOrders($order->order_id);
+
             if($order->order_status=='0'){ $order_status='OPEN'; }elseif($order->order_status=='4'){ $order_status='NCK BILL'; }
 			$CartLists=json_decode($order->item_details, true);
 			
@@ -1661,6 +1663,8 @@ class Restaurant extends Main
 
 		foreach ( $orders as $order )
         {
+			$order = $this->combineOrders($order->order_id);
+
             if($order->order_status=='0'){ $order_status='OPEN'; }elseif($order->order_status=='1'){ $order_status='CONFIRM'; }elseif($order->order_status=='2'){ $order_status='CLOSE'; }else{ $order_status='VOID BILL'; }
 			$CartLists=json_decode($order->item_details, true);
 			

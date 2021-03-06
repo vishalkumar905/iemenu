@@ -286,7 +286,7 @@
 
         $('.card .material-datatables label').addClass('form-group');
         
-        setInterval(function(){ $('#datatables').DataTable().ajax.reload();  }, 60000 * 2);
+        setInterval(function(){ $('#datatables').DataTable().ajax.reload();  }, 5000);
         
         
         
@@ -383,6 +383,9 @@
         $('#voidBillModal1').modal('show');
     });
 
+    // $('#voidBillModal1').on('shown.bs.modal', function (e) {
+    //     $("#managerPass")[0].reset();
+    // });
 
 	$("#verifyPassBtn").click(function(e) {
 
