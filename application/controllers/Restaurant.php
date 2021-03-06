@@ -1176,7 +1176,9 @@ class Restaurant extends Main
 							$orderItemDetails[$subOrderProductId] = $subOrderItemDetail;
 						}
 					}
-					
+
+					$order->discount_coupon_percentage = floatval($order->discount_coupon_percentage) + floatval($subOrder['discount_coupon_percentage']);
+					$order->flat_amount_discount = floatval($order->flat_amount_discount) + floatval($subOrder['flat_amount_discount']);
 					$order->delivery_charge = floatval($order->delivery_charge) + floatval($subOrder['delivery_charge']);
 					$order->container_charge = floatval($order->container_charge) + floatval($subOrder['container_charge']);
 					
