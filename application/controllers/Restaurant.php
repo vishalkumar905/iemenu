@@ -294,6 +294,8 @@ class Restaurant extends Main
 		{
 			foreach($orders as $order)
 			{
+				$order = (array)$this->combineOrders($order['order_id']);
+
 				$itemDetails = json_decode($order['item_details'], true);
 
 				if (!empty($itemDetails))
