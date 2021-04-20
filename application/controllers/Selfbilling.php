@@ -121,7 +121,7 @@ class Selfbilling extends CI_Controller
                 "itemOldPrice"=> floatval($itemPrice), 
                 "itemFoodType"=> "",
                 "itemCount"=> $items['itemQty'],
-                "itemTaxes"=> $items['itemTaxDetails'],
+                "itemTaxes"=> $items['itemTaxDetails'] ?? [],
                 "itemTotalTax" => $itemTax,
                 "itemDiscountAmount" => $items['itemDiscountAmount'],
                 "itemTotalAmount" => $items['itemTotalAmount'],
@@ -144,7 +144,7 @@ class Selfbilling extends CI_Controller
             $items['itemFoodType'] = '';
             $items['itemCount'] = $items['itemQty'];
             $items['itemOldPrice'] = $items['itemPrice'];
-            $items['itemTaxes'] = $items['itemTaxDetails'];
+            $items['itemTaxes'] = $items['itemTaxDetails'] ?? [];
             $items['itemNote'] = $items['specialNote'] ?? '';
             $items['itemTotalTax'] = $items['itemTax'];
 
@@ -274,7 +274,7 @@ class Selfbilling extends CI_Controller
                 "itemOldPrice"=> floatval($itemPrice), 
                 "itemFoodType"=> "",
                 "itemCount"=> $items['itemQty'],
-                "itemTaxes"=> $items['itemTaxDetails'],
+                "itemTaxes"=> $items['itemTaxDetails'] ?? [],
                 "itemTotalTax" => $itemTax,
                 "itemDiscountAmount" => $items['itemDiscountAmount'],
                 "itemTotalAmount" => $items['itemTotalAmount'],
@@ -291,7 +291,7 @@ class Selfbilling extends CI_Controller
             $items['itemFoodType'] = '';
             $items['itemOldPrice'] = $items['itemPrice'];
             $items['itemCount'] = $items['itemQty'];
-            $items['itemTaxes'] = $items['itemTaxDetails'];
+            $items['itemTaxes'] = $items['itemTaxDetails'] ?? [];
             $items['itemNote'] = $items['specialNote'] ?? '';
             $items['itemTotalTax'] = $items['itemTax'];
 
