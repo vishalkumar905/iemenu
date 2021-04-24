@@ -348,13 +348,19 @@
 		    data: {'orderID':orderID,'status':status}
         })
     	.done(function(response){
-			location.reload();
-			
-			// console.log(response);
-        })
+            makeRecipeRequestForOrder(orderID);
+        });
     }
-    
-    
+
+    var makeRecipeRequestForOrder = function(orderId) {
+        let userId = "<?=$this->session->userid?>";
+        $.post(`${BASE_URL}api/recipe/saveOrderRecipe/${userId}/${orderId}`, {
+            userId, orderId
+        }, function(resp) {
+            console.log('Save order recipe request made', resp);
+            location.reload();
+        });
+    }
     
     function removeCart(orderID=0,itemid=0,itemtype=null)
 	{

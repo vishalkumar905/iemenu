@@ -59,21 +59,20 @@
     <script src="<?php echo base_url('/assets/js/demo.js'); ?>"></script>
     
     <script>
+        var HOSTNAME = window.location.hostname;
+        var BASE_URL = HOSTNAME == 'localhost' ? 'http://localhost/inventory/' : 'https://iemenu.in/inventory/'; 
+
+        if (HOSTNAME == 'iemenu.beginweb.in')
+        {
+            BASE_URL = 'http://inventory.beginweb.in/';
+        }
+        else if (HOSTNAME == 'iemenu.in')
+        {
+            BASE_URL = 'https://iemenu.in/inventory/';
+        }        
+
         $("#ieMenuInventoryLink").click(function() {
-            let hostname = window.location.hostname;
-            let baseUrl = hostname == 'localhost' ? 'http://localhost/inventory/' : 'https://iemenu.in/inventory/';
-            
-            if (hostname == 'iemenu.beginweb.in')
-            {
-                baseUrl = 'http://inventory.beginweb.in/';
-            }
-            else if (hostname == 'iemenu.in')
-            {
-                baseUrl = 'https://iemenu.in/inventory/';
-            }
-
-
-            let url = baseUrl + 'home/generateLoginToken';
+            let url = BASE_URL + 'home/generateLoginToken';
             let data = {
                 userId: "<?=$this->session->userid?>",
                 name: "<?=$this->session->name?>",
@@ -95,20 +94,8 @@
             }, 'json');
         });
 
-        $("#logoutSession").click(function() {
-            let hostname = window.location.hostname;
-            let baseUrl = hostname == 'localhost' ? 'http://localhost/inventory/' : 'https://iemenu.in/inventory/'; 
-
-            if (hostname == 'iemenu.beginweb.in')
-            {
-                baseUrl = 'http://inventory.beginweb.in/';
-            }
-            else if (hostname == 'iemenu.in')
-            {
-                baseUrl = 'https://iemenu.in/inventory/';
-            }
-            
-            let url = baseUrl + 'home/destroySession';
+        $("#logoutSession").click(function() {            
+            let url = BASE_URL + 'home/destroySession';
             let logoutLink = $(this).attr("datahref");
             $.post(url, {}, function(response) {
                 if (response.isSuccess == false)
