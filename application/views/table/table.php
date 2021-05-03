@@ -142,12 +142,32 @@
             language: {
                 search: "_INPUT_",
                 searchPlaceholder: "Search records",
-            }
-
+            },
+			drawCallback: function(){
+				$('.paginate_button', this.api().table().container()).on('click', function(){
+					$('#datatables .checkBoxClass').on('click', function() {
+						if($(".checkBoxClass:checked").length > 0) 
+						{
+							$('input[name="multiQrGen"]').show();
+							$('input[name="DeleteTable"]').show();
+							$('input[name="SelfOrder"]').show();
+						}
+						else
+						{
+							$('input[name="multiQrGen"]').hide();
+							$('input[name="DeleteTable"]').hide();
+							$('input[name="SelfOrder"]').hide();
+						}
+					});
+				});       
+			}
         });
 
-
+		
         var table = $('#datatables').DataTable();
+
+		
+
 
         // Edit record
         /*table.on('click', '.edit', function() {
@@ -203,8 +223,9 @@
                 $('input[name="SelfOrder"]').hide();
             }
 		});
+
 		$('.checkBoxClass').on('click', function(){
-            if($(".checkBoxClass:checked").length > 0) 
+			if($(".checkBoxClass:checked").length > 0) 
             {
                 $('input[name="multiQrGen"]').show();
                 $('input[name="DeleteTable"]').show();
@@ -216,6 +237,7 @@
                 $('input[name="SelfOrder"]').hide();
             }
 		});
+
 		
 		$('input[name="DeleteTable"]').on('click', function(){
 		    swal({
