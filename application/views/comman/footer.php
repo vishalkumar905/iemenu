@@ -64,7 +64,7 @@
 
         if (HOSTNAME == 'iemenu.beginweb.in')
         {
-            BASE_URL = 'http://inventory.beginweb.in/';
+            BASE_URL = 'https://inventory.beginweb.in/';
         }
         else if (HOSTNAME == 'iemenu.in')
         {

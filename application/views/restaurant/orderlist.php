@@ -362,6 +362,16 @@
         });
     }
     
+    var updateRecipeOrderStatus = function(orderId, orderStatus) {
+        let userId = "<?=$this->session->userid?>";
+        $.post(`${BASE_URL}api/recipe/updateOrderRecipe/${userId}/${orderId}/${orderStatus}`, {
+            userId, orderId, orderStatus
+        }, function(resp) {
+            console.log('Update order recipe request made', resp);
+            location.reload();
+        });
+    }
+    
     function removeCart(orderID=0,itemid=0,itemtype=null)
 	{
 	    if(orderID!==0 && itemid!==0 && itemtype!==null) {
@@ -434,6 +444,7 @@
 
                     if(msg == "correct"){
                        
+                        updateRecipeOrderStatus(orderID, 3);
                         swal("Success!", "added to void orders successfully", "success");
                        
                         $('#voidBillModal1').modal('hide');  
@@ -503,6 +514,8 @@
 				cache: false,
 				success: function(msg) {
                     if(msg == "correct"){
+                        updateRecipeOrderStatus(orderID, 4);
+
                         swal("Success!", "added to nck orders successfully", "success");
                         $('#nckBillVerifyModal').modal('hide');  
                     } else {
